@@ -16,8 +16,10 @@
 #include <time.h>
 #include <stdlib.h>
 int window; 	//id of the window
-double x,y,u;
+double x,y,a,b,c,d,u,v,w;
 double x1,x2,x3,x4,l1,y2,y3,y4;
+double a1,a2,a3,a4,b1,b2,b3,b4;
+double c1,c2,c3,c4,c1,c2,c3,c4;
 static double s = 0.5;
  
 void keystroke(unsigned char c, int x, int y) {
@@ -33,6 +35,14 @@ void keystroke(unsigned char c, int x, int y) {
 			x4 = ((rand() % (99)/100.)*5)-2.5;
 			y4 = ((rand() % (99)/100.)*5)-2.5;
 			break;
+		case 111:
+			a1 = a2;
+			b1 = b2;
+			a2 = a3; b2 = b3;
+			a3 = a4; b3 = b4;
+			a4 = ((rand() % (99)/100.)*5)-2.5;
+			b4 = ((rand() % (99)/100.)*5)-2.5;
+			break;
 	}
 }
 void display() {
@@ -40,7 +50,6 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	//double l1;
 	glColor3f(1.0,0.0,0.0);
 
 	glPushMatrix();
@@ -48,19 +57,26 @@ void display() {
 	glutSolidSphere(0.25,25,25);
 	glPopMatrix();
 	
-	glColor3f(1.0,1.0,1.0);
-	glPointSize(10.0f);
-	glBegin(GL_POINTS);
-		glVertex3f(x1, l1, 0);
-		glColor3f(1.0,0.0,0.0);
-		glVertex3f(x2, y2, 0);
-		glColor3f(0.0,1.0,0.0);
-		glVertex3f(x3, y3, 0);
-		glColor3f(0.0,0.0,1.0);
-		glVertex3f(x4, y4, 0);
-	glEnd();
+	glPushMatrix();
+	glColor3f(0.0,1.0,0.0);
 
+	glPushMatrix();
+	glTranslatef(a,b,0);
+	glutSolidSphere(0.25,25,25);
 	glPopMatrix();
+	//glColor3f(1.0,1.0,1.0);
+	//glPointSize(10.0f);
+	//glBegin(GL_POINTS);
+	//	glVertex3f(x1, l1, 0);
+	//	glColor3f(1.0,0.0,0.0);
+	//	glVertex3f(x2, y2, 0);
+	//	glColor3f(0.0,1.0,0.0);
+	//	glVertex3f(x3, y3, 0);
+	//	glColor3f(0.0,0.0,1.0);
+	//	glVertex3f(x4, y4, 0);
+	//glEnd();
+
+	//glPopMatrix();
 
 	glutSwapBuffers();
 }
@@ -83,6 +99,25 @@ void animate() {
 	}else{
 		u = 0.0;
 		keystroke('n', 0, 0);
+	}
+	
+	if( v < 1.0) {
+		a = (s * ((-1*v) + (2*pow(v,2)) + (-1*pow(v,3))) * a1) +
+			(s * (pow(v,2) + (-1 * pow(v,3))) * a2) +
+			((1 - (3*pow(v,2)) + (2*pow(v,3))) * a2) +
+			(s * (v - (2*pow(v,2)) + pow(v,3)) * a3) +
+			(((3*pow(v,2)) - (2*pow(v,3))) * a3) +
+			((s * (pow(v,3) - pow(v,2))) * a4);
+		b = (s * ((-1*v) + (2*pow(v,2)) + (-1*pow(v,3))) * b1) +
+			(s * (pow(v,2) + (-1 * pow(v,3))) * b2) +
+			((1 - (3*pow(v,2)) + (2*pow(v,3))) * b2) +
+			(s * (v - (2*pow(v,2)) + pow(v,3)) * b3) +
+			(((3*pow(v,2)) - (2*pow(v,3))) * b3) +
+			((s * (pow(v,3) - pow(v,2))) * b4);
+		v+=0.001;
+	}else{
+		v = 0.0;
+		keystroke(111, 0, 0);
 	}
 	// We must set the current window, since a window isn't
 	// set before this function is called
@@ -137,6 +172,14 @@ void gfxinit() {
 	y3 = ((rand() % (99)/100.)*10)-5.0;
 	x4 = ((rand() % (99)/100.)*10)-5.0;
 	y4 = ((rand() % (99)/100.)*10)-5.0;
+	a1 = 0;
+	b1 = 0;
+	a2 = ((rand() % (99)/100.)*10)-5.0;
+	b2 = ((rand() % (99)/100.)*10)-5.0;
+	a3 = ((rand() % (99)/100.)*10)-5.0;
+	b3 = ((rand() % (99)/100.)*10)-5.0;
+	a4 = ((rand() % (99)/100.)*10)-5.0;
+	b4 = ((rand() % (99)/100.)*10)-5.0;
      
 }
 
