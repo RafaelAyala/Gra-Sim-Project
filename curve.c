@@ -7,9 +7,21 @@
 * 100366066
 */
 
-#include <GL/gl.h>
-#include <GL/glu.h>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#include <OpenGL/gl.h>
+#include <OpenGL/glu.h>
+#else
 #include <GL/glut.h>
+#include <GL/glu.h>
+#include <GL/gl.h>
+#endif
+//#include <GL/glew.h>
+
+
+//#include <GL/gl.h>
+//#include <GL/glu.h>
+//#include <GL/glut.h>
 #include <stdio.h> 
 #include <string.h>
 #include <math.h>
