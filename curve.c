@@ -31,7 +31,7 @@ void display() {
 	float t = 0.0;
 		double s = 0.5*(1-t);
 		double u;
-		glBegin(GL_LINE_STRIP);
+		//glBegin(GL_LINE_STRIP);
 		u = 0;
 		//printf("world1\n");
 		while(u<=1) {
@@ -48,10 +48,14 @@ void display() {
 				(s * (u - (2*pow(u,2)) + pow(u,3)) * y3) +
 				(((3*pow(u,2)) - (2*pow(u,3))) * y3) +
 				((s * (pow(u,3) - pow(u,2))) * y4);
-			glVertex3f(x,y,0);
+			//glVertex3f(x,y,0);
+			glPushMatrix();
+			glTranslatef(x,y,0);
+			glutSolidSphere(0.25,25,25);
+			glPopMatrix();
 			u+=0.1;
 		}
-		glEnd();
+		//glEnd();
 	glColor3f(1.0,1.0,1.0);
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);
@@ -95,12 +99,12 @@ void gfxinit() {
  	srand(time(NULL));
 	x1 = 0;
 	l1 = 0;
-	x2 = ((rand() % (99)/100.)*5)-2.5;
-	y2 = ((rand() % (99)/100.)*5)-2.5;
-	x3 = ((rand() % (99)/100.)*5)-2.5;
-	y3 = ((rand() % (99)/100.)*5)-2.5;
-	x4 = ((rand() % (99)/100.)*5)-2.5;
-	y4 = ((rand() % (99)/100.)*5)-2.5;
+	x2 = ((rand() % (99)/100.)*10)-5.0;
+	y2 = ((rand() % (99)/100.)*10)-5.0;
+	x3 = ((rand() % (99)/100.)*10)-5.0;
+	y3 = ((rand() % (99)/100.)*10)-5.0;
+	x4 = ((rand() % (99)/100.)*10)-5.0;
+	y4 = ((rand() % (99)/100.)*10)-5.0;
      
 }
 
