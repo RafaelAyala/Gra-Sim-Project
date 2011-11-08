@@ -85,18 +85,42 @@ void animate() {
      
 
 void gfxinit() {
-     
-     // enable the depth buffer
-     glEnable(GL_DEPTH_TEST);
-     // set the projection to perspective
-     glMatrixMode(GL_PROJECTION);
-     gluPerspective(60.0, 1.0, 1.0, 20.0);
-     // set up the viewing transformation
-     // the view is at (0, 3, 0) and they are looking at (0,0,0)
-     // the up direction is (0, 0, 1) - the z axis
-     glMatrixMode(GL_MODELVIEW);
-     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
- 	srand(time(NULL));
+ 
+	// LIGHTING 	
+    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
+    GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
+    GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
+    GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
+
+    // set the light position, 5 units along the y axis
+    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+    // set the ambient light colour
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
+    // set the diffuse light colour
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
+    // set the specular light colour
+    //glLightfv(GL_LIGHT0, GL_SPECULAR,lightspec);
+	// global ambient
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	// turn on lighting
+    glEnable(GL_LIGHTING);
+    // enable light 0, all the other lights are off
+    glEnable(GL_LIGHT0);
+
+
+    // enable the depth buffer
+    glEnable(GL_DEPTH_TEST);
+   
+    glMatrixMode(GL_PROJECTION);
+    gluPerspective(60.0, 1.0, 1.0, 20.0);
+    glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	
+	glEnable ( GL_COLOR_MATERIAL ) ;
+	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
+	glShadeModel(GL_SMOOTH);
+
+	srand(time(NULL));
 	x1 = 0;
 	l1 = 0;
 	x2 = ((rand() % (99)/100.)*10)-5.0;
