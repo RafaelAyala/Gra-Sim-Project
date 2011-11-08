@@ -56,8 +56,11 @@ void display() {
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);
 		glVertex3f(x1, l1, 0);
+		glColor3f(1.0,0.0,0.0);
 		glVertex3f(x2, y2, 0);
+		glColor3f(0.0,1.0,0.0);
 		glVertex3f(x3, y3, 0);
+		glColor3f(0.0,0.0,1.0);
 		glVertex3f(x4, y4, 0);
 	glEnd();
 
@@ -101,7 +104,21 @@ void gfxinit() {
      
 }
 
-void keystroke()
+void keystroke(unsigned char c, int x, int y) {
+	switch(c) {
+		case 113:
+			exit(0);
+			break;
+		case 110:
+			x1 = x2;
+			l1 = y2;
+			x2 = x3; y2 = y3;
+			x3 = x4; y3 = y4;
+			x4 = ((rand() % (99)/100.)*5)-2.5;
+			y4 = ((rand() % (99)/100.)*5)-2.5;
+			break;
+	}
+}
 
 int main(int argc, char **argv) {
      // Initialize GLUT and process its command line arguments
@@ -114,8 +131,9 @@ int main(int argc, char **argv) {
      glutDisplayFunc(display);
      // Set the Idle function, called when GLUT isn't busy
      glutIdleFunc(animate);
-     // Initialize OpenGL
-     gfxinit();
+     glutKeyboardFunc(keystroke);
+	 // Initialize OpenGL
+	 gfxinit();
      // Pass control to GLUT to run the application
      glutMainLoop();
    
