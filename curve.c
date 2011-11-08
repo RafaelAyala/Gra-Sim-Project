@@ -16,59 +16,52 @@
  #include <time.h>
 #include <stdlib.h>
  int window; 	//id of the window
- FILE * input;
+	double x1,x2,x3,x4,l1,y2,y3,y4;
  
 void display() {
-
+	//printf("hello\n");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	glPushMatrix();
-	double x1,x2,x3,x4,y1,y2,y3,y4;
+	//glPushMatrix();
+	//double l1;
 	double x,y;
-	x1 = 0;
-	y1 = 0;
-	x2 = ((rand() % (99)/100.)*5)-2.5;
-	y2 = ((rand() % (99)/100.)*5)-2.5;
-	x3 = ((rand() % (99)/100.)*5)-2.5;
-	y3 = ((rand() % (99)/100.)*5)-2.5;
-	x4 = ((rand() % (99)/100.)*5)-2.5;
-	y4 = ((rand() % (99)/100.)*5)-2.5;
+	glColor3f(1.0,0.0,0.0);
 
 	//printf("%f - %f\n", x, y);
-	int t;
-	for(t = 0.0; t<=1.0; t+=0.2){	
+	float t = 0.0;
 		double s = 0.5*(1-t);
 		double u;
 		glBegin(GL_LINE_STRIP);
 		u = 0;
+		//printf("world1\n");
 		while(u<=1) {
+			//printf("world2\n");
 			x = (s * ((-1*u) + (2*pow(u,2)) + (-1*pow(u,3))) * x1) +
 				(s * (pow(u,2) + (-1 * pow(u,3))) * x2) +
 				((1 - (3*pow(u,2)) + (2*pow(u,3))) * x2) +
 				(s * (u - (2*pow(u,2)) + pow(u,3)) * x3) +
 				(((3*pow(u,2)) - (2*pow(u,3))) * x3) +
 				((s * (pow(u,3) - pow(u,2))) * x4);
-			y = (s * ((-1*u) + (2*pow(u,2)) + (-1*pow(u,3))) * x1) +
-				(s * (pow(u,2) + (-1 * pow(u,3))) * x2) +
-				((1 - (3*pow(u,2)) + (2*pow(u,3))) * x2) +
-				(s * (u - (2*pow(u,2)) + pow(u,3)) * x3) +
-				(((3*pow(u,2)) - (2*pow(u,3))) * x3) +
-				((s * (pow(u,3) - pow(u,2))) * x4);
+			y = (s * ((-1*u) + (2*pow(u,2)) + (-1*pow(u,3))) * l1) +
+				(s * (pow(u,2) + (-1 * pow(u,3))) * y2) +
+				((1 - (3*pow(u,2)) + (2*pow(u,3))) * y2) +
+				(s * (u - (2*pow(u,2)) + pow(u,3)) * y3) +
+				(((3*pow(u,2)) - (2*pow(u,3))) * y3) +
+				((s * (pow(u,3) - pow(u,2))) * y4);
 			glVertex3f(x,y,0);
 			u+=0.1;
 		}
 		glEnd();
-	}
 	glColor3f(1.0,1.0,1.0);
 	glPointSize(10.0f);
 	glBegin(GL_POINTS);
-		glVertex3f(x1, y1, 0);
+		glVertex3f(x1, l1, 0);
 		glVertex3f(x2, y2, 0);
 		glVertex3f(x3, y3, 0);
 		glVertex3f(x4, y4, 0);
 	glEnd();
 
-	glPopMatrix();
+	//glPopMatrix();
 
 	glutSwapBuffers();
 }
@@ -90,15 +83,25 @@ void gfxinit() {
      glEnable(GL_DEPTH_TEST);
      // set the projection to perspective
      glMatrixMode(GL_PROJECTION);
-     gluPerspective(40.0, 1.0, 1.0, 10.0);
+     gluPerspective(60.0, 1.0, 1.0, 20.0);
      // set up the viewing transformation
      // the view is at (0, 3, 0) and they are looking at (0,0,0)
      // the up direction is (0, 0, 1) - the z axis
      glMatrixMode(GL_MODELVIEW);
-     gluLookAt(0.0, 3.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0);
+     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
  	srand(time(NULL));
+	x1 = 0;
+	l1 = 0;
+	x2 = ((rand() % (99)/100.)*5)-2.5;
+	y2 = ((rand() % (99)/100.)*5)-2.5;
+	x3 = ((rand() % (99)/100.)*5)-2.5;
+	y3 = ((rand() % (99)/100.)*5)-2.5;
+	x4 = ((rand() % (99)/100.)*5)-2.5;
+	y4 = ((rand() % (99)/100.)*5)-2.5;
      
 }
+
+void keystroke()
 
 int main(int argc, char **argv) {
      // Initialize GLUT and process its command line arguments
