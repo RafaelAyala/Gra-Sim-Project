@@ -24,7 +24,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-int number_of_balls = 3;
+#define NUMBER_OF_BALLS 3
 
 int window; 	//id of the window
 double x,y,a,b,c,d,u,v,w;
@@ -33,12 +33,10 @@ double a1,a2,a3,a4,b1,b2,b3,b4;
 double c1,c2,c3,c4,d1,d2,d3,d4;
 static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 
-struct ball{
+struct spheres{
 	double xPos, yPos, interval;
-	double x1, x2, x3, x4, y1, y2, y3, y4;
-	
-};
-
+	double x1, x2, x3, x4, y1, y2, y3, y4;	
+} all_spheres[NUMBER_OF_BALLS];
 
 
 void keystroke(unsigned char c, int x, int y) {
