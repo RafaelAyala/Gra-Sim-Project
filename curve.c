@@ -70,7 +70,7 @@ void display() {
 	glColor3f(0.0,1.0,0.0);
 	glPushMatrix();
 	glTranslatef(a,b,0);
-	glutSolidSphere(0.25,25,25);
+	glutSolidSphere(0.5,25,25);
 	glPopMatrix();
 	
 	// blue sphere
@@ -78,7 +78,7 @@ void display() {
 	glColor3f(0.0,0.0,1.0);
 	glPushMatrix();
 	glTranslatef(c,d,0);
-	glutSolidSphere(0.25,25,25);
+	glutSolidSphere(1.0,25,25);
 	glPopMatrix();
 	glutSwapBuffers();
 }
