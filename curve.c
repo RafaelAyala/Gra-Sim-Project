@@ -19,7 +19,7 @@ int window; 	//id of the window
 double x,y,a,b,c,d,u,v,w;
 double x1,x2,x3,x4,l1,y2,y3,y4;
 double a1,a2,a3,a4,b1,b2,b3,b4;
-double c1,c2,c3,c4,c1,c2,c3,c4;
+double c1,c2,c3,c4,d1,d2,d3,d4;
 static double s = 0.5;
  
 void keystroke(unsigned char c, int x, int y) {
@@ -43,41 +43,43 @@ void keystroke(unsigned char c, int x, int y) {
 			a4 = ((rand() % (99)/100.)*5)-2.5;
 			b4 = ((rand() % (99)/100.)*5)-2.5;
 			break;
+		case 112:
+			c1 = c2;
+			d1 = d2;
+			c2 = c3; d2 = d3;
+			c3 = c4; d3 = d4;
+			c4 = ((rand() % (99)/100.)*5)-2.5;
+			d4 = ((rand() % (99)/100.)*5)-2.5;
+			break;
 	}
 }
 void display() {
 	//printf("hello\n");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// red sphere
 	glPushMatrix();
 	glColor3f(1.0,0.0,0.0);
-
 	glPushMatrix();
 	glTranslatef(x,y,0);
 	glutSolidSphere(0.25,25,25);
 	glPopMatrix();
 	
+	// green sphere
 	glPushMatrix();
 	glColor3f(0.0,1.0,0.0);
-
 	glPushMatrix();
 	glTranslatef(a,b,0);
 	glutSolidSphere(0.25,25,25);
 	glPopMatrix();
-	//glColor3f(1.0,1.0,1.0);
-	//glPointSize(10.0f);
-	//glBegin(GL_POINTS);
-	//	glVertex3f(x1, l1, 0);
-	//	glColor3f(1.0,0.0,0.0);
-	//	glVertex3f(x2, y2, 0);
-	//	glColor3f(0.0,1.0,0.0);
-	//	glVertex3f(x3, y3, 0);
-	//	glColor3f(0.0,0.0,1.0);
-	//	glVertex3f(x4, y4, 0);
-	//glEnd();
-
-	//glPopMatrix();
-
+	
+	// blue sphere
+	glPushMatrix();
+	glColor3f(0.0,0.0,1.0);
+	glPushMatrix();
+	glTranslatef(c,d,0);
+	glutSolidSphere(0.25,25,25);
+	glPopMatrix();
 	glutSwapBuffers();
 }
 
@@ -118,6 +120,25 @@ void animate() {
 	}else{
 		v = 0.0;
 		keystroke(111, 0, 0);
+	}
+	
+	if( w < 1.0) {
+		c = (s * ((-1*w) + (2*pow(w,2)) + (-1*pow(w,3))) * c1) +
+			(s * (pow(w,2) + (-1 * pow(w,3))) * c2) +
+			((1 - (3*pow(w,2)) + (2*pow(w,3))) * c2) +
+			(s * (w - (2*pow(w,2)) + pow(w,3)) * c3) +
+			(((3*pow(w,2)) - (2*pow(w,3))) * c3) +
+			((s * (pow(w,3) - pow(w,2))) * c4);
+		d = (s * ((-1*w) + (2*pow(w,2)) + (-1*pow(w,3))) * d1) +
+			(s * (pow(w,2) + (-1 * pow(w,3))) * d2) +
+			((1 - (3*pow(w,2)) + (2*pow(w,3))) * d2) +
+			(s * (w - (2*pow(w,2)) + pow(w,3)) * d3) +
+			(((3*pow(w,2)) - (2*pow(w,3))) * d3) +
+			((s * (pow(w,3) - pow(w,2))) * d4);
+		w+=0.001;
+	}else{
+		w = 0.0;
+		keystroke(112, 0, 0);
 	}
 	// We must set the current window, since a window isn't
 	// set before this function is called
@@ -180,6 +201,14 @@ void gfxinit() {
 	b3 = ((rand() % (99)/100.)*10)-5.0;
 	a4 = ((rand() % (99)/100.)*10)-5.0;
 	b4 = ((rand() % (99)/100.)*10)-5.0;
+	c1 = 0;
+	d1 = 0;
+	c2 = ((rand() % (99)/100.)*10)-5.0;
+	d2 = ((rand() % (99)/100.)*10)-5.0;
+	c3 = ((rand() % (99)/100.)*10)-5.0;
+	d3 = ((rand() % (99)/100.)*10)-5.0;
+	c4 = ((rand() % (99)/100.)*10)-5.0;
+	d4 = ((rand() % (99)/100.)*10)-5.0;
      
 }
 
