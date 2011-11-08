@@ -1,39 +1,46 @@
 /*
-* CSCI 3090U
-* Assignment 2 - Part 2
-* Feb. 20, 2010
-*
-* Jordan Stadler
-* 100366066
-*/
+ * Rafael Ayala
+ * 100XXXXXX
+ *
+ * Jordan Stadler
+ * 100366066
+ *
+ * Final Project
+ */
 
-#ifdef __APPLE__
+#ifdef __APPLE__  	// Mac OpenGL Libraries
 #include <GLUT/glut.h>
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
-#else
+#else				// Linux OpenGL Libraries
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <GL/gl.h>
 #endif
-//#include <GL/glew.h>
-
-
-//#include <GL/gl.h>
-//#include <GL/glu.h>
-//#include <GL/glut.h>
+// Common Libraries
 #include <stdio.h> 
 #include <string.h>
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
+
+int number_of_balls = 3;
+
 int window; 	//id of the window
 double x,y,a,b,c,d,u,v,w;
 double x1,x2,x3,x4,l1,y2,y3,y4;
 double a1,a2,a3,a4,b1,b2,b3,b4;
 double c1,c2,c3,c4,d1,d2,d3,d4;
-static double s = 0.5;
- 
+static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
+
+struct ball{
+	double xPos, yPos, interval;
+	double x1, x2, x3, x4, y1, y2, y3, y4;
+	
+};
+
+
+
 void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 113:
@@ -46,22 +53,6 @@ void keystroke(unsigned char c, int x, int y) {
 			x3 = x4; y3 = y4;
 			x4 = ((rand() % (99)/100.)*5)-2.5;
 			y4 = ((rand() % (99)/100.)*5)-2.5;
-			break;
-		case 111:
-			a1 = a2;
-			b1 = b2;
-			a2 = a3; b2 = b3;
-			a3 = a4; b3 = b4;
-			a4 = ((rand() % (99)/100.)*5)-2.5;
-			b4 = ((rand() % (99)/100.)*5)-2.5;
-			break;
-		case 112:
-			c1 = c2;
-			d1 = d2;
-			c2 = c3; d2 = d3;
-			c3 = c4; d3 = d4;
-			c4 = ((rand() % (99)/100.)*5)-2.5;
-			d4 = ((rand() % (99)/100.)*5)-2.5;
 			break;
 	}
 }
@@ -77,21 +68,6 @@ void display() {
 	glutSolidSphere(0.25,25,25);
 	glPopMatrix();
 	
-	// green sphere
-	glPushMatrix();
-	glColor3f(0.0,1.0,0.0);
-	glPushMatrix();
-	glTranslatef(a,b,0);
-	glutSolidSphere(0.5,25,25);
-	glPopMatrix();
-	
-	// blue sphere
-	glPushMatrix();
-	glColor3f(0.0,0.0,1.0);
-	glPushMatrix();
-	glTranslatef(c,d,0);
-	glutSolidSphere(1.0,25,25);
-	glPopMatrix();
 	glutSwapBuffers();
 }
 
@@ -115,43 +91,6 @@ void animate() {
 		keystroke('n', 0, 0);
 	}
 	
-	if( v < 1.0) {
-		a = (s * ((-1*v) + (2*pow(v,2)) + (-1*pow(v,3))) * a1) +
-			(s * (pow(v,2) + (-1 * pow(v,3))) * a2) +
-			((1 - (3*pow(v,2)) + (2*pow(v,3))) * a2) +
-			(s * (v - (2*pow(v,2)) + pow(v,3)) * a3) +
-			(((3*pow(v,2)) - (2*pow(v,3))) * a3) +
-			((s * (pow(v,3) - pow(v,2))) * a4);
-		b = (s * ((-1*v) + (2*pow(v,2)) + (-1*pow(v,3))) * b1) +
-			(s * (pow(v,2) + (-1 * pow(v,3))) * b2) +
-			((1 - (3*pow(v,2)) + (2*pow(v,3))) * b2) +
-			(s * (v - (2*pow(v,2)) + pow(v,3)) * b3) +
-			(((3*pow(v,2)) - (2*pow(v,3))) * b3) +
-			((s * (pow(v,3) - pow(v,2))) * b4);
-		v+=0.001;
-	}else{
-		v = 0.0;
-		keystroke(111, 0, 0);
-	}
-	
-	if( w < 1.0) {
-		c = (s * ((-1*w) + (2*pow(w,2)) + (-1*pow(w,3))) * c1) +
-			(s * (pow(w,2) + (-1 * pow(w,3))) * c2) +
-			((1 - (3*pow(w,2)) + (2*pow(w,3))) * c2) +
-			(s * (w - (2*pow(w,2)) + pow(w,3)) * c3) +
-			(((3*pow(w,2)) - (2*pow(w,3))) * c3) +
-			((s * (pow(w,3) - pow(w,2))) * c4);
-		d = (s * ((-1*w) + (2*pow(w,2)) + (-1*pow(w,3))) * d1) +
-			(s * (pow(w,2) + (-1 * pow(w,3))) * d2) +
-			((1 - (3*pow(w,2)) + (2*pow(w,3))) * d2) +
-			(s * (w - (2*pow(w,2)) + pow(w,3)) * d3) +
-			(((3*pow(w,2)) - (2*pow(w,3))) * d3) +
-			((s * (pow(w,3) - pow(w,2))) * d4);
-		w+=0.001;
-	}else{
-		w = 0.0;
-		keystroke(112, 0, 0);
-	}
 	// We must set the current window, since a window isn't
 	// set before this function is called
 	glutSetWindow(window);
@@ -205,23 +144,6 @@ void gfxinit() {
 	y3 = ((rand() % (99)/100.)*10)-5.0;
 	x4 = ((rand() % (99)/100.)*10)-5.0;
 	y4 = ((rand() % (99)/100.)*10)-5.0;
-	a1 = 0;
-	b1 = 0;
-	a2 = ((rand() % (99)/100.)*10)-5.0;
-	b2 = ((rand() % (99)/100.)*10)-5.0;
-	a3 = ((rand() % (99)/100.)*10)-5.0;
-	b3 = ((rand() % (99)/100.)*10)-5.0;
-	a4 = ((rand() % (99)/100.)*10)-5.0;
-	b4 = ((rand() % (99)/100.)*10)-5.0;
-	c1 = 0;
-	d1 = 0;
-	c2 = ((rand() % (99)/100.)*10)-5.0;
-	d2 = ((rand() % (99)/100.)*10)-5.0;
-	c3 = ((rand() % (99)/100.)*10)-5.0;
-	d3 = ((rand() % (99)/100.)*10)-5.0;
-	c4 = ((rand() % (99)/100.)*10)-5.0;
-	d4 = ((rand() % (99)/100.)*10)-5.0;
-     
 }
 
 
