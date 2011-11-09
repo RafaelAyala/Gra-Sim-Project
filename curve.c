@@ -61,7 +61,7 @@ void display() {
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		// red sphere
 		glPushMatrix();
-		glColor3f(1.0,0.0,0.0);
+		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
 		glPushMatrix();
 		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
 		glutSolidSphere(all_spheres[i].size,25,25);
@@ -148,6 +148,7 @@ void gfxinit() {
 	srand(time(NULL));
 	int k;
 	for( k = 0; k < NUMBER_OF_BALLS; k++ ) {
+		
 		all_spheres[k].x1 = 0.0;
 		all_spheres[k].x2 = new_random_value();
 		all_spheres[k].x3 = new_random_value();
@@ -157,7 +158,12 @@ void gfxinit() {
 		all_spheres[k].y2 = new_random_value();
 		all_spheres[k].y3 = new_random_value();
 		all_spheres[k].y4 = new_random_value();
+		
 		all_spheres[k].size = BALL_SIZE;
+		
+		all_spheres[k].red = 0.0;
+		all_spheres[k].green = 1.0;
+		all_spheres[k].blue	= 0.0;
 	}
 }
 
