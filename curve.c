@@ -25,18 +25,18 @@
 #include <stdlib.h>
 
 #define NUMBER_OF_BALLS 100
-
+#define INTERVAL 0.004
+#define BALL_SIZE 0.5
 int window; 	//id of the window
-double x,y,a,b,c,d,u,v,w;
-double x1,x2,x3,x4,l1,y2,y3,y4;
-double a1,a2,a3,a4,b1,b2,b3,b4;
-double c1,c2,c3,c4,d1,d2,d3,d4;
 static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 
 struct sphere{
 	double xPos, yPos, interval;
 	double x1, x2, x3, x4, y1, y2, y3, y4;
 	double size;
+	double red;
+	double green;
+	double blue;
 } all_spheres[NUMBER_OF_BALLS];
 
 double new_random_value() {
@@ -64,7 +64,7 @@ void display() {
 		glColor3f(1.0,0.0,0.0);
 		glPushMatrix();
 		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
-		glutSolidSphere(0.25,25,25);
+		glutSolidSphere(all_spheres[i].size,25,25);
 		glPopMatrix();
 	}
 	glutSwapBuffers();
@@ -86,7 +86,7 @@ void animate() {
 				(s * (all_spheres[j].interval - (2*pow(all_spheres[j].interval,2)) + pow(all_spheres[j].interval,3)) * all_spheres[j].y3) +
 				(((3*pow(all_spheres[j].interval,2)) - (2*pow(all_spheres[j].interval,3))) * all_spheres[j].y3) +
 				((s * (pow(all_spheres[j].interval,3) - pow(all_spheres[j].interval,2))) * all_spheres[j].y4);
-			all_spheres[j].interval+=0.004999;
+			all_spheres[j].interval+=INTERVAL;
 
 		} else {
 			all_spheres[j].interval = 0.0;
@@ -157,6 +157,7 @@ void gfxinit() {
 		all_spheres[k].y2 = new_random_value();
 		all_spheres[k].y3 = new_random_value();
 		all_spheres[k].y4 = new_random_value();
+		all_spheres[k].size = BALL_SIZE;
 	}
 }
 
