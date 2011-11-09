@@ -103,28 +103,6 @@ void animate() {
 		}
 	}
 	
-	
-	
-	
-	//if( u < 1.0) {
-	//	x = (s * ((-1*u) + (2*pow(u,2)) + (-1*pow(u,3))) * x1) +
-	//		(s * (pow(u,2) + (-1 * pow(u,3))) * x2) +
-	//		((1 - (3*pow(u,2)) + (2*pow(u,3))) * x2) +
-	//		(s * (u - (2*pow(u,2)) + pow(u,3)) * x3) +
-	//		(((3*pow(u,2)) - (2*pow(u,3))) * x3) +
-	//		((s * (pow(u,3) - pow(u,2))) * x4);
-	//	y = (s * ((-1*u) + (2*pow(u,2)) + (-1*pow(u,3))) * l1) +
-	//		(s * (pow(u,2) + (-1 * pow(u,3))) * y2) +
-	//		((1 - (3*pow(u,2)) + (2*pow(u,3))) * y2) +
-	//		(s * (u - (2*pow(u,2)) + pow(u,3)) * y3) +
-	//		(((3*pow(u,2)) - (2*pow(u,3))) * y3) +
-	//		((s * (pow(u,3) - pow(u,2))) * y4);
-	//	u+=0.001;
-	//}else{
-	//	u = 0.0;
-	//	keystroke('n', 0, 0);
-	//}
-	
 	// We must set the current window, since a window isn't
 	// set before this function is called
 	glutSetWindow(window);
@@ -147,8 +125,6 @@ void gfxinit() {
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
     // set the diffuse light colour
     glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
-    // set the specular light colour
-    //glLightfv(GL_LIGHT0, GL_SPECULAR,lightspec);
 	// global ambient
     glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
 	// turn on lighting
@@ -182,15 +158,6 @@ void gfxinit() {
 		all_spheres[k].y3 = new_random_value();
 		all_spheres[k].y4 = new_random_value();
 	}
-	
-	//all_spheres[j].x1 = 0;
-	//l1 = 0;
-	//x2 = ((rand() % (99)/100.)*10)-5.0;
-	//y2 = ((rand() % (99)/100.)*10)-5.0;
-	//x3 = ((rand() % (99)/100.)*10)-5.0;
-	//y3 = ((rand() % (99)/100.)*10)-5.0;
-	//x4 = ((rand() % (99)/100.)*10)-5.0;
-	//y4 = ((rand() % (99)/100.)*10)-5.0;
 }
 
 
