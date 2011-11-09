@@ -27,6 +27,8 @@
 #define NUMBER_OF_BALLS 100
 #define INTERVAL 0.004
 #define BALL_SIZE 0.5
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
 int window; 	//id of the window
 static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 
@@ -56,7 +58,13 @@ void keystroke(unsigned char c, int x, int y) {
 void display() {
 	//printf("hello\n");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	glColor3f(1.0, 1.0, 1.0);
+	glBegin(GL_QUADS);
+		glVertex3f(-20.0, -20.0, -1.0);
+		glVertex3f(20.0, -20.0, -1.0);
+		glVertex3f(20.0, 20.0, -1.0);
+		glVertex3f(-20.0, 20.0, -1.0);
+	glEnd();
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		// red sphere
@@ -161,9 +169,15 @@ void gfxinit() {
 		
 		all_spheres[k].size = BALL_SIZE;
 		
-		all_spheres[k].red = 0.0;
-		all_spheres[k].green = 1.0;
-		all_spheres[k].blue	= 0.0;
+		//red spheres
+		//all_spheres[k].red = 1.0;
+		//all_spheres[k].green = 0.0;
+		//all_spheres[k].blue	= 0.0;
+		
+		//colored spheres
+		all_spheres[k].red = fmod(new_random_value(),1.0);
+		all_spheres[k].green = fmod(new_random_value(),1.0);
+		all_spheres[k].blue	= fmod(new_random_value(),1.0);
 	}
 }
 
