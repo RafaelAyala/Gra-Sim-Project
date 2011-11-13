@@ -219,7 +219,7 @@ void gfxinit() {
 			all_spheres[k].green = 0.0;
 			all_spheres[k].blue	= 0.0;
 		}
-		//print_sphere_info(all_spheres[k]);
+		print_sphere_info(all_spheres[k]);
 		
 	}
 }
