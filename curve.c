@@ -29,7 +29,7 @@
 //#define INTERVAL 0.0049999
 #define BALL_SIZE 0.25
 #define BALL_SPEED 1.00 // ASU's per second
-#define CURVE_LENGTH_APPROX 64
+#define CURVE_LENGTH_APPROX 1024
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -79,6 +79,8 @@ void animate() {
 		
 			tempX = all_spheres[j].xPos;
 			tempY = all_spheres[j].yPos;
+			all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
+										(CLOCKS_PER_SEC * all_spheres[j].curve_time);
 			all_spheres[j].xPos = get_position(
 										all_spheres[j].x1,
 										all_spheres[j].x2,
@@ -94,13 +96,12 @@ void animate() {
 										all_spheres[j].interval
 					);
 		
-			//printf("current speed: %f AMU/s\n", 
-			//		sqrt( pow(all_spheres[j].xPos - tempX ,2) 
-			//				+ pow(all_spheres[j].yPos - tempY ,2) )
-			//);
-			all_spheres[j].interval = ((current - all_spheres[j].start_time)/ 
-										CLOCKS_PER_SEC) / 
-										all_spheres[j].curve_time;
+			printf("current speed: %f AMU/s\n", 
+					sqrt( pow(all_spheres[j].xPos - tempX ,2) 
+							+ pow(all_spheres[j].yPos - tempY ,2) )
+			);
+			//all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
+			//							(CLOCKS_PER_SEC * all_spheres[j].curve_time);
 		} else {
 			all_spheres[j].interval = 0.0;
 			all_spheres[j].x2 = (all_spheres[j].x4 - all_spheres[j].x3) + 
@@ -128,7 +129,7 @@ void animate() {
 			all_spheres[j].curve_time = all_spheres[j].curve_length / 
 										all_spheres[j].speed;
 		}
-		//print_sphere_info(all_spheres[j]);
+		print_sphere_info(all_spheres[j]);
 	}
 	
 	// We must set the current window, since a window isn't
