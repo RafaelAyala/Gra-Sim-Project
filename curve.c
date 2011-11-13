@@ -24,9 +24,9 @@
 #include <time.h>
 #include <stdlib.h>
 
-#define NUMBER_OF_BALLS 100
-#define INTERVAL 0.004
-#define BALL_SIZE 0.5
+#define NUMBER_OF_BALLS 150
+#define INTERVAL 0.0049999
+#define BALL_SIZE 0.25
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 int window; 	//id of the window
@@ -59,6 +59,7 @@ void display() {
 	//printf("hello\n");
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0, 1.0, 1.0);
+	
 	glBegin(GL_QUADS);
 		glVertex3f(-20.0, -20.0, -1.0);
 		glVertex3f(20.0, -20.0, -1.0);
@@ -80,34 +81,34 @@ void display() {
 
 void animate() {
 	int j;
+	float a, b, c;
 	for(j = 0; j < NUMBER_OF_BALLS; j++) {
 		if( all_spheres[j].interval < 1.0) {
-			all_spheres[j].xPos = (s * ((-1*all_spheres[j].interval) + (2*pow(all_spheres[j].interval,2)) + (-1*pow(all_spheres[j].interval,3))) * all_spheres[j].x1) +
-				(s * (pow(all_spheres[j].interval,2) + (-1 * pow(all_spheres[j].interval,3))) * all_spheres[j].x2) +
-				((1 - (3*pow(all_spheres[j].interval,2)) + (2*pow(all_spheres[j].interval,3))) * all_spheres[j].x2) +
-				(s * (all_spheres[j].interval - (2*pow(all_spheres[j].interval,2)) + pow(all_spheres[j].interval,3)) * all_spheres[j].x3) +
-				(((3*pow(all_spheres[j].interval,2)) - (2*pow(all_spheres[j].interval,3))) * all_spheres[j].x3) +
-				((s * (pow(all_spheres[j].interval,3) - pow(all_spheres[j].interval,2))) * all_spheres[j].x4);
-			all_spheres[j].yPos = (s * ((-1*all_spheres[j].interval) + (2*pow(all_spheres[j].interval,2)) + (-1*pow(all_spheres[j].interval,3))) * all_spheres[j].y1) +
-				(s * (pow(all_spheres[j].interval,2) + (-1 * pow(all_spheres[j].interval,3))) * all_spheres[j].y2) +
-				((1 - (3*pow(all_spheres[j].interval,2)) + (2*pow(all_spheres[j].interval,3))) * all_spheres[j].y2) +
-				(s * (all_spheres[j].interval - (2*pow(all_spheres[j].interval,2)) + pow(all_spheres[j].interval,3)) * all_spheres[j].y3) +
-				(((3*pow(all_spheres[j].interval,2)) - (2*pow(all_spheres[j].interval,3))) * all_spheres[j].y3) +
-				((s * (pow(all_spheres[j].interval,3) - pow(all_spheres[j].interval,2))) * all_spheres[j].y4);
+			c = 3 * (all_spheres[j].x2 - all_spheres[j].x1);
+			b = 3 * (all_spheres[j].x3 - all_spheres[j].x2) - c;
+			a = all_spheres[j].x4 - all_spheres[j].x1 - c - b;
+			all_spheres[j].xPos = a * pow(all_spheres[j].interval,3) + b * pow(all_spheres[j].interval,2) + c * all_spheres[j].interval + all_spheres[j].x1;
+			
+			c = 3 * (all_spheres[j].y2 - all_spheres[j].y1);
+			b = 3 * (all_spheres[j].y3 - all_spheres[j].y2) - c;
+			a = all_spheres[j].y4 - all_spheres[j].y1 - c - b;
+			all_spheres[j].yPos = a * pow(all_spheres[j].interval,3) + b * pow(all_spheres[j].interval,2) + c * all_spheres[j].interval + all_spheres[j].y1;
+			
 			all_spheres[j].interval+=INTERVAL;
 
 		} else {
 			all_spheres[j].interval = 0.0;
-			all_spheres[j].x1 = all_spheres[j].x2;		
-			all_spheres[j].x2 = all_spheres[j].x3;		
-			all_spheres[j].x3 = all_spheres[j].x4;
+			all_spheres[j].x2 = (all_spheres[j].x4 - all_spheres[j].x3) + 
+				all_spheres[j].x4;
+			all_spheres[j].x1 = all_spheres[j].x4;
+			all_spheres[j].x3 = new_random_value();
 			all_spheres[j].x4 = new_random_value();
-
-			all_spheres[j].y1 = all_spheres[j].y2;		
-			all_spheres[j].y2 = all_spheres[j].y3;		
-			all_spheres[j].y3 = all_spheres[j].y4;
+			
+			all_spheres[j].y2 = (all_spheres[j].y4 - all_spheres[j].y3) + 
+				all_spheres[j].y4;
+			all_spheres[j].y1 = all_spheres[j].y4;
+			all_spheres[j].y3 = new_random_value();
 			all_spheres[j].y4 = new_random_value();
-
 		}
 	}
 	
