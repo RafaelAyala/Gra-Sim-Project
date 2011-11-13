@@ -26,10 +26,10 @@
 
 // configuration
 #define NUMBER_OF_BALLS 100
-#define INTERVAL 0.0049999
+//#define INTERVAL 0.0049999
 #define BALL_SIZE 0.25
 #define BALL_SPEED 1.00 // ASU's per second
-#define CURVE_LENGTH_APPROX 8
+#define CURVE_LENGTH_APPROX 64
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -63,6 +63,7 @@ void keystroke(unsigned char c, int x, int y);
 void display();
 void animate();
 void gfxinit();
+void print_sphere_info(struct sphere ball);
 
 void animate() {
 	int j;
@@ -100,8 +101,6 @@ void animate() {
 			all_spheres[j].interval = ((current - all_spheres[j].start_time)/ 
 										CLOCKS_PER_SEC) / 
 										all_spheres[j].curve_time;
-			//printf("interval: %f\n", all_spheres[j].interval);
-
 		} else {
 			all_spheres[j].interval = 0.0;
 			all_spheres[j].x2 = (all_spheres[j].x4 - all_spheres[j].x3) + 
@@ -129,6 +128,7 @@ void animate() {
 			all_spheres[j].curve_time = all_spheres[j].curve_length / 
 										all_spheres[j].speed;
 		}
+		//print_sphere_info(all_spheres[j]);
 	}
 	
 	// We must set the current window, since a window isn't
@@ -190,6 +190,9 @@ void gfxinit() {
 		all_spheres[k].size = BALL_SIZE;
 		//all_spheres[k].speed = BALL_SPEED;	
 		all_spheres[k].speed = new_random_value();
+		all_spheres[k].speed = (all_spheres[k].speed < 0) ? 
+								all_spheres[k].speed * -1 :
+								all_spheres[k].speed;
 		all_spheres[k].curve_length = curve_length(
 										all_spheres[k].x1,
 										all_spheres[k].x2,
@@ -216,22 +219,7 @@ void gfxinit() {
 			all_spheres[k].green = 0.0;
 			all_spheres[k].blue	= 0.0;
 		}
-		//printf("x: %f %f %f %f\n", 
-		//		all_spheres[k].x1,
-		//		all_spheres[k].x2,
-		//		all_spheres[k].x3,
-		//		all_spheres[k].x4
-		//	  );
-		//printf("y: %f %f %f %f\n", 
-		//		all_spheres[k].y1,
-		//		all_spheres[k].y2,
-		//		all_spheres[k].y3,
-		//		all_spheres[k].y4
-		//	  );
-		//printf("speed %f\n", all_spheres[k].speed);
-		//printf("curve length %f\n", all_spheres[k].curve_length);
-		//printf("start time %f\n", all_spheres[k].start_time);
-		//printf("curve time %f\n", all_spheres[k].curve_time);
+		//print_sphere_info(all_spheres[k]);
 		
 	}
 }
@@ -285,7 +273,6 @@ double curve_length( double p1x, double p2x, double p3x, double p4x,
 	x1 = get_position( p1x, p2x, p3x, p4x, 0);
 	y1 = get_position( p1y, p2y, p3y, p4y, 0);
 	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
-		//printf("%f\n", i);
 		x2 = get_position( p1x, p2x, p3x, p4x, i);
 		y2 = get_position( p1y, p2y, p3y, p4y, i);
 		total = total + sqrt( pow(x2-x1,2) + pow(y2-y1,2) );
@@ -316,7 +303,6 @@ void display() {
 	glEnd();
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
-		//printf("%f\n", all_spheres[i].curve_length);
 		// red sphere
 		glPushMatrix();
 		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
@@ -327,4 +313,22 @@ void display() {
 	}
 	glutSwapBuffers();
 }
-
+void print_sphere_info(struct sphere ball) {
+	printf("x: %f %f %f %f\n", 
+			ball.x1,
+			ball.x2,
+			ball.x3,
+			ball.x4
+		  );
+	printf("y: %f %f %f %f\n", 
+			ball.y1,
+			ball.y2,
+			ball.y3,
+			ball.y4
+		  );
+	printf("speed %f\n", ball.speed);
+	printf("start time %f\n", ball.start_time);
+	printf("curve length %f\n",ball.curve_length);
+	printf("curve time %f\n", ball.curve_time);
+	printf("interval: %f\n", ball.interval);
+}
