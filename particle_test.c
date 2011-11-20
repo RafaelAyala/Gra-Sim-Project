@@ -27,7 +27,7 @@
 // configuration
 #define NUMBER_OF_BALLS 250
 //#define INTERVAL 0.0049999
-#define BALL_SIZE 0.25
+#define BALL_SIZE 0.02
 #define BALL_SPEED 2.00 // ASU's per second
 #define CURVE_LENGTH_APPROX 8
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
@@ -39,7 +39,16 @@ int window; 	//id of the window
 static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 static double start;
 double current;
-
+double progress;
+double x,y;
+double x2,y2;
+double x3,y3;
+double x4,y4;
+double x5,y5;
+double x6,y6;
+double x7,y7;
+double x8,y8;
+double x9,y9;
 struct sphere{
 	double xPos, yPos, interval;
 	double x1, x2, x3, x4, y1, y2, y3, y4;
@@ -66,75 +75,7 @@ void gfxinit();
 void print_sphere_info(struct sphere ball);
 
 void animate() {
-	int j;
-	double a, b, c;
-
-	while((double) clock() == current){} // waits for next time step
-	current = (double) clock();
-	
-	double tempX, tempY;
-
-	for(j = 0; j < NUMBER_OF_BALLS; j++) {
-		if( all_spheres[j].interval < 1.0) {
-		
-			tempX = all_spheres[j].xPos;
-			tempY = all_spheres[j].yPos;
-			all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
-										(CLOCKS_PER_SEC * all_spheres[j].curve_time);
-			all_spheres[j].xPos = get_position(
-										all_spheres[j].x1,
-										all_spheres[j].x2,
-										all_spheres[j].x3,
-										all_spheres[j].x4,
-										all_spheres[j].interval
-					);
-			all_spheres[j].yPos = get_position(
-										all_spheres[j].y1,
-										all_spheres[j].y2,
-										all_spheres[j].y3,
-										all_spheres[j].y4,
-										all_spheres[j].interval
-					);
-		
-			//printf("current speed: %f AMU/s\n", 
-			//		sqrt( pow(all_spheres[j].xPos - tempX ,2) 
-			//				+ pow(all_spheres[j].yPos - tempY ,2) )
-			//);
-			//all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
-			//							(CLOCKS_PER_SEC * all_spheres[j].curve_time);
-		} else {
-			//printf("Time spent on curve: %fs\n", (current-all_spheres[j].start_time) /
-			//		CLOCKS_PER_SEC);
-			all_spheres[j].interval = 0.0;
-			all_spheres[j].x2 = (all_spheres[j].x4 - all_spheres[j].x3) + 
-				all_spheres[j].x4;
-			all_spheres[j].x1 = all_spheres[j].x4;
-			all_spheres[j].x3 = new_random_value();
-			all_spheres[j].x4 = new_random_value();
-			
-			all_spheres[j].y2 = (all_spheres[j].y4 - all_spheres[j].y3) + 
-				all_spheres[j].y4;
-			all_spheres[j].y1 = all_spheres[j].y4;
-			all_spheres[j].y3 = new_random_value();
-			all_spheres[j].y4 = new_random_value();
-			all_spheres[j].curve_length = curve_length(
-											all_spheres[j].x1,
-											all_spheres[j].x2,
-											all_spheres[j].x3,
-											all_spheres[j].x4,
-											all_spheres[j].y1,
-											all_spheres[j].y2,
-											all_spheres[j].y3,
-											all_spheres[j].y4
-					);
-			all_spheres[j].start_time = (double) clock();
-			all_spheres[j].curve_time = all_spheres[j].curve_length / 
-										all_spheres[j].speed;
-			//print_sphere_info(all_spheres[j]);
-		}
-		//print_sphere_info(all_spheres[j]);
-	}
-	
+	progress = (progress >= 1.0) ? 0.0 : progress+0.001;	
 	// We must set the current window, since a window isn't
 	// set before this function is called
 	glutSetWindow(window);
@@ -143,7 +84,17 @@ void animate() {
 }
      
 void gfxinit() {
+	x = 5.0; y = 3.0;
+	x2 = 2.0; y2 = 8.0;
+	x3 = 3.0; y3 = 7.0;
+	x4 = 4.0; y4 = 6.0;
+	x5 = 5.0; y5 = 5.0;
+	x6 = 6.0; y6 = 4.0;
+	x7 = 7.0; y7 = 3.0;
+	x8 = 8.0; y8 = -2.0;
+	x9 = 9.0; y9 = -1.0;
 	start = (double) clock(); 
+	progress = 0.0;
 	current = 0.0;
 	// LIGHTING 	
     GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
@@ -300,21 +251,49 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0, 1.0, 1.0);
 
-	glBegin(GL_QUADS);
-		glVertex3f(20.0, -20.0, -1.0);
-		glVertex3f(-20.0, -20.0, -1.0);
-		glVertex3f(-20.0, 20.0, -1.0);
-		glVertex3f(20.0, 20.0, -1.0);
-	glEnd();
-	int i;
-	for(i = 0; i < NUMBER_OF_BALLS; i++) {
-		// red sphere
-		glPushMatrix();
-		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
-		glutSolidSphere(all_spheres[i].size,25,25);
-		glPopMatrix();
-	}
+	// red sphere
+	glPushMatrix();
+		glColor3f(1.0, 0.0, 0.0);
+		glTranslatef(0,0,0);
+		glutSolidSphere(0.5,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x*progress,y*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x2*progress,y2*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x3*progress,y3*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x4*progress,y4*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x5*progress,y5*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x6*progress,y6*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x7*progress,y7*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x8*progress,y8*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	glPushMatrix();
+		glTranslatef(x9*progress,y9*progress,0);
+		glutSolidSphere(0.04,25,25);
+	glPopMatrix();
+	
 	glutSwapBuffers();
 }
 void print_sphere_info(struct sphere ball) {
