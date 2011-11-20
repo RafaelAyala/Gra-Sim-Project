@@ -1,2 +1,26 @@
-herp
-derp
+Final Project
+Advanced Graphics - CSCI4110U ?
+Simulation and Modelling - CSCI3010U ?
+
+Rafael Ayala 	- 1003XXXXX
+Jordan Stadler 	- 100366066
+
+Dependancies
+------------
+	- GCC or similar C compiler
+	- OpenGL libraries
+
+How to Run
+----------
+
+	gcc -lGL -lGLU -lglut curve.c
+	./a.out
+	(update this later)
+
+Description
+-----------
+
+	- Spheres that move (in 2D or 3D, undecided) on curves with randomized endpoints
+	- Spheres deteriorate over time (particles fly out)
+	- Destructive collisions (other spheres or walls)
+	- Squish on impact
