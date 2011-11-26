@@ -1,6 +1,6 @@
 /*
  * Rafael Ayala
- * 10037366
+ * 100XXXXXX
  *
  * Jordan Stadler
  * 100366066
@@ -296,6 +296,8 @@ void keystroke(unsigned char c, int x, int y) {
 	}
 }
 
+void collision 
+
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0, 1.0, 1.0);
@@ -315,8 +317,12 @@ void display() {
 		glutSolidSphere(all_spheres[i].size,25,25);
 		glPopMatrix();
 	}
+	
+	collision_check();
+
 	glutSwapBuffers();
 }
+
 void print_sphere_info(struct sphere ball) {
 	printf("x: %f %f %f %f\n", 
 			ball.x1,

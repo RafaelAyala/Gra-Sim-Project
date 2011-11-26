@@ -1,6 +1,6 @@
 /*
  * Rafael Ayala
- * 10037366
+ * 100XXXXXX
  *
  * Jordan Stadler
  * 100366066
@@ -41,8 +41,8 @@ static double start;
 double current;
 
 struct sphere{
-	double xPos, yPos, interval;
-	double x1, x2, x3, x4, y1, y2, y3, y4;
+	double xPos, yPos, zPos, interval;
+	double x1, x2, x3, x4, y1, y2, y3, y4, z1,z2,z3,z4;
 	double size;
 	double red;
 	double green;
@@ -58,7 +58,8 @@ double new_random_value();
 void set_curve_length( struct sphere ball);
 double get_position( double p1, double p2, double p3, double p4, double pos);
 double curve_length( double p1x, double p2x, double p3x, double p4x, 
-					 double p1y, double p2y, double p3y, double p4y);
+					 double p1y, double p2y, double p3y, double p4y,
+					 double p1z, double p2z, double p3z, double p4z);
 void keystroke(unsigned char c, int x, int y);
 void display();
 void animate();
@@ -95,6 +96,13 @@ void animate() {
 										all_spheres[j].y4,
 										all_spheres[j].interval
 					);
+			all_spheres[j].zPos = get_position(
+										all_spheres[j].z1,
+										all_spheres[j].z2,
+										all_spheres[j].z3,
+										all_spheres[j].z4,
+										all_spheres[j].interval
+					);
 		
 			//printf("current speed: %f AMU/s\n", 
 			//		sqrt( pow(all_spheres[j].xPos - tempX ,2) 
@@ -117,6 +125,11 @@ void animate() {
 			all_spheres[j].y1 = all_spheres[j].y4;
 			all_spheres[j].y3 = new_random_value();
 			all_spheres[j].y4 = new_random_value();
+			all_spheres[j].z2 = (all_spheres[j].z4 - all_spheres[j].z3) + 
+				all_spheres[j].z4;
+			all_spheres[j].z1 = all_spheres[j].z4;
+			all_spheres[j].z3 = new_random_value();
+			all_spheres[j].z4 = new_random_value();
 			all_spheres[j].curve_length = curve_length(
 											all_spheres[j].x1,
 											all_spheres[j].x2,
@@ -125,7 +138,11 @@ void animate() {
 											all_spheres[j].y1,
 											all_spheres[j].y2,
 											all_spheres[j].y3,
-											all_spheres[j].y4
+											all_spheres[j].y4,
+											all_spheres[j].z1,
+											all_spheres[j].z2,
+											all_spheres[j].z3,
+											all_spheres[j].z4
 					);
 			all_spheres[j].start_time = (double) clock();
 			all_spheres[j].curve_time = all_spheres[j].curve_length / 
@@ -169,7 +186,7 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    gluPerspective(60.0, 16/9., 1.0, 30.0);
     glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
@@ -191,6 +208,11 @@ void gfxinit() {
 		all_spheres[k].y3 = new_random_value();
 		all_spheres[k].y4 = new_random_value();
 		
+		all_spheres[k].z1 = 0.0;
+		all_spheres[k].z2 = new_random_value();
+		all_spheres[k].z3 = new_random_value();
+		all_spheres[k].z4 = new_random_value();
+		
 		all_spheres[k].size = BALL_SIZE;
 		all_spheres[k].speed = BALL_SPEED;	
 		//all_spheres[k].speed = new_random_value();
@@ -205,7 +227,11 @@ void gfxinit() {
 										all_spheres[k].y1,
 										all_spheres[k].y2,
 										all_spheres[k].y3,
-										all_spheres[k].y4
+										all_spheres[k].y4,
+										all_spheres[k].z1,
+										all_spheres[k].z2,
+										all_spheres[k].z3,
+										all_spheres[k].z4
 				);
 		
 		all_spheres[k].start_time = (double) clock();
@@ -270,7 +296,8 @@ double get_position( double p1, double p2, double p3, double p4, double pos) {
 }
 
 double curve_length( double p1x, double p2x, double p3x, double p4x, 
-					 double p1y, double p2y, double p3y, double p4y) {
+					 double p1y, double p2y, double p3y, double p4y,
+					 double p1z, double p2z, double p3z, double p4z) {
 	float i;
 	double x1, y1, x2, y2;
 	double total = 0;
@@ -300,18 +327,19 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glColor3f(1.0, 1.0, 1.0);
 
+	
 	glBegin(GL_QUADS);
-		glVertex3f(20.0, -20.0, -1.0);
-		glVertex3f(-20.0, -20.0, -1.0);
-		glVertex3f(-20.0, 20.0, -1.0);
-		glVertex3f(20.0, 20.0, -1.0);
+		glVertex3f(20.0, -20.0, -15.0);
+		glVertex3f(-20.0, -20.0, -15.0);
+		glVertex3f(-20.0, 20.0, -15.0);
+		glVertex3f(20.0, 20.0, -15.0);
 	glEnd();
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		// red sphere
 		glPushMatrix();
 		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
+		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,all_spheres[i].zPos);
 		glutSolidSphere(all_spheres[i].size,25,25);
 		glPopMatrix();
 	}
