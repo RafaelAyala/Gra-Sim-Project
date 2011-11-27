@@ -41,6 +41,8 @@ static double start;
 double current;
 double temp;
 
+GLUquadricObj *qobj;
+
 struct sphere{
 	double xPos, yPos, interval;
 	//double x1, x2, x3, x4, y1, y2, y3, y4;
@@ -74,7 +76,7 @@ void animate() {
 	double a, b, c;
 
 	while((double) clock() == current){} // waits for next time step
-	while((double) clock() == current){} // waits for next time step
+	//while((double) clock() == current){} // waits for next time step
 	//current = (double) clock();
 	//while((double) clock() == current){} // waits for next time step
 	//current = (double) clock();
@@ -170,7 +172,7 @@ void gfxinit() {
 	all_spheres[2].size = BALL_SIZE;
 	all_spheres[2].xPos = -2.0;
 	all_spheres[2].yPos = -2.0;
-	all_spheres[2].speed = 0.3; // units per second
+	all_spheres[2].speed = 0.1; // units per second
 	all_spheres[2].delta_x = 0.2;
 	all_spheres[2].delta_y = 0.2;
 	all_spheres[2].red = 0.0;
@@ -218,10 +220,17 @@ void normalize(struct sphere ball) {
 		ball.delta_y /= mag;
 }
 
+double distance( struct sphere ball1, struct sphere ball2 ) {
+	return sqrt( pow(ball1.xPos - ball2.xPos,2) + pow(ball1.yPos - ball2.yPos,2 ));
+}
+
 void collision_check() {
 	int i, j;
 	double mag;
+	double d;	
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
+		
+		// ball-wall collisions
 		double dist = 5.0 - all_spheres[i].size;
 		if(all_spheres[i].xPos >= dist || all_spheres[i].xPos <= -1*dist) {
 			all_spheres[i].delta_x *= -1;
@@ -230,80 +239,41 @@ void collision_check() {
 		if(all_spheres[i].yPos >= dist || all_spheres[i].yPos <= -1*dist) {
 			all_spheres[i].delta_y *= -1;
 		}
+		
+		// end ball-wall collisions
+
+		// ball-ball collisions
 		for( j=i+1; j < NUMBER_OF_BALLS; j++) {
-			// check all but itself
-			//if( i == j) { j++; }
-			
-			// if collision distance in x
-			if( fabs(all_spheres[i].xPos - all_spheres[j].xPos) < 
-					0.9 ) {
-					//(all_spheres[i].size + all_spheres[j].size)  ) {
-				// and collision distance in y
-				if( fabs(all_spheres[i].yPos - all_spheres[j].yPos) < 
-						0.9 ){
-						//(all_spheres[i].size + all_spheres[j].size)  ) {
-					// collision occurs
+		
+			d = distance(all_spheres[i], all_spheres[j]);
+			printf("Distance: %f\n", d);
+			if( d <= all_spheres[i].size + all_spheres[j].size) {
+		
+		
 					printf("collision\n");	
-					printf("ball1 -- xPos: %f yPos: %f\n", 
+					printf("red -- xPos: %f yPos: %f\n", 
 							all_spheres[0].xPos, all_spheres[0].yPos); 	
-					printf("ball2 -- xPos: %f yPos: %f\n", 
+					printf("gre -- xPos: %f yPos: %f\n", 
 							all_spheres[1].xPos, all_spheres[1].yPos); 	
+					printf("blu -- xPos: %f yPos: %f\n", 
+							all_spheres[2].xPos, all_spheres[2].yPos); 	
 		
 					int k;
-					//glPushMatrix();
-					//glColor3f(0.0,0.0,0.7);
-					//glTranslatef( fabs(all_spheres[i].xPos - all_spheres[j].xPos)/2. + 
-					//		((all_spheres[i].xPos < all_spheres[j].xPos) ? 
-					//		 all_spheres[i].xPos : all_spheres[j].xPos),
-					//		fabs(all_spheres[i].yPos - all_spheres[j].yPos)/2. +
-					//		((all_spheres[i].yPos < all_spheres[j].yPos) ?
-					//		 all_spheres[i].yPos : all_spheres[j].yPos),
-					//		0);
-					//glutSolidSphere(0.2,25,25);
-					//glPopMatrix();
+	//				glutIdleFunc(NULL);	
 					
-					//glutIdleFunc(NULL);	
-					
-					//for(j = 0; k < NUMBER_OF_BALLS; k++) {
-					//	// red sphere
-					//	glPushMatrix();
-					//	glColor3f(all_spheres[k].red,all_spheres[k].green,all_spheres[k].blue);
-					//	glTranslatef(all_spheres[k].xPos,all_spheres[k].yPos,0);
-					//	glutSolidSphere(all_spheres[k].size,25,25);
-					//	glPopMatrix();
-					//}
-					
-
-
-
-					// ball 1 pos adjustment
-					//all_spheres[i].xPos -= all_spheres[i].delta_x;
-					//all_spheres[i].yPos -= all_spheres[i].delta_y;
-					// ball 1 velocity adjustment
 					all_spheres[i].delta_x = all_spheres[i].xPos - all_spheres[j].xPos;
 					all_spheres[i].delta_y = all_spheres[i].yPos - all_spheres[j].yPos;
-					// normalize velocity
-					//mag = sqrt(pow(all_spheres[i].delta_x,2) + pow(all_spheres[i].delta_y,2));
-					//all_spheres[i].delta_x /= mag;
-					//all_spheres[i].delta_y /= mag;
 					normalize(all_spheres[i]);
 
-					// ball 2 pos adjustment
-					//all_spheres[j].xPos -= all_spheres[j].delta_x;
-					//all_spheres[j].yPos -= all_spheres[j].delta_y;
-					// ball 1 velocity adjustment
 					all_spheres[j].delta_x = all_spheres[j].xPos - all_spheres[i].xPos;
 					all_spheres[j].delta_y = all_spheres[j].yPos - all_spheres[i].yPos;
-					// normalize velocity
-					//mag = sqrt(pow(all_spheres[j].delta_x,2) + pow(all_spheres[j].delta_y,2));
-					//all_spheres[j].delta_x /= mag;
-					//all_spheres[j].delta_y /= mag;
 					normalize(all_spheres[i]);
 				}
-			}
 		}
+		// end ball-ball collisions
 	}
 }
+
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -316,6 +286,8 @@ void display() {
 		glVertex3f(20.0, 20.0, -1.0);
 	glEnd();
 	int i;
+
+
 
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		// red sphere
