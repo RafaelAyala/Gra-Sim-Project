@@ -58,8 +58,7 @@ struct sphere{
 } all_spheres[NUMBER_OF_BALLS];
 
 double new_random_value() {
-	return ((rand() % (101)/100.)*10)-5.0;
-	
+	return ((rand() % (101)/100.)*10)-5.0;	
 }
 
 double get_position( double p1, double p2, double p3, double p4, double pos) {
@@ -89,6 +88,17 @@ double curve_length( double p1x, double p2x, double p3x, double p4x,
 		y1 = y2;
 	}
 	return total;
+}
+
+void normalize(struct sphere ball) {
+	double mag;
+	mag = sqrt(pow(ball.delta_x,2) + pow(ball.delta_y,2));
+	ball.delta_x /= mag;
+	ball.delta_y /= mag;
+}
+
+double distance( struct sphere ball1, struct sphere ball2 ) {
+	return sqrt( pow(ball1.xPos - ball2.xPos,2) + pow(ball1.yPos - ball2.yPos,2));
 }
 
 void animate() {
@@ -180,120 +190,7 @@ void animate() {
 	glutPostRedisplay();
 }
      
-void gfxinit() {
-	start = (double) clock(); 
-	current = 0.0;
-	// LIGHTING 	
-    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
-    GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
-    GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
-    GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
 
-    // set the light position, 5 units along the y axis
-    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-    // set the ambient light colour
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
-    // set the diffuse light colour
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
-	// global ambient
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-	// turn on lighting
-    glEnable(GL_LIGHTING);
-    // enable light 0, all the other lights are off
-    glEnable(GL_LIGHT0);
-
-
-    // enable the depth buffer
-    glEnable(GL_DEPTH_TEST);
-   
-    glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
-	glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	
-	glEnable ( GL_COLOR_MATERIAL ) ;
-	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
-	glShadeModel(GL_SMOOTH);
-
-	srand(time(NULL));
-	int k;
-	for( k = 0; k < NUMBER_OF_BALLS; k++ ) {
-		
-		all_spheres[k].x1 = new_random_value();
-		all_spheres[k].x2 = new_random_value();
-		all_spheres[k].x3 = new_random_value();
-		all_spheres[k].x4 = new_random_value();
-
-		all_spheres[k].y1 = new_random_value();
-		all_spheres[k].y2 = new_random_value();
-		all_spheres[k].y3 = new_random_value();
-		all_spheres[k].y4 = new_random_value();
-		
-		all_spheres[k].size = BALL_SIZE;
-		all_spheres[k].speed = BALL_SPEED;	
-		//all_spheres[k].speed = new_random_value();
-		//all_spheres[k].speed = (all_spheres[k].speed < 0) ? 
-		//						all_spheres[k].speed * -1 :
-		//						all_spheres[k].speed;
-		all_spheres[k].curve_length = curve_length(
-										all_spheres[k].x1,
-										all_spheres[k].x2,
-										all_spheres[k].x3,
-										all_spheres[k].x4,
-										all_spheres[k].y1,
-										all_spheres[k].y2,
-										all_spheres[k].y3,
-										all_spheres[k].y4
-				);
-		all_spheres[k].path = 1;	
-		all_spheres[k].start_time = (double) clock();
-		all_spheres[k].curve_time = all_spheres[k].curve_length / 
-									all_spheres[k].speed;
-		
-		if(RAINBOW) {
-			//multi-colored spheres
-			all_spheres[k].red = fmod(new_random_value(),1.0);
-			all_spheres[k].green = fmod(new_random_value(),1.0);
-			all_spheres[k].blue	= fmod(new_random_value(),1.0);
-		} else {
-			//red spheres
-			all_spheres[k].red = 1.0;
-			all_spheres[k].green = 0.0;
-			all_spheres[k].blue	= 0.0;
-		}
-		//print_sphere_info(all_spheres[k]);
-		
-	}
-}
-
-
-
-void set_curve_length( struct sphere ball) {
-	ball.curve_length = 1.0;
-}
-
-
-
-// [q] is quit
-void keystroke(unsigned char c, int x, int y) {
-	switch(c) {
-		case 113:
-			exit(0);
-			break;
-	}
-}
-
-void normalize(struct sphere ball) {
-	double mag;
-	mag = sqrt(pow(ball.delta_x,2) + pow(ball.delta_y,2));
-	ball.delta_x /= mag;
-	ball.delta_y /= mag;
-}
-
-double distance( struct sphere ball1, struct sphere ball2 ) {
-	return sqrt( pow(ball1.xPos - ball2.xPos,2) + pow(ball1.yPos - ball2.yPos,2));
-}
 
 void collision_check() {
 	int i, j;
@@ -442,43 +339,137 @@ void collision_check() {
 		}
 	}
 }
+void gfxinit() {
+	start = (double) clock(); 
+	current = 0.0;
+	// LIGHTING 	
+    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
+    GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
+    GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
+    GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
+
+    // set the light position, 5 units along the y axis
+    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+    // set the ambient light colour
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
+    // set the diffuse light colour
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
+	// global ambient
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	// turn on lighting
+    glEnable(GL_LIGHTING);
+    // enable light 0, all the other lights are off
+    glEnable(GL_LIGHT0);
+
+
+    // enable the depth buffer
+    glEnable(GL_DEPTH_TEST);
+   
+    glMatrixMode(GL_PROJECTION);
+    //gluPerspective(60.0, 16/9., 1.0, 20.0);
+    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+	glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	
+	glEnable ( GL_COLOR_MATERIAL ) ;
+	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
+	glShadeModel(GL_SMOOTH);
+
+	srand(time(NULL));
+	int k;
+	for( k = 0; k < NUMBER_OF_BALLS; k++ ) {
+		
+		all_spheres[k].x1 = new_random_value();
+		all_spheres[k].x2 = new_random_value();
+		all_spheres[k].x3 = new_random_value();
+		all_spheres[k].x4 = new_random_value();
+
+		all_spheres[k].y1 = new_random_value();
+		all_spheres[k].y2 = new_random_value();
+		all_spheres[k].y3 = new_random_value();
+		all_spheres[k].y4 = new_random_value();
+		
+		all_spheres[k].size = BALL_SIZE;
+		all_spheres[k].speed = BALL_SPEED;	
+		//all_spheres[k].speed = new_random_value();
+		//all_spheres[k].speed = (all_spheres[k].speed < 0) ? 
+		//						all_spheres[k].speed * -1 :
+		//						all_spheres[k].speed;
+		all_spheres[k].curve_length = curve_length(
+										all_spheres[k].x1,
+										all_spheres[k].x2,
+										all_spheres[k].x3,
+										all_spheres[k].x4,
+										all_spheres[k].y1,
+										all_spheres[k].y2,
+										all_spheres[k].y3,
+										all_spheres[k].y4
+				);
+		all_spheres[k].path = 1;	
+		all_spheres[k].start_time = (double) clock();
+		all_spheres[k].curve_time = all_spheres[k].curve_length / 
+									all_spheres[k].speed;
+		
+		if(RAINBOW) {
+			//multi-colored spheres
+			all_spheres[k].red = fmod(new_random_value(),1.0);
+			all_spheres[k].green = fmod(new_random_value(),1.0);
+			all_spheres[k].blue	= fmod(new_random_value(),1.0);
+		} else {
+			//red spheres
+			all_spheres[k].red = 1.0;
+			all_spheres[k].green = 0.0;
+			all_spheres[k].blue	= 0.0;
+		}
+		//print_sphere_info(all_spheres[k]);
+		
+	}
+}
 
 void display() {
-	glClearColor(0.8,0.8,0.8,1.0);
+	glClearColor(0.8,0.8,0.8,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
 	int i;
-	for(i = 0; i < NUMBER_OF_BALLS; i++) {
-		// red sphere
+	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
 		glPushMatrix();
 		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
 		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
 		glutSolidSphere(all_spheres[i].size,25,25);
 		glPopMatrix();
 	}
-	
-	collision_check();
-
+	collision_check();	// check for collisions wall-ball and ball-ball
 	glutSwapBuffers();
 }
 
-int main(int argc, char **argv) {
-     // Initialize GLUT and process its command line arguments
-     glutInit(&argc,argv);
-     // Set the display mode, double buffered, RGB colour and depth buffer
-     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-     // Create the display window
-     window = glutCreateWindow("first");
-     // Set the display function
-     glutDisplayFunc(display);
-     // Set the Idle function, called when GLUT isn't busy
-     glutIdleFunc(animate);
-     glutKeyboardFunc(keystroke);
-	 // Initialize OpenGL
-	 gfxinit();
-     // Pass control to GLUT to run the application
-     glutMainLoop();
-   
-	//return 0;
+
+/*
+ * void keystroke(unisgned char c, int x, int y);
+ *
+ * The keystroke function handles user input to modify how the animation
+ * performs. Also allows the user to quit
+ */
+void keystroke(unsigned char c, int x, int y) {
+	switch(c) {
+		case 113:		// [q] is quit
+			exit(0);
+			break;
+	}
 }
 
+/*
+ * void keystroke(int argc, char **argv);
+ *
+ * Simply sets up the OpenGL framework, calls functions to set up and begin
+ * the animation.
+ */
+int main(int argc, char **argv) {
+     glutInit(&argc,argv);
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+     window = glutCreateWindow("Sphere Collisions"); //window title
+     glutDisplayFunc(display);
+     glutIdleFunc(animate);	// call animate() when idle
+     glutKeyboardFunc(keystroke);	//handles user input
+	 gfxinit();
+     glutMainLoop(); // start the animation
+}
