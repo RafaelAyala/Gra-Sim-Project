@@ -30,8 +30,8 @@
 // configuration
 #define NUMBER_OF_BALLS 20
 //#define INTERVAL 0.0049999
-#define BALL_SIZE 0.1
-#define BALL_SPEED 7.0 // ASU's per second
+#define BALL_RADIUS 0.1
+#define BALL_SPEED 12.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 8
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 
@@ -63,7 +63,7 @@ struct sphere{
 	double interval;
 	struct point2f pos;
 	struct point2f p1,p2,p3,p4;
-	double size;
+	double radius;
 	struct color3f color;
 	double speed;
 	double curve_length;
@@ -97,6 +97,19 @@ struct color3f random_color(){
 	}while( red == 0.0 && green == 0.0 && blue == 0.0); // no black balls
 	color.red = red;  color.green = green;  color.blue = blue;
 	return color;
+}
+
+/*
+ * double random_radius();
+ *
+ * returns a random radius between 0.15 and 0.7
+ */
+double random_radius() {
+	double radius;
+	do{
+		radius = (rand() % 10001)/10000.;
+	}while(radius > 0.7 || radius < 0.15);
+	return radius;
 }
 
 /*
@@ -239,7 +252,7 @@ void collision_check() {
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		
 		// ball-wall collisions
-		double dist = 5.0 - all_spheres[i].size;
+		double dist = 5.0 - all_spheres[i].radius;
 		//right
 		if(all_spheres[i].pos.x >= dist ) {
 			all_spheres[i].delta_x *= -1;
@@ -278,7 +291,7 @@ void collision_check() {
 					
 			d = distance(all_spheres[i], all_spheres[j]);
 
-			if( d <= all_spheres[i].size + all_spheres[j].size) {
+			if( d <= all_spheres[i].radius + all_spheres[j].radius) {
 				//printf("ball-ball\n");
 				//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
 				//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
@@ -357,7 +370,7 @@ void gfxinit() {
 		all_spheres[k].p3.y = new_random_value();
 		all_spheres[k].p4.y = new_random_value();
 		
-		all_spheres[k].size = BALL_SIZE;
+		all_spheres[k].radius = random_radius();
 
 		// TODO random ball speed
 		all_spheres[k].speed = BALL_SPEED;	
@@ -397,7 +410,7 @@ void display() {
 				all_spheres[i].color.blue);
 		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
 		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
-		glutSolidSphere(all_spheres[i].size,25,25);
+		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
 	collision_check();	// check for collisions wall-ball and ball-ball
