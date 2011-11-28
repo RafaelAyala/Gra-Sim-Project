@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 5
+#define NUMBER_OF_BALLS 75
 //#define INTERVAL 0.0049999
 #define BALL_SIZE 0.25
 #define BALL_SPEED 2.00 // ASU's per second
@@ -326,14 +326,47 @@ void keystroke(unsigned char c, int x, int y) {
 
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(1.0, 1.0, 1.0);
-
-	
+	glColor3f(0.5, 0.5, 0.5);
+	// back box
 	glBegin(GL_QUADS);
-		glVertex3f(20.0, -20.0, -15.0);
-		glVertex3f(-20.0, -20.0, -15.0);
-		glVertex3f(-20.0, 20.0, -15.0);
-		glVertex3f(20.0, 20.0, -15.0);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f( 5, -5, -5);
+	  glVertex3f( 5,  5, -5);
+	  glVertex3f(-5,  5, -5);
+	glEnd();
+	
+	glColor3f(0.4, 0.4, 0.4);
+	// left side
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f(-5, -5,  5);
+	  glVertex3f(-5,  5,  5);
+	  glVertex3f(-5,  5, -5);
+	glEnd();
+
+	// right side
+	glBegin(GL_QUADS);
+	  glVertex3f( 5, -5, -5);
+	  glVertex3f( 5, -5,  5);
+	  glVertex3f( 5,  5,  5);
+	  glVertex3f( 5,  5, -5);
+	glEnd();
+	
+	glColor3f(0.6, 0.6, 0.6);
+	// bottom
+	glBegin(GL_QUADS);
+	  glVertex3f(-5,  5, -5);
+	  glVertex3f(-5,  5,  5);
+	  glVertex3f( 5,  5,  5);
+	  glVertex3f( 5,  5, -5);
+	glEnd();
+
+	// top
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f(-5, -5,  5);
+	  glVertex3f( 5, -5,  5);
+	  glVertex3f( 5, -5, -5);
 	glEnd();
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {

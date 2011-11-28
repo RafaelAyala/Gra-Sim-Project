@@ -394,8 +394,8 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    //glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
@@ -417,8 +417,50 @@ void gfxinit() {
  * The display function displays the animation to the users screen.
  */
 void display() {
-	glClearColor(0.8,0.8,0.8,1.0);	// set the background color
+	glClearColor(0.0,0.0,0.0,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glColor3f(0.5, 0.5, 0.5);
+	// back box
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f( 5, -5, -5);
+	  glVertex3f( 5,  5, -5);
+	  glVertex3f(-5,  5, -5);
+	glEnd();
+	
+	glColor3f(0.4, 0.4, 0.4);
+	// left side
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f(-5, -5,  5);
+	  glVertex3f(-5,  5,  5);
+	  glVertex3f(-5,  5, -5);
+	glEnd();
+
+	// right side
+	glBegin(GL_QUADS);
+	  glVertex3f( 5, -5, -5);
+	  glVertex3f( 5, -5,  5);
+	  glVertex3f( 5,  5,  5);
+	  glVertex3f( 5,  5, -5);
+	glEnd();
+	
+	glColor3f(0.6, 0.6, 0.6);
+	// bottom
+	glBegin(GL_QUADS);
+	  glVertex3f(-5,  5, -5);
+	  glVertex3f(-5,  5,  5);
+	  glVertex3f( 5,  5,  5);
+	  glVertex3f( 5,  5, -5);
+	glEnd();
+
+	// top
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f(-5, -5,  5);
+	  glVertex3f( 5, -5,  5);
+	  glVertex3f( 5, -5, -5);
+	glEnd();
 	
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
@@ -431,6 +473,9 @@ void display() {
 		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
+
+
+
 	collision_check();	// check for collisions wall-ball and ball-ball
 	glutSwapBuffers();
 }
