@@ -25,7 +25,7 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 250
+#define NUMBER_OF_BALLS 5
 //#define INTERVAL 0.0049999
 #define BALL_SIZE 0.25
 #define BALL_SPEED 2.00 // ASU's per second
@@ -187,7 +187,8 @@ void gfxinit() {
    
     glMatrixMode(GL_PROJECTION);
     gluPerspective(60.0, 16/9., 1.0, 30.0);
-    glMatrixMode(GL_MODELVIEW);
+    //glOrtho(-5.0,5.0, 5.0, -5.0, 1.0, 20.0);
+	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	
 	glEnable ( GL_COLOR_MATERIAL ) ;
