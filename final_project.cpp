@@ -47,9 +47,10 @@ double current;
 double temp;
 
 // holds 2 floating point number representing a point in 2 space
-struct point2f {
+struct point3f {
 	double x;
 	double y;
+	double z;
 };
 
 // holds 3 floating point numbers representing a color (RGB)
@@ -63,8 +64,8 @@ struct color3f {
 // holds all information pertaining to a single sphere
 struct sphere{
 	double interval;
-	struct point2f pos;
-	struct point2f p1,p2,p3,p4;
+	struct point3f pos;
+	struct point3f p1,p2,p3,p4;
 	double radius;
 	struct color3f color;
 	double speed;
@@ -72,7 +73,7 @@ struct sphere{
 	double start_time;
 	double curve_time;
 	int path;  // flag: 0 is linear path, 1 is a bezier curve
-	double delta_x, delta_y;
+	double delta_x, delta_y, delta_z;
 	double mass;
 } all_spheres[NUMBER_OF_BALLS];
 
@@ -127,13 +128,13 @@ double get_mass(struct sphere ball) {
 }
 
 /*
- * struct point2f get_position(struct sphere ball, double pos);
+ * struct point3f get_position(struct sphere ball, double pos);
  *
  * returns the position of the ball on a curve
  */
-struct point2f get_position( struct sphere ball, double pos) {
+struct point3f get_position( struct sphere ball, double pos) {
 	double a, b, c;
-	struct point2f result;
+	struct point3f result;
 	// x
 	c = 3 * (ball.p2.x - ball.p1.x);
 	b = 3 * (ball.p3.x - ball.p2.x) - c;
@@ -145,6 +146,12 @@ struct point2f get_position( struct sphere ball, double pos) {
 	b = 3 * (ball.p3.y - ball.p2.y) - c;
 	a = ball.p4.y - ball.p1.y - c - b;
 	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.y;
+	
+	// z
+	c = 3 * (ball.p2.z - ball.p1.z);
+	b = 3 * (ball.p3.z - ball.p2.z) - c;
+	a = ball.p4.z - ball.p1.z - c - b;
+	result.z = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.z;
 	
 	return result;
 }
@@ -159,11 +166,11 @@ double curve_length( struct sphere ball ) {
 	double i;
 	double x1, y1, x2, y2;
 	double total = 0;
-	struct point2f p1, p2;
+	struct point3f p1, p2;
 	p1 = get_position( ball, 0);
 	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
 		p2 = get_position( ball, i);
-		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) );
+		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) + pow(p2.z-p1.z,2));
 		p1 = p2;
 	}
 	return total;
@@ -176,9 +183,10 @@ double curve_length( struct sphere ball ) {
  */
 void normalize(struct sphere ball) {
 	double mag;
-	mag = sqrt(pow(ball.delta_x,2) + pow(ball.delta_y,2));
+	mag = sqrt(pow(ball.delta_x,2) + pow(ball.delta_y,2) + pow(ball.delta_z,2));
 	ball.delta_x /= mag;
 	ball.delta_y /= mag;
+	ball.delta_z /= mag;
 }
 
 /*
@@ -187,7 +195,7 @@ void normalize(struct sphere ball) {
  * returns the distance between two parameter spheres
  */
 double distance( struct sphere ball1, struct sphere ball2 ) {
-	return sqrt( pow(ball1.pos.x - ball2.pos.x,2) + pow(ball1.pos.y - ball2.pos.y,2));
+	return sqrt( pow(ball1.pos.x - ball2.pos.x,2) + pow(ball1.pos.y - ball2.pos.y,2) + pow(ball1.pos.z - ball2.pos.z,2));
 }
 
 /*
@@ -204,7 +212,7 @@ void animate() {
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
 	
-	double tempX, tempY;
+	double tempX, tempY, tempZ;
 
 	for(j = 0; j < NUMBER_OF_BALLS; j++) {
 		
@@ -221,6 +229,7 @@ void animate() {
 			
 				tempX = all_spheres[j].pos.x;
 				tempY = all_spheres[j].pos.y;
+				tempZ = all_spheres[j].pos.z;
 				all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
 											(CLOCKS_PER_SEC * all_spheres[j].curve_time);
 				all_spheres[j].pos = get_position( all_spheres[j], all_spheres[j].interval );
@@ -237,6 +246,13 @@ void animate() {
 				all_spheres[j].p1.y = all_spheres[j].p4.y;
 				all_spheres[j].p3.y = new_random_value();
 				all_spheres[j].p4.y = new_random_value();
+				
+				all_spheres[j].p2.z = (all_spheres[j].p4.z - all_spheres[j].p3.z) + 
+					all_spheres[j].p4.z;
+				all_spheres[j].p1.z = all_spheres[j].p4.z;
+				all_spheres[j].p3.z = new_random_value();
+				all_spheres[j].p4.z = new_random_value();
+				
 				all_spheres[j].curve_length = curve_length( all_spheres[j] );
 				all_spheres[j].start_time = (double) clock();
 				all_spheres[j].curve_time = all_spheres[j].curve_length / 
@@ -295,6 +311,19 @@ void collision_check() {
 			all_spheres[i].path = 0;
 			//printf("top\n");
 			//glutIdleFunc(NULL);
+		} else if(all_spheres[i].pos.z >= dist ) {
+			all_spheres[i].delta_z *= -1;
+			all_spheres[i].pos.z = dist;
+			all_spheres[i].path = 0;
+			//printf("bottom\n");
+			//glutIdleFunc(NULL);
+		//top
+		}else if(all_spheres[i].pos.z <= -1*dist){
+			all_spheres[i].delta_z *= -1;
+			all_spheres[i].pos.z = -1*dist;
+			all_spheres[i].path = 0;
+			//printf("top\n");
+			//glutIdleFunc(NULL);
 		}
 		// end ball-wall collisions	
 
@@ -314,12 +343,14 @@ void collision_check() {
 				
 				all_spheres[i].delta_x = all_spheres[i].pos.x - all_spheres[j].pos.x;
 				all_spheres[i].delta_y = all_spheres[i].pos.y - all_spheres[j].pos.y;
+				all_spheres[i].delta_z = all_spheres[i].pos.z - all_spheres[j].pos.z;
 				all_spheres[i].path = 0;
 				normalize(all_spheres[i]);
      			all_spheres[i].speed = 0.1;
 
 				all_spheres[j].delta_x = all_spheres[j].pos.x - all_spheres[i].pos.x;
                 all_spheres[j].delta_y = all_spheres[j].pos.y - all_spheres[i].pos.y;
+                all_spheres[j].delta_z = all_spheres[j].pos.z - all_spheres[i].pos.z;
 				all_spheres[i].path = 0;
                 normalize(all_spheres[j]);
 				all_spheres[j].speed = 0.1;	
@@ -341,6 +372,11 @@ struct sphere make_sphere(){
 	ball.p3.y = new_random_value();
 	ball.p4.y = new_random_value();
 	
+	ball.p1.z = new_random_value();
+	ball.p2.z = new_random_value();
+	ball.p3.z = new_random_value();
+	ball.p4.z = new_random_value();
+	
 	ball.radius = random_radius();
 
 	// TODO random ball speed
@@ -358,7 +394,8 @@ struct sphere make_sphere(){
 
 	ball.delta_x = 0.3;
 	ball.delta_y = 0.3;
-	
+	ball.delta_z = 0.3;
+
 	ball.color = random_color();		
 	return ball;
 }
@@ -469,17 +506,14 @@ void display() {
 				all_spheres[i].color.green,
 				all_spheres[i].color.blue);
 		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,all_spheres[i].pos.z);
 		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
 
-
-
 	collision_check();	// check for collisions wall-ball and ball-ball
 	glutSwapBuffers();
 }
-
 
 /*
  * void keystroke(unisgned char c, int x, int y);
