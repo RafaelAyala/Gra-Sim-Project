@@ -6,6 +6,9 @@
  * 100366066
  *
  * Final Project
+ *
+ * TODO decay
+ * TODO mass for momentum
  */
 
 #ifdef __APPLE__  	// Mac OpenGL Libraries
@@ -25,9 +28,9 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 5
+#define NUMBER_OF_BALLS 20
 //#define INTERVAL 0.0049999
-#define BALL_SIZE 0.2
+#define BALL_SIZE 0.1
 #define BALL_SPEED 7.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 8
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
@@ -41,17 +44,21 @@ static double start;
 double current;
 double temp;
 
+// holds 2 floating point number representing a point in 2 space
 struct point2f {
 	double x;
 	double y;
 };
 
+// holds 3 floating point numbers representing a color (RGB)
 struct color3f {
 	double red;
 	double green;
 	double blue;
 };
 
+// TODO clean sphere struct
+// holds all information pertaining to a single sphere
 struct sphere{
 	double interval;
 	struct point2f pos;
@@ -67,10 +74,16 @@ struct sphere{
 	double mass;
 } all_spheres[NUMBER_OF_BALLS];
 
+// TODO create all random functions
 double new_random_value() {
 	return ((rand() % (101)/100.)*10)-5.0;	
 }
 
+/*
+ * struct color3f random_color();
+ *
+ * returns a randomized RGB color w/o dark colors
+ */
 struct color3f random_color(){
 	struct color3f color;
 	double red, green, blue;
@@ -86,6 +99,11 @@ struct color3f random_color(){
 	return color;
 }
 
+/*
+ * struct point2f get_position(struct sphere ball, double pos);
+ *
+ * returns the position of the ball on a curve
+ */
 struct point2f get_position( struct sphere ball, double pos) {
 	double a, b, c;
 	struct point2f result;
@@ -104,8 +122,12 @@ struct point2f get_position( struct sphere ball, double pos) {
 	return result;
 }
 
-
-
+/*
+ * double curve_length(struct sphere ball);
+ *
+ * returns a double value representing the approximate length of the bezier
+ * curve
+ */
 double curve_length( struct sphere ball ) {
 	double i;
 	double x1, y1, x2, y2;
@@ -113,7 +135,6 @@ double curve_length( struct sphere ball ) {
 	struct point2f p1, p2;
 	p1 = get_position( ball, 0);
 	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
-		//printf("%f\n", i);
 		p2 = get_position( ball, i);
 		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) );
 		p1 = p2;
@@ -121,6 +142,11 @@ double curve_length( struct sphere ball ) {
 	return total;
 }
 
+/*
+ * void normalize(struct sphere ball);
+ *
+ * normalizes the delta_x and delta_y components of a sphere
+ */
 void normalize(struct sphere ball) {
 	double mag;
 	mag = sqrt(pow(ball.delta_x,2) + pow(ball.delta_y,2));
@@ -128,10 +154,22 @@ void normalize(struct sphere ball) {
 	ball.delta_y /= mag;
 }
 
+/*
+ * double distance(struct sphere ball1, struct sphere ball2);
+ *
+ * returns the distance between two parameter spheres
+ */
 double distance( struct sphere ball1, struct sphere ball2 ) {
 	return sqrt( pow(ball1.pos.x - ball2.pos.x,2) + pow(ball1.pos.y - ball2.pos.y,2));
 }
 
+/*
+ * void animate();
+ *
+ * This acts as the idle function, whenever the system is idle, animte() is
+ * called.  The end of animate() forces display() to refresh
+ * TODO clean animate
+ */
 void animate() {
 	int j;
 	double a, b, c;
@@ -176,20 +214,24 @@ void animate() {
 				all_spheres[j].start_time = (double) clock();
 				all_spheres[j].curve_time = all_spheres[j].curve_length / 
 											all_spheres[j].speed;
-				//print_sphere_info(all_spheres[j]);
 			}
-			//print_sphere_info(all_spheres[j]);
 		}	
 	
 	}
-	
-	// We must set the current window, since a window isn't
-	// set before this function is called
+
+	// set window and call display to refresh screen
 	glutSetWindow(window);
-	//  Ask Glut to redisplay the current window
 	glutPostRedisplay();
 }
-     
+
+/*
+ * void collision_check();
+ *
+ * determines if any ball-wall or ball-ball collisions occur
+ * TODO speeds are hard coded,
+ * TODO tangents need to be used
+ * TODO deltas need real values
+ */
 void collision_check() {
 	int i, j;
 	double d;
@@ -197,51 +239,50 @@ void collision_check() {
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		
 		// ball-wall collisions
-		//TODO
-		// speed are hard coded,
-		// tangents need to be used
-		// deltas need real values
-		
 		double dist = 5.0 - all_spheres[i].size;
 		//right
 		if(all_spheres[i].pos.x >= dist ) {
 			all_spheres[i].delta_x *= -1;
 			all_spheres[i].pos.x = dist;
 			all_spheres[i].path = 0;
-			//all_spheres[i].speed = 0.1;
-
+			//printf("right\n");
+			//glutIdleFunc(NULL);
 		//left
 		} else if(all_spheres[i].pos.x <= -1*dist){
 			all_spheres[i].delta_x *= -1;
 			all_spheres[i].pos.x = -1*dist;
 			all_spheres[i].path = 0;
-			//all_spheres[i].speed = 0.1;
-		//top
+			//printf("left\n");
+			//glutIdleFunc(NULL);
+		//bottom
 		} else if(all_spheres[i].pos.y >= dist ) {
 			all_spheres[i].delta_y *= -1;
 			all_spheres[i].pos.y = dist;
 			all_spheres[i].path = 0;
-			//all_spheres[i].speed = 0.1;
-			//all_spheres[i].delta_y *= -1;
-			//all_spheres[i].pos.y = dist;
-		//bottom
+			//printf("bottom\n");
+			//glutIdleFunc(NULL);
+		//top
 		}else if(all_spheres[i].pos.y <= -1*dist){
 			all_spheres[i].delta_y *= -1;
 			all_spheres[i].pos.y = -1*dist;
 			all_spheres[i].path = 0;
-			//all_spheres[i].speed = 0.1;
-			//all_spheres[i].delta_y *= -1;
-			//all_spheres[i].pos.y = -1*dist;
+			//printf("top\n");
+			//glutIdleFunc(NULL);
 		}
-		// end ball-wall collisions
-		
+		// end ball-wall collisions	
+
+		// ball-ball collisions
 		for( j=0; j < NUMBER_OF_BALLS; j++) {
 			// check all but itself
-			if( i == j) { j++; }
-		
+			if( i == j) { continue; }
+					
 			d = distance(all_spheres[i], all_spheres[j]);
 
 			if( d <= all_spheres[i].size + all_spheres[j].size) {
+				//printf("ball-ball\n");
+				//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
+				//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
+				//glutIdleFunc(NULL);
 					
 				
 				all_spheres[i].delta_x = all_spheres[i].pos.x - all_spheres[j].pos.x;
@@ -257,6 +298,7 @@ void collision_check() {
 				all_spheres[j].speed = 0.1;	
 			}
 		}
+		// end ball-ball
 	}
 }
 
@@ -264,6 +306,7 @@ void collision_check() {
  * void gfxinit();
  *
  * initializes the system prior to animating
+ * TODO refactor(make a ball generation function)
  */
 void gfxinit() {
 	start = (double) clock(); 
@@ -372,6 +415,9 @@ void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 113:		// [q] is quit
 			exit(0);
+			break;
+		case 110:
+			glutIdleFunc(animate);
 			break;
 	}
 }
