@@ -114,7 +114,7 @@ void animate() {
 		
 		
 		if(all_spheres[j].path == 0) { //linear paths
-
+			// TODO
 			all_spheres[j].xPos += all_spheres[j].delta_x * all_spheres[j].speed;
 			all_spheres[j].yPos += all_spheres[j].delta_y * all_spheres[j].speed;
 
@@ -339,6 +339,12 @@ void collision_check() {
 		}
 	}
 }
+
+/*
+ * void gfxinit();
+ *
+ * initializes the system prior to animating
+ */
 void gfxinit() {
 	start = (double) clock(); 
 	current = 0.0;
@@ -348,7 +354,6 @@ void gfxinit() {
     GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
     GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
 
-    // set the light position, 5 units along the y axis
     glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
     // set the ambient light colour
     glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
@@ -374,9 +379,10 @@ void gfxinit() {
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
 	glShadeModel(GL_SMOOTH);
 
-	srand(time(NULL));
+	srand(time(NULL));	// seed for rand() calls
+
 	int k;
-	for( k = 0; k < NUMBER_OF_BALLS; k++ ) {
+	for( k = 0; k < NUMBER_OF_BALLS; k++ ) { //setup all ball settings
 		
 		all_spheres[k].x1 = new_random_value();
 		all_spheres[k].x2 = new_random_value();
@@ -389,11 +395,12 @@ void gfxinit() {
 		all_spheres[k].y4 = new_random_value();
 		
 		all_spheres[k].size = BALL_SIZE;
+
+		// TODO random ball speed
 		all_spheres[k].speed = BALL_SPEED;	
-		//all_spheres[k].speed = new_random_value();
-		//all_spheres[k].speed = (all_spheres[k].speed < 0) ? 
-		//						all_spheres[k].speed * -1 :
-		//						all_spheres[k].speed;
+		
+		// TODO random ball mass for momentum
+
 		all_spheres[k].curve_length = curve_length(
 										all_spheres[k].x1,
 										all_spheres[k].x2,
@@ -404,7 +411,10 @@ void gfxinit() {
 										all_spheres[k].y3,
 										all_spheres[k].y4
 				);
+		
+		// start on a curved path
 		all_spheres[k].path = 1;	
+		
 		all_spheres[k].start_time = (double) clock();
 		all_spheres[k].curve_time = all_spheres[k].curve_length / 
 									all_spheres[k].speed;

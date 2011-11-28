@@ -24,3 +24,23 @@ Description
 	- Spheres deteriorate over time (particles fly out)
 	- Destructive collisions (other spheres or walls)
 	- Squish on impact
+
+TODO Simulation Presentation
+----------------------------
+	- Decay
+	- Death and Birth of spheres from the system
+	- Refactoring
+	- Adjusting curves (probabilites)
+	- Optimize collisions  
+
+TODO Graphics Presentation
+--------------------------
+	- Constant speed of spheres
+	- Multiple line segments per curve
+	- Mouse and Keyboard scene navigation
+	- Release particles on crash and decay
+	- squish (based on angle of collision) + ease in/out
+	- color based on decay
+	- reflection using stencil buffer
+	- 3D?
+	- transparent cube?
