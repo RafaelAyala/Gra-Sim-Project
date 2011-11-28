@@ -86,32 +86,37 @@ struct color3f random_color(){
 	return color;
 }
 
-
-double get_position( double p1, double p2, double p3, double p4, double pos) {
-	double result;
+struct point2f get_position( struct sphere ball, double pos) {
 	double a, b, c;
-	c = 3 * (p2 - p1);
-	b = 3 * (p3 - p2) - c;
-	a = p4 - p1 - c - b;
-	result = a * pow(pos,3) + b * pow(pos,2) + c * pos + p1;
+	struct point2f result;
+	// x
+	c = 3 * (ball.p2.x - ball.p1.x);
+	b = 3 * (ball.p3.x - ball.p2.x) - c;
+	a = ball.p4.x - ball.p1.x - c - b;
+	result.x = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.x;
+	
+	// y
+	c = 3 * (ball.p2.y - ball.p1.y);
+	b = 3 * (ball.p3.y - ball.p2.y) - c;
+	a = ball.p4.y - ball.p1.y - c - b;
+	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.y;
 	
 	return result;
 }
 
-double curve_length( double p1x, double p2x, double p3x, double p4x, 
-					 double p1y, double p2y, double p3y, double p4y) {
+
+
+double curve_length( struct sphere ball ) {
 	double i;
 	double x1, y1, x2, y2;
 	double total = 0;
-	x1 = get_position( p1x, p2x, p3x, p4x, 0);
-	y1 = get_position( p1y, p2y, p3y, p4y, 0);
+	struct point2f p1, p2;
+	p1 = get_position( ball, 0);
 	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
 		//printf("%f\n", i);
-		x2 = get_position( p1x, p2x, p3x, p4x, i);
-		y2 = get_position( p1y, p2y, p3y, p4y, i);
-		total = total + sqrt( pow(x2-x1,2) + pow(y2-y1,2) );
-		x1 = x2;
-		y1 = y2;
+		p2 = get_position( ball, i);
+		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) );
+		p1 = p2;
 	}
 	return total;
 }
@@ -153,30 +158,8 @@ void animate() {
 				tempY = all_spheres[j].pos.y;
 				all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
 											(CLOCKS_PER_SEC * all_spheres[j].curve_time);
-				all_spheres[j].pos.x = get_position(
-											all_spheres[j].p1.x,
-											all_spheres[j].p2.x,
-											all_spheres[j].p3.x,
-											all_spheres[j].p4.x,
-											all_spheres[j].interval
-						);
-				all_spheres[j].pos.y = get_position(
-											all_spheres[j].p1.y,
-											all_spheres[j].p2.y,
-											all_spheres[j].p3.y,
-											all_spheres[j].p4.y,
-											all_spheres[j].interval
-						);
-			
-				//printf("current speed: %f AMU/s\n", 
-				//		sqrt( pow(all_spheres[j].pos.x - tempX ,2) 
-				//				+ pow(all_spheres[j].pos.y - tempY ,2) )
-				//);
-				//all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
-				//							(CLOCKS_PER_SEC * all_spheres[j].curve_time);
+				all_spheres[j].pos = get_position( all_spheres[j], all_spheres[j].interval );
 			} else {
-				//printf("Time spent on curve: %fs\n", (current-all_spheres[j].start_time) /
-				//		CLOCKS_PER_SEC);
 				all_spheres[j].interval = 0.0;
 				all_spheres[j].p2.x = (all_spheres[j].p4.x - all_spheres[j].p3.x) + 
 					all_spheres[j].p4.x;
@@ -189,16 +172,7 @@ void animate() {
 				all_spheres[j].p1.y = all_spheres[j].p4.y;
 				all_spheres[j].p3.y = new_random_value();
 				all_spheres[j].p4.y = new_random_value();
-				all_spheres[j].curve_length = curve_length(
-												all_spheres[j].p1.x,
-												all_spheres[j].p2.x,
-												all_spheres[j].p3.x,
-												all_spheres[j].p4.x,
-												all_spheres[j].p1.y,
-												all_spheres[j].p2.y,
-												all_spheres[j].p3.y,
-												all_spheres[j].p4.y
-						);
+				all_spheres[j].curve_length = curve_length( all_spheres[j] );
 				all_spheres[j].start_time = (double) clock();
 				all_spheres[j].curve_time = all_spheres[j].curve_length / 
 											all_spheres[j].speed;
@@ -347,16 +321,7 @@ void gfxinit() {
 		
 		// TODO random ball mass for momentum
 
-		all_spheres[k].curve_length = curve_length(
-										all_spheres[k].p1.x,
-										all_spheres[k].p2.x,
-										all_spheres[k].p3.x,
-										all_spheres[k].p4.x,
-										all_spheres[k].p1.y,
-										all_spheres[k].p2.y,
-										all_spheres[k].p3.y,
-										all_spheres[k].p4.y
-				);
+		all_spheres[k].curve_length = curve_length( all_spheres[k] );
 		
 		// start on a curved path
 		all_spheres[k].path = 1;	
@@ -368,21 +333,7 @@ void gfxinit() {
 		all_spheres[k].delta_x = 0.3;
 		all_spheres[k].delta_y = 0.3;
 		
-		all_spheres[k].color = random_color();
-
-		//// set ball colors
-		//if(RAINBOW) {
-		//	//multi-colored spheres
-		//	all_spheres[k].red = fmod(new_random_value(),1.0);
-		//	all_spheres[k].green = fmod(new_random_value(),1.0);
-		//	all_spheres[k].blue	= fmod(new_random_value(),1.0);
-		//} else {
-		//	//red spheres
-		//	all_spheres[k].red = 1.0;
-		//	all_spheres[k].green = 0.0;
-		//	all_spheres[k].blue	= 0.0;
-		//}
-	
+		all_spheres[k].color = random_color();	
 	}
 }
 
