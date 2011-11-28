@@ -232,14 +232,19 @@ void collision_check() {
 		
 		// ball-wall collisions
 		double dist = 5.0 - all_spheres[i].size;
-		if(all_spheres[i].xPos >= dist || all_spheres[i].xPos <= -1*dist) {
+		if(all_spheres[i].xPos >= dist ) {
 			all_spheres[i].delta_x *= -1;
-		}
-		
-		if(all_spheres[i].yPos >= dist || all_spheres[i].yPos <= -1*dist) {
+			all_spheres[i].xPos = dist;
+		} else if(all_spheres[i].xPos <= -1*dist){
+			all_spheres[i].delta_x *= -1;
+			all_spheres[i].xPos = -1*dist;
+		} else if(all_spheres[i].yPos >= dist ) {
 			all_spheres[i].delta_y *= -1;
+			all_spheres[i].yPos = dist;
+		}else if(all_spheres[i].yPos <= -1*dist){
+			all_spheres[i].delta_y *= -1;
+			all_spheres[i].yPos = -1*dist;
 		}
-		
 		// end ball-wall collisions
 
 		// ball-ball collisions
@@ -267,7 +272,7 @@ void collision_check() {
 
 					all_spheres[j].delta_x = all_spheres[j].xPos - all_spheres[i].xPos;
 					all_spheres[j].delta_y = all_spheres[j].yPos - all_spheres[i].yPos;
-					normalize(all_spheres[i]);
+					normalize(all_spheres[j]);
 				}
 		}
 		// end ball-ball collisions
