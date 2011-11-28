@@ -57,17 +57,39 @@ struct sphere{
 	double mass;
 } all_spheres[NUMBER_OF_BALLS];
 
-// prototypes
-double new_random_value();
-void set_curve_length( struct sphere ball);
-double get_position( double p1, double p2, double p3, double p4, double pos);
+double new_random_value() {
+	return ((rand() % (101)/100.)*10)-5.0;
+	
+}
+
+double get_position( double p1, double p2, double p3, double p4, double pos) {
+	double result;
+	double a, b, c;
+	c = 3 * (p2 - p1);
+	b = 3 * (p3 - p2) - c;
+	a = p4 - p1 - c - b;
+	result = a * pow(pos,3) + b * pow(pos,2) + c * pos + p1;
+	
+	return result;
+}
+
 double curve_length( double p1x, double p2x, double p3x, double p4x, 
-					 double p1y, double p2y, double p3y, double p4y);
-void keystroke(unsigned char c, int x, int y);
-void display();
-void animate();
-void gfxinit();
-void print_sphere_info(struct sphere ball);
+					 double p1y, double p2y, double p3y, double p4y) {
+	double i;
+	double x1, y1, x2, y2;
+	double total = 0;
+	x1 = get_position( p1x, p2x, p3x, p4x, 0);
+	y1 = get_position( p1y, p2y, p3y, p4y, 0);
+	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
+		//printf("%f\n", i);
+		x2 = get_position( p1x, p2x, p3x, p4x, i);
+		y2 = get_position( p1y, p2y, p3y, p4y, i);
+		total = total + sqrt( pow(x2-x1,2) + pow(y2-y1,2) );
+		x1 = x2;
+		y1 = y2;
+	}
+	return total;
+}
 
 void animate() {
 	int j;
@@ -246,63 +268,12 @@ void gfxinit() {
 }
 
 
-int main(int argc, char **argv) {
-     // Initialize GLUT and process its command line arguments
-     glutInit(&argc,argv);
-     // Set the display mode, double buffered, RGB colour and depth buffer
-     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-     // Create the display window
-     window = glutCreateWindow("first");
-     // Set the display function
-     glutDisplayFunc(display);
-     // Set the Idle function, called when GLUT isn't busy
-     glutIdleFunc(animate);
-     glutKeyboardFunc(keystroke);
-	 // Initialize OpenGL
-	 gfxinit();
-     // Pass control to GLUT to run the application
-     glutMainLoop();
-   
-	//return 0;
-}
-
-double new_random_value() {
-	return ((rand() % (101)/100.)*10)-5.0;
-	
-}
 
 void set_curve_length( struct sphere ball) {
 	ball.curve_length = 1.0;
 }
 
-double get_position( double p1, double p2, double p3, double p4, double pos) {
-	double result;
-	double a, b, c;
-	c = 3 * (p2 - p1);
-	b = 3 * (p3 - p2) - c;
-	a = p4 - p1 - c - b;
-	result = a * pow(pos,3) + b * pow(pos,2) + c * pos + p1;
-	
-	return result;
-}
 
-double curve_length( double p1x, double p2x, double p3x, double p4x, 
-					 double p1y, double p2y, double p3y, double p4y) {
-	double i;
-	double x1, y1, x2, y2;
-	double total = 0;
-	x1 = get_position( p1x, p2x, p3x, p4x, 0);
-	y1 = get_position( p1y, p2y, p3y, p4y, 0);
-	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
-		//printf("%f\n", i);
-		x2 = get_position( p1x, p2x, p3x, p4x, i);
-		y2 = get_position( p1y, p2y, p3y, p4y, i);
-		total = total + sqrt( pow(x2-x1,2) + pow(y2-y1,2) );
-		x1 = x2;
-		y1 = y2;
-	}
-	return total;
-}
 
 // [q] is quit
 void keystroke(unsigned char c, int x, int y) {
@@ -468,8 +439,6 @@ void collision_check() {
 
 			//	}
 			}
-
-
 		}
 	}
 }
@@ -478,14 +447,6 @@ void display() {
 	glClearColor(0.8,0.8,0.8,1.0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	//glColor3f(1.0, 1.0, 1.0);
-
-	//glBegin(GL_QUADS);
-	//	glVertex3f(20.0, -20.0, -1.0);
-	//	glVertex3f(-20.0, -20.0, -1.0);
-	//	glVertex3f(-20.0, 20.0, -1.0);
-	//	glVertex3f(20.0, 20.0, -1.0);
-	//glEnd();
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
 		// red sphere
@@ -501,22 +462,23 @@ void display() {
 	glutSwapBuffers();
 }
 
-void print_sphere_info(struct sphere ball) {
-	printf("x: %f %f %f %f\n", 
-			ball.x1,
-			ball.x2,
-			ball.x3,
-			ball.x4
-		  );
-	printf("y: %f %f %f %f\n", 
-			ball.y1,
-			ball.y2,
-			ball.y3,
-			ball.y4
-		  );
-	printf("speed %f\n", ball.speed);
-	printf("start time %f\n", ball.start_time);
-	printf("curve length %f\n",ball.curve_length);
-	printf("curve time %f\n", ball.curve_time);
-	printf("interval: %f\n", ball.interval);
+int main(int argc, char **argv) {
+     // Initialize GLUT and process its command line arguments
+     glutInit(&argc,argv);
+     // Set the display mode, double buffered, RGB colour and depth buffer
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+     // Create the display window
+     window = glutCreateWindow("first");
+     // Set the display function
+     glutDisplayFunc(display);
+     // Set the Idle function, called when GLUT isn't busy
+     glutIdleFunc(animate);
+     glutKeyboardFunc(keystroke);
+	 // Initialize OpenGL
+	 gfxinit();
+     // Pass control to GLUT to run the application
+     glutMainLoop();
+   
+	//return 0;
 }
+
