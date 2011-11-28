@@ -45,6 +45,10 @@ static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 static double start;
 double current;
 double temp;
+double global_pos;
+double lastx, lasty;
+float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, angle=0.0;
+double xrotrad, yrotrad;
 
 // holds 2 floating point number representing a point in 2 space
 struct point3f {
@@ -394,7 +398,7 @@ struct sphere make_sphere(){
 
 	ball.delta_x = 0.3;
 	ball.delta_y = 0.3;
-	ball.delta_z = 0.3;
+	ball.delta_z = 0.5;
 
 	ball.color = random_color();		
 	return ball;
@@ -431,7 +435,7 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    gluPerspective(60.0, 16/9., 1.0, 40.0);
     //glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
@@ -442,11 +446,26 @@ void gfxinit() {
 
 	srand(time(NULL));	// seed for rand() calls
 
+	global_pos = 0.0;
+	lastx = 0.0;
+	lasty = 0.0;
+	xrot = 0.0;
+	yrot = 0.0;
 	int k;
 	for( k = 0; k < NUMBER_OF_BALLS; k++ ) { //setup all ball settings
 		all_spheres[k] = make_sphere();	
 	}
 }
+
+void camera (void) {
+	    glRotatef(xrot,1.0,0.0,0.0);  //rotate our camera on teh 
+		//x-axis (left and right)
+			    glRotatef(yrot,0.0,1.0,0.0);  //rotate our camera on the 
+		//y-axis (up and down)
+			    glTranslated(-xpos,-ypos,-zpos); //translate the screen
+		 //to the position of our camera
+}
+
 
 /*
  * void display();
@@ -456,7 +475,24 @@ void gfxinit() {
 void display() {
 	glClearColor(0.0,0.0,0.0,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glColor3f(0.5, 0.5, 0.5);
+
+	int i;
+	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
+		glPushMatrix();
+		glColor3f(all_spheres[i].color.red,
+				all_spheres[i].color.green,
+				all_spheres[i].color.blue);
+		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,all_spheres[i].pos.z);
+		glutSolidSphere(all_spheres[i].radius,25,25);
+		glPopMatrix();
+	}
+	glEnable(GL_BLEND);	     // Turn blending On 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);	
+	
+	glDisable(GL_LIGHTING);
+
+	glColor4f(0.25, 0.25, 0.25, 0.5);
 	// back box
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -465,7 +501,14 @@ void display() {
 	  glVertex3f(-5,  5, -5);
 	glEnd();
 	
-	glColor3f(0.4, 0.4, 0.4);
+	// front box
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, 5);
+	  glVertex3f( 5, -5, 5);
+	  glVertex3f( 5,  5, 5);
+	  glVertex3f(-5,  5, 5);
+	glEnd();
+
 	// left side
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -482,7 +525,6 @@ void display() {
 	  glVertex3f( 5,  5, -5);
 	glEnd();
 	
-	glColor3f(0.6, 0.6, 0.6);
 	// bottom
 	glBegin(GL_QUADS);
 	  glVertex3f(-5,  5, -5);
@@ -498,19 +540,10 @@ void display() {
 	  glVertex3f( 5, -5,  5);
 	  glVertex3f( 5, -5, -5);
 	glEnd();
-	
-	int i;
-	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
-		glPushMatrix();
-		glColor3f(all_spheres[i].color.red,
-				all_spheres[i].color.green,
-				all_spheres[i].color.blue);
-		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,all_spheres[i].pos.z);
-		glutSolidSphere(all_spheres[i].radius,25,25);
-		glPopMatrix();
-	}
-
+	glEnable(GL_LIGHTING);
+	glDisable(GL_BLEND);
+    //gluLookAt(global_pos, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	camera();	
 	collision_check();	// check for collisions wall-ball and ball-ball
 	glutSwapBuffers();
 }
@@ -526,10 +559,43 @@ void keystroke(unsigned char c, int x, int y) {
 		case 113:		// [q] is quit
 			exit(0);
 			break;
-		case 110:
+		case 110:		// [n] resumes animation, used for debugging
 			glutIdleFunc(animate);
 			break;
+		case 97: // translate right [a]
+			yrotrad = (yrot / 180 * 3.141592654f);
+			xpos -= float(cos(yrotrad)) * 0.2;
+			zpos -= float(sin(yrotrad)) * 0.2;
+			break;
+		case 100: // translate left [d]
+			yrotrad = (yrot / 180 * 3.141592654f);
+			xpos += float(cos(yrotrad)) * 0.2;
+			zpos += float(sin(yrotrad)) * 0.2;
+			break;	
+		case 119: // zoom in [w]
+			yrotrad = (yrot / 180 * 3.141592654f);
+			xrotrad = (xrot / 180 * 3.141592654f); 
+			xpos += float(sin(yrotrad)) ;
+			zpos -= float(cos(yrotrad)) ;
+			ypos -= float(sin(xrotrad)) ;
+			break;
+		case 115: // zoom out [s]
+			yrotrad = (yrot / 180 * 3.141592654f);
+			xrotrad = (xrot / 180 * 3.141592654f); 
+			xpos -= float(sin(yrotrad));
+			zpos += float(cos(yrotrad)) ;
+			ypos += float(sin(xrotrad));
+			break;
 	}
+}
+
+void mouseMovement(int x, int y) {
+	int diffx=x-lastx; //check the difference between the current x and the last x position
+	int diffy=y-lasty; //check the difference between the current y and the last y position
+	lastx=x; //set lastx to the current x position
+	lasty=y; //set lasty to the current y position
+	xrot += (float) diffy/20.; //set the xrot to xrot with the addition of the difference in the y position
+	yrot += (float) diffx/20.;// set the xrot to yrot with the addition of the difference in the x position
 }
 
 /*
@@ -545,6 +611,7 @@ int main(int argc, char **argv) {
      glutDisplayFunc(display);
      glutIdleFunc(animate);	// call animate() when idle
      glutKeyboardFunc(keystroke);	//handles user input
+	 glutPassiveMotionFunc(mouseMovement);
 	 gfxinit();
      glutMainLoop(); // start the animation
 }
