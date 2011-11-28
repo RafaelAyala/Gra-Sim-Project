@@ -329,6 +329,40 @@ void collision_check() {
 	}
 }
 
+struct sphere make_sphere(){
+	struct sphere ball;
+	ball.p1.x = new_random_value();
+	ball.p2.x = new_random_value();
+	ball.p3.x = new_random_value();
+	ball.p4.x = new_random_value();
+
+	ball.p1.y = new_random_value();
+	ball.p2.y = new_random_value();
+	ball.p3.y = new_random_value();
+	ball.p4.y = new_random_value();
+	
+	ball.radius = random_radius();
+
+	// TODO random ball speed
+	ball.speed = BALL_SPEED;	
+	
+	// TODO random ball mass for momentum
+
+	ball.curve_length = curve_length( ball );
+	
+	// start on a curved path
+	ball.path = 1;	
+	
+	ball.start_time = (double) clock();
+	ball.curve_time = ball.curve_length / ball.speed;
+
+	ball.delta_x = 0.3;
+	ball.delta_y = 0.3;
+	
+	ball.color = random_color();		
+	return ball;
+}
+
 /*
  * void gfxinit();
  *
@@ -373,37 +407,7 @@ void gfxinit() {
 
 	int k;
 	for( k = 0; k < NUMBER_OF_BALLS; k++ ) { //setup all ball settings
-		
-		all_spheres[k].p1.x = new_random_value();
-		all_spheres[k].p2.x = new_random_value();
-		all_spheres[k].p3.x = new_random_value();
-		all_spheres[k].p4.x = new_random_value();
-
-		all_spheres[k].p1.y = new_random_value();
-		all_spheres[k].p2.y = new_random_value();
-		all_spheres[k].p3.y = new_random_value();
-		all_spheres[k].p4.y = new_random_value();
-		
-		all_spheres[k].radius = random_radius();
-
-		// TODO random ball speed
-		all_spheres[k].speed = BALL_SPEED;	
-		
-		// TODO random ball mass for momentum
-
-		all_spheres[k].curve_length = curve_length( all_spheres[k] );
-		
-		// start on a curved path
-		all_spheres[k].path = 1;	
-		
-		all_spheres[k].start_time = (double) clock();
-		all_spheres[k].curve_time = all_spheres[k].curve_length / 
-									all_spheres[k].speed;
-
-		all_spheres[k].delta_x = 0.3;
-		all_spheres[k].delta_y = 0.3;
-		
-		all_spheres[k].color = random_color();	
+		all_spheres[k] = make_sphere();	
 	}
 }
 
