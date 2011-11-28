@@ -34,7 +34,7 @@ TODO Simulation Presentation
 	- Optimize collisions  
 [X]	- random color eqn
 	- mass and momentum
-	- random sizes(0.25 0.75)
+[X]	- random sizes(0.15 0.75)
 
 TODO Graphics Presentation
 --------------------------
