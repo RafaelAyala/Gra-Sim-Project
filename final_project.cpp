@@ -34,6 +34,8 @@
 #define BALL_SPEED 12.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 8
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
+#define DENSITY 1.0
+#define PI 3.14159
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -110,6 +112,18 @@ double random_radius() {
 		radius = (rand() % 10001)/10000.;
 	}while(radius > 0.7 || radius < 0.15);
 	return radius;
+}
+
+/*
+ * double get_mass(struct sphere ball);
+ *
+ * returns the mass of the ball based on the radius
+ * Note: all balls have the same density
+ * volume = (4*Pi * r^3) / 3
+ */
+double get_mass(struct sphere ball) {
+	double volume = (4 * PI * pow(ball.radius,3))/3.;
+	return volume * DENSITY;
 }
 
 /*
