@@ -41,9 +41,15 @@ static double start;
 double current;
 double temp;
 
+struct point {
+	double x;
+	double y;
+};
+
 struct sphere{
-	double xPos, yPos, interval;
-	double x1, x2, x3, x4, y1, y2, y3, y4;
+	double interval;
+	struct point pos;
+	struct point p1,p2,p3,p4;
 	double size;
 	double red;
 	double green;
@@ -98,7 +104,7 @@ void normalize(struct sphere ball) {
 }
 
 double distance( struct sphere ball1, struct sphere ball2 ) {
-	return sqrt( pow(ball1.xPos - ball2.xPos,2) + pow(ball1.yPos - ball2.yPos,2));
+	return sqrt( pow(ball1.pos.x - ball2.pos.x,2) + pow(ball1.pos.y - ball2.pos.y,2));
 }
 
 void animate() {
@@ -115,36 +121,36 @@ void animate() {
 		
 		if(all_spheres[j].path == 0) { //linear paths
 			// TODO
-			all_spheres[j].xPos += all_spheres[j].delta_x * all_spheres[j].speed;
-			all_spheres[j].yPos += all_spheres[j].delta_y * all_spheres[j].speed;
+			all_spheres[j].pos.x += all_spheres[j].delta_x * all_spheres[j].speed;
+			all_spheres[j].pos.y += all_spheres[j].delta_y * all_spheres[j].speed;
 
 
 
 		} else if(all_spheres[j].path == 1) { // bezier curves for path	
 			if( all_spheres[j].interval < 1.0) {
 			
-				tempX = all_spheres[j].xPos;
-				tempY = all_spheres[j].yPos;
+				tempX = all_spheres[j].pos.x;
+				tempY = all_spheres[j].pos.y;
 				all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
 											(CLOCKS_PER_SEC * all_spheres[j].curve_time);
-				all_spheres[j].xPos = get_position(
-											all_spheres[j].x1,
-											all_spheres[j].x2,
-											all_spheres[j].x3,
-											all_spheres[j].x4,
+				all_spheres[j].pos.x = get_position(
+											all_spheres[j].p1.x,
+											all_spheres[j].p2.x,
+											all_spheres[j].p3.x,
+											all_spheres[j].p4.x,
 											all_spheres[j].interval
 						);
-				all_spheres[j].yPos = get_position(
-											all_spheres[j].y1,
-											all_spheres[j].y2,
-											all_spheres[j].y3,
-											all_spheres[j].y4,
+				all_spheres[j].pos.y = get_position(
+											all_spheres[j].p1.y,
+											all_spheres[j].p2.y,
+											all_spheres[j].p3.y,
+											all_spheres[j].p4.y,
 											all_spheres[j].interval
 						);
 			
 				//printf("current speed: %f AMU/s\n", 
-				//		sqrt( pow(all_spheres[j].xPos - tempX ,2) 
-				//				+ pow(all_spheres[j].yPos - tempY ,2) )
+				//		sqrt( pow(all_spheres[j].pos.x - tempX ,2) 
+				//				+ pow(all_spheres[j].pos.y - tempY ,2) )
 				//);
 				//all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
 				//							(CLOCKS_PER_SEC * all_spheres[j].curve_time);
@@ -152,26 +158,26 @@ void animate() {
 				//printf("Time spent on curve: %fs\n", (current-all_spheres[j].start_time) /
 				//		CLOCKS_PER_SEC);
 				all_spheres[j].interval = 0.0;
-				all_spheres[j].x2 = (all_spheres[j].x4 - all_spheres[j].x3) + 
-					all_spheres[j].x4;
-				all_spheres[j].x1 = all_spheres[j].x4;
-				all_spheres[j].x3 = new_random_value();
-				all_spheres[j].x4 = new_random_value();
+				all_spheres[j].p2.x = (all_spheres[j].p4.x - all_spheres[j].p3.x) + 
+					all_spheres[j].p4.x;
+				all_spheres[j].p1.x = all_spheres[j].p4.x;
+				all_spheres[j].p3.x = new_random_value();
+				all_spheres[j].p4.x = new_random_value();
 				
-				all_spheres[j].y2 = (all_spheres[j].y4 - all_spheres[j].y3) + 
-					all_spheres[j].y4;
-				all_spheres[j].y1 = all_spheres[j].y4;
-				all_spheres[j].y3 = new_random_value();
-				all_spheres[j].y4 = new_random_value();
+				all_spheres[j].p2.y = (all_spheres[j].p4.y - all_spheres[j].p3.y) + 
+					all_spheres[j].p4.y;
+				all_spheres[j].p1.y = all_spheres[j].p4.y;
+				all_spheres[j].p3.y = new_random_value();
+				all_spheres[j].p4.y = new_random_value();
 				all_spheres[j].curve_length = curve_length(
-												all_spheres[j].x1,
-												all_spheres[j].x2,
-												all_spheres[j].x3,
-												all_spheres[j].x4,
-												all_spheres[j].y1,
-												all_spheres[j].y2,
-												all_spheres[j].y3,
-												all_spheres[j].y4
+												all_spheres[j].p1.x,
+												all_spheres[j].p2.x,
+												all_spheres[j].p3.x,
+												all_spheres[j].p4.x,
+												all_spheres[j].p1.y,
+												all_spheres[j].p2.y,
+												all_spheres[j].p3.y,
+												all_spheres[j].p4.y
 						);
 				all_spheres[j].start_time = (double) clock();
 				all_spheres[j].curve_time = all_spheres[j].curve_length / 
@@ -206,38 +212,38 @@ void collision_check() {
 		
 		double dist = 5.0 - all_spheres[i].size;
 		//right
-		if(all_spheres[i].xPos >= dist ) {
+		if(all_spheres[i].pos.x >= dist ) {
 			all_spheres[i].delta_x = -1;
 			all_spheres[i].delta_y = 0;
-			all_spheres[i].xPos = dist;
+			all_spheres[i].pos.x = dist;
 			all_spheres[i].path = 0;
 			all_spheres[i].speed = 0.1;
 
 		//left
-		} else if(all_spheres[i].xPos <= -1*dist){
+		} else if(all_spheres[i].pos.x <= -1*dist){
 			all_spheres[i].delta_x = 1;
 			all_spheres[i].delta_y = 0;
-			all_spheres[i].xPos = -1*dist;
+			all_spheres[i].pos.x = -1*dist;
 			all_spheres[i].path = 0;
 			all_spheres[i].speed = 0.1;
 		//top
-		} else if(all_spheres[i].yPos >= dist ) {
+		} else if(all_spheres[i].pos.y >= dist ) {
 			all_spheres[i].delta_x = 0;
 			all_spheres[i].delta_y = -1;
-			all_spheres[i].yPos = dist;
+			all_spheres[i].pos.y = dist;
 			all_spheres[i].path = 0;
 			all_spheres[i].speed = 0.1;
 			//all_spheres[i].delta_y *= -1;
-			//all_spheres[i].yPos = dist;
+			//all_spheres[i].pos.y = dist;
 		//bottom
-		}else if(all_spheres[i].yPos <= -1*dist){
+		}else if(all_spheres[i].pos.y <= -1*dist){
 			all_spheres[i].delta_x = 0;
 			all_spheres[i].delta_y = 1;
-			all_spheres[i].yPos = -1*dist;
+			all_spheres[i].pos.y = -1*dist;
 			all_spheres[i].path = 0;
 			all_spheres[i].speed = 0.1;
 			//all_spheres[i].delta_y *= -1;
-			//all_spheres[i].yPos = -1*dist;
+			//all_spheres[i].pos.y = -1*dist;
 		}
 		// end ball-wall collisions
 		
@@ -246,10 +252,10 @@ void collision_check() {
 			if( i == j) { j++; }
 			
 			// if collision distance in x
-		//	if( fabs(all_spheres[i].xPos - all_spheres[j].xPos) <= 
+		//	if( fabs(all_spheres[i].pos.x - all_spheres[j].pos.x) <= 
 		//			(all_spheres[i].size + all_spheres[j].size)  ) {
 		//		// and collision distance in y
-		//		if( fabs(all_spheres[i].yPos - all_spheres[j].yPos) <= 
+		//		if( fabs(all_spheres[i].pos.y - all_spheres[j].pos.y) <= 
 		//				(all_spheres[i].size + all_spheres[j].size)  ) {
 		
 			d = distance(all_spheres[i], all_spheres[j]);
@@ -259,14 +265,14 @@ void collision_check() {
 				//if(d > 0) {
 					
 				
-				all_spheres[i].delta_x = all_spheres[i].xPos - all_spheres[j].xPos;
-				all_spheres[i].delta_y = all_spheres[i].yPos - all_spheres[j].yPos;
+				all_spheres[i].delta_x = all_spheres[i].pos.x - all_spheres[j].pos.x;
+				all_spheres[i].delta_y = all_spheres[i].pos.y - all_spheres[j].pos.y;
 				all_spheres[i].path = 0;
 				normalize(all_spheres[i]);
      			all_spheres[i].speed = 0.1;
 
-				all_spheres[j].delta_x = all_spheres[j].xPos - all_spheres[i].xPos;
-                all_spheres[j].delta_y = all_spheres[j].yPos - all_spheres[i].yPos;
+				all_spheres[j].delta_x = all_spheres[j].pos.x - all_spheres[i].pos.x;
+                all_spheres[j].delta_y = all_spheres[j].pos.y - all_spheres[i].pos.y;
 				all_spheres[i].path = 0;
                 normalize(all_spheres[j]);
 				all_spheres[j].speed = 0.1;
@@ -279,26 +285,26 @@ void collision_check() {
 					//all_spheres[i].interval = 0.0;
 					//all_spheres[i].start_time = current;	
 					//
-					//all_spheres[i].x1 = all_spheres[i].xPos +
-					//		(all_spheres[i].xPos - all_spheres[j].xPos)*0.000000001;
-					//all_spheres[i].x2 = (all_spheres[i].xPos - all_spheres[j].xPos);
-					//all_spheres[i].x3 = 2*all_spheres[i].x1;
-					//all_spheres[i].x4 = 3*all_spheres[i].x1;
+					//all_spheres[i].p1.x = all_spheres[i].pos.x +
+					//		(all_spheres[i].pos.x - all_spheres[j].pos.x)*0.000000001;
+					//all_spheres[i].p2.x = (all_spheres[i].pos.x - all_spheres[j].pos.x);
+					//all_spheres[i].p3.x = 2*all_spheres[i].p1.x;
+					//all_spheres[i].p4.x = 3*all_spheres[i].p1.x;
 					//
-					//all_spheres[i].y1 = all_spheres[i].yPos +
-					//		(all_spheres[i].yPos - all_spheres[j].yPos)*0.1;
-					//all_spheres[i].y2 = (all_spheres[i].yPos - all_spheres[j].yPos);
-					//all_spheres[i].y3 = 2*all_spheres[i].y1;
-					//all_spheres[i].y4 = 3*all_spheres[i].y1;
+					//all_spheres[i].p1.y = all_spheres[i].pos.y +
+					//		(all_spheres[i].pos.y - all_spheres[j].pos.y)*0.1;
+					//all_spheres[i].p2.y = (all_spheres[i].pos.y - all_spheres[j].pos.y);
+					//all_spheres[i].p3.y = 2*all_spheres[i].p1.y;
+					//all_spheres[i].p4.y = 3*all_spheres[i].p1.y;
 					//all_spheres[i].curve_length = curve_length(
-					//								all_spheres[i].x1,
-					//								all_spheres[i].x2,
-					//								all_spheres[i].x3,
-					//								all_spheres[i].x4,
-					//								all_spheres[i].y1,
-					//								all_spheres[i].y2,
-					//								all_spheres[i].y3,
-					//								all_spheres[i].y4
+					//								all_spheres[i].p1.x,
+					//								all_spheres[i].p2.x,
+					//								all_spheres[i].p3.x,
+					//								all_spheres[i].p4.x,
+					//								all_spheres[i].p1.y,
+					//								all_spheres[i].p2.y,
+					//								all_spheres[i].p3.y,
+					//								all_spheres[i].p4.y
 					//		);
 					//
 					//all_spheres[i].curve_time = all_spheres[i].curve_length / 
@@ -307,26 +313,26 @@ void collision_check() {
 					//all_spheres[j].interval = 0.0;
 					//all_spheres[j].start_time = current;	
 					//
-					//all_spheres[j].x1 = all_spheres[j].xPos + 
-					//		(all_spheres[j].xPos - all_spheres[i].xPos)*0.000000001;
-					//all_spheres[j].x2 = (all_spheres[j].xPos - all_spheres[i].xPos);
-					//all_spheres[j].x3 = 2*all_spheres[j].x1;
-					//all_spheres[j].x4 = 3*all_spheres[j].x1;
+					//all_spheres[j].p1.x = all_spheres[j].pos.x + 
+					//		(all_spheres[j].pos.x - all_spheres[i].pos.x)*0.000000001;
+					//all_spheres[j].p2.x = (all_spheres[j].pos.x - all_spheres[i].pos.x);
+					//all_spheres[j].p3.x = 2*all_spheres[j].p1.x;
+					//all_spheres[j].p4.x = 3*all_spheres[j].p1.x;
 					//
-					//all_spheres[j].y1 = all_spheres[j].yPos + 
-					//		(all_spheres[j].yPos - all_spheres[i].yPos)*0.000000001;
-					//all_spheres[j].y2 = (all_spheres[j].yPos - all_spheres[i].yPos);
-					//all_spheres[j].y3 = 2*all_spheres[j].y1;
-					//all_spheres[j].y4 = 3*all_spheres[j].y1;
+					//all_spheres[j].p1.y = all_spheres[j].pos.y + 
+					//		(all_spheres[j].pos.y - all_spheres[i].pos.y)*0.000000001;
+					//all_spheres[j].p2.y = (all_spheres[j].pos.y - all_spheres[i].pos.y);
+					//all_spheres[j].p3.y = 2*all_spheres[j].p1.y;
+					//all_spheres[j].p4.y = 3*all_spheres[j].p1.y;
 					//all_spheres[j].curve_length = curve_length(
-					//								all_spheres[j].x1,
-					//								all_spheres[j].x2,
-					//								all_spheres[j].x3,
-					//								all_spheres[j].x4,
-					//								all_spheres[j].y1,
-					//								all_spheres[j].y2,
-					//								all_spheres[j].y3,
-					//								all_spheres[j].y4
+					//								all_spheres[j].p1.x,
+					//								all_spheres[j].p2.x,
+					//								all_spheres[j].p3.x,
+					//								all_spheres[j].p4.x,
+					//								all_spheres[j].p1.y,
+					//								all_spheres[j].p2.y,
+					//								all_spheres[j].p3.y,
+					//								all_spheres[j].p4.y
 					//		);
 					//
 					//all_spheres[j].curve_time = all_spheres[j].curve_length / 
@@ -384,15 +390,15 @@ void gfxinit() {
 	int k;
 	for( k = 0; k < NUMBER_OF_BALLS; k++ ) { //setup all ball settings
 		
-		all_spheres[k].x1 = new_random_value();
-		all_spheres[k].x2 = new_random_value();
-		all_spheres[k].x3 = new_random_value();
-		all_spheres[k].x4 = new_random_value();
+		all_spheres[k].p1.x = new_random_value();
+		all_spheres[k].p2.x = new_random_value();
+		all_spheres[k].p3.x = new_random_value();
+		all_spheres[k].p4.x = new_random_value();
 
-		all_spheres[k].y1 = new_random_value();
-		all_spheres[k].y2 = new_random_value();
-		all_spheres[k].y3 = new_random_value();
-		all_spheres[k].y4 = new_random_value();
+		all_spheres[k].p1.y = new_random_value();
+		all_spheres[k].p2.y = new_random_value();
+		all_spheres[k].p3.y = new_random_value();
+		all_spheres[k].p4.y = new_random_value();
 		
 		all_spheres[k].size = BALL_SIZE;
 
@@ -402,14 +408,14 @@ void gfxinit() {
 		// TODO random ball mass for momentum
 
 		all_spheres[k].curve_length = curve_length(
-										all_spheres[k].x1,
-										all_spheres[k].x2,
-										all_spheres[k].x3,
-										all_spheres[k].x4,
-										all_spheres[k].y1,
-										all_spheres[k].y2,
-										all_spheres[k].y3,
-										all_spheres[k].y4
+										all_spheres[k].p1.x,
+										all_spheres[k].p2.x,
+										all_spheres[k].p3.x,
+										all_spheres[k].p4.x,
+										all_spheres[k].p1.y,
+										all_spheres[k].p2.y,
+										all_spheres[k].p3.y,
+										all_spheres[k].p4.y
 				);
 		
 		// start on a curved path
@@ -447,7 +453,7 @@ void display() {
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
 		glPushMatrix();
 		glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].xPos,all_spheres[i].yPos,0);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
 		glutSolidSphere(all_spheres[i].size,25,25);
 		glPopMatrix();
 	}
