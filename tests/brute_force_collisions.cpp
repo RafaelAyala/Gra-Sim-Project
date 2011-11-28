@@ -361,7 +361,6 @@ void gfxinit() {
     // enable light 0, all the other lights are off
     glEnable(GL_LIGHT0);
 
-
     // enable the depth buffer
     glEnable(GL_DEPTH_TEST);
    
@@ -409,7 +408,8 @@ void gfxinit() {
 		all_spheres[k].start_time = (double) clock();
 		all_spheres[k].curve_time = all_spheres[k].curve_length / 
 									all_spheres[k].speed;
-		
+
+		// set ball colors
 		if(RAINBOW) {
 			//multi-colored spheres
 			all_spheres[k].red = fmod(new_random_value(),1.0);
@@ -421,11 +421,14 @@ void gfxinit() {
 			all_spheres[k].green = 0.0;
 			all_spheres[k].blue	= 0.0;
 		}
-		//print_sphere_info(all_spheres[k]);
-		
 	}
 }
 
+/*
+ * void display();
+ *
+ * The display function displays the animation to the users screen.
+ */
 void display() {
 	glClearColor(0.8,0.8,0.8,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -458,7 +461,7 @@ void keystroke(unsigned char c, int x, int y) {
 }
 
 /*
- * void keystroke(int argc, char **argv);
+ * void main(int argc, char **argv);
  *
  * Simply sets up the OpenGL framework, calls functions to set up and begin
  * the animation.
