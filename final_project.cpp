@@ -45,7 +45,8 @@ static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 static double start;
 double current;
 double temp;
-double global_pos;
+double y_rotation;
+double x_rotation;
 double lastx, lasty;
 float xpos = 0, ypos = 0, zpos = 0, xrot = 0, yrot = 0, angle=0.0;
 double xrotrad, yrotrad;
@@ -225,6 +226,7 @@ void animate() {
 			// TODO
 			all_spheres[j].pos.x += all_spheres[j].delta_x / BALL_SPEED;
 			all_spheres[j].pos.y += all_spheres[j].delta_y / BALL_SPEED;
+			all_spheres[j].pos.z += all_spheres[j].delta_z / BALL_SPEED;
 
 
 
@@ -414,7 +416,7 @@ void gfxinit() {
 	start = (double) clock(); 
 	current = 0.0;
 	// LIGHTING 	
-    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
+    GLfloat lightpos[4] = { 0.0, 0.0, 0.0, 1.0 };     // light position
     GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
     GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
     GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
@@ -430,7 +432,7 @@ void gfxinit() {
     glEnable(GL_LIGHTING);
     // enable light 0, all the other lights are off
     glEnable(GL_LIGHT0);
-
+	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE,1); 
     // enable the depth buffer
     glEnable(GL_DEPTH_TEST);
    
@@ -446,7 +448,7 @@ void gfxinit() {
 
 	srand(time(NULL));	// seed for rand() calls
 
-	global_pos = 0.0;
+	y_rotation = 0.0;
 	lastx = 0.0;
 	lasty = 0.0;
 	xrot = 0.0;
@@ -475,7 +477,10 @@ void camera (void) {
 void display() {
 	glClearColor(0.0,0.0,0.0,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
+	glPushMatrix();
+	glRotatef(y_rotation, 0, 1, 0);
+	glRotatef(x_rotation, 1, 0, 0);
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
 		glPushMatrix();
@@ -487,10 +492,24 @@ void display() {
 		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
+
+	
 	glEnable(GL_BLEND);	     // Turn blending On 
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);	
 	
 	glDisable(GL_LIGHTING);
+	glBegin(GL_LINES);
+		glColor3f(1.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(4.0, 0.0, 0.0);
+		glColor3f(0.0, 1.0, 0.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 4.0, 0.0);
+		glColor3f(0.0, 0.0, 1.0);
+		glVertex3f(0.0, 0.0, 0.0);
+		glVertex3f(0.0, 0.0, 4.0);
+	glEnd;
+	
 
 	glColor4f(0.25, 0.25, 0.25, 0.5);
 	// back box
@@ -540,9 +559,10 @@ void display() {
 	  glVertex3f( 5, -5,  5);
 	  glVertex3f( 5, -5, -5);
 	glEnd();
+	glPopMatrix();
 	glEnable(GL_LIGHTING);
 	glDisable(GL_BLEND);
-    //gluLookAt(global_pos, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    //gluLookAt(y_rotation, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 	camera();	
 	collision_check();	// check for collisions wall-ball and ball-ball
 	glutSwapBuffers();
@@ -556,12 +576,6 @@ void display() {
  */
 void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
-		case 113:		// [q] is quit
-			exit(0);
-			break;
-		case 110:		// [n] resumes animation, used for debugging
-			glutIdleFunc(animate);
-			break;
 		case 97: // translate right [a]
 			yrotrad = (yrot / 180 * 3.141592654f);
 			xpos -= float(cos(yrotrad)) * 0.2;
@@ -585,6 +599,24 @@ void keystroke(unsigned char c, int x, int y) {
 			xpos -= float(sin(yrotrad));
 			zpos += float(cos(yrotrad)) ;
 			ypos += float(sin(xrotrad));
+			break;
+		case 116: // t is rotate left
+			x_rotation += 1.0;
+			break;
+		case 103: // g is rotate right
+			x_rotation -= 1.0;
+			break;
+		case 113: // q is rotate left
+			y_rotation += 1.0;
+			break;
+		case 101: // e is rotate right
+			y_rotation -= 1.0;
+			break;
+		case 112:  // p is quit
+			exit(0);
+			break;
+		case 110:  // [n] resumes animation, used for debugging
+			glutIdleFunc(animate);
 			break;
 	}
 }
@@ -611,7 +643,7 @@ int main(int argc, char **argv) {
      glutDisplayFunc(display);
      glutIdleFunc(animate);	// call animate() when idle
      glutKeyboardFunc(keystroke);	//handles user input
-	 glutPassiveMotionFunc(mouseMovement);
+	 //glutPassiveMotionFunc(mouseMovement);
 	 gfxinit();
      glutMainLoop(); // start the animation
 }
