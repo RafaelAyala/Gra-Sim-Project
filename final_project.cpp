@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 3
+#define NUMBER_OF_BALLS 2
 //#define INTERVAL 0.0049999
 #define BALL_RADIUS 0.1
 #define BALL_SPEED 4.0 // ASU's per second
@@ -334,22 +334,22 @@ void collision_check() {
 				b1_v = all_spheres[i].velocity;
 				b2_v = all_spheres[j].velocity;
 				// have before collision velocities stored	
-				printf("###COLLISION### %d vs %d\n", i, j);
-				printf("b1 v before: %f\n", all_spheres[i].velocity);
-				printf("b2 v before: %f\n", b2_v);
-				printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
-				printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
+				//printf("###COLLISION### %d vs %d\n", i, j);
+				//printf("b1 v before: %f\n", all_spheres[i].velocity);
+				//printf("b2 v before: %f\n", b2_v);
+				//printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
+				//printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
 				// need x and y components of speed
 				double b1_vx, b1_vy, b2_vx, b2_vy;
-				b1_vx = 1/(all_spheres[i].direction.x * b1_v);
-				b1_vy = 1/(all_spheres[i].direction.y * b1_v);
+				b1_vx = (all_spheres[i].direction.x * b1_v);
+				b1_vy = (all_spheres[i].direction.y * b1_v);
 
-				b2_vx = 1/(all_spheres[j].direction.x * b2_v);
-				b2_vy = 1/(all_spheres[j].direction.y * b2_v);
+				b2_vx = (all_spheres[j].direction.x * b2_v);
+				b2_vy = (all_spheres[j].direction.y * b2_v);
 				// have x and y components of speed
 			
-				printf("b1 components: %f %f\n", b1_vx, b1_vy);
-				printf("b2 components: %f %f\n", b2_vx, b2_vy);
+				//printf("b1 components: %f %f\n", b1_vx, b1_vy);
+				//printf("b2 components: %f %f\n", b2_vx, b2_vy);
 
 
 				// need ball1 and ball2 masses
@@ -359,8 +359,8 @@ void collision_check() {
 				m1 = all_spheres[i].mass;
 				m2 = all_spheres[j].mass;
 				// have ball masses
-				printf("mass1 %f\n", m1);
-				printf("mass2 %f\n", m2);
+				//printf("mass1 %f\n", m1);
+				//printf("mass2 %f\n", m2);
 
 				// need the new velocity components (after collision)
 				double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
@@ -373,10 +373,10 @@ void collision_check() {
 				b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
 				b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
 				// have new velocity compoents
-				printf("b1 newx: %f\n", b1_vx_new);
-				printf("b1 newy: %f\n", b1_vy_new);
-				printf("b2 newx: %f\n", b2_vx_new);
-				printf("b2 newy: %f\n", b2_vy_new);
+				//printf("b1 newx: %f\n", b1_vx_new);
+				//printf("b1 newy: %f\n", b1_vy_new);
+				//printf("b2 newx: %f\n", b2_vx_new);
+				//printf("b2 newy: %f\n", b2_vy_new);
 
 				// need to change direction to match new speeds
 				all_spheres[i].direction.x = b1_vx_new;
@@ -384,12 +384,17 @@ void collision_check() {
 				double mag1 = normalize(all_spheres[i].direction);
 				all_spheres[i].direction.x /= mag1;
 				all_spheres[i].direction.y /= mag1;
-				
+				//printf("ball1 dir: %f\n", all_spheres[i].direction.x);
+				//printf("ball1 dir: %f\n", all_spheres[i].direction.y);
+
+
 				all_spheres[j].direction.x = b2_vx_new;
 				all_spheres[j].direction.y = b2_vy_new;
 				double mag2 = normalize(all_spheres[j].direction);
 				all_spheres[j].direction.x /= mag2;
 				all_spheres[j].direction.y /= mag2;
+				//printf("ball2 dir: %f\n", all_spheres[j].direction.x);
+				//printf("ball2 dir: %f\n", all_spheres[j].direction.y);
 				// directions changed, normalized for unit vectors
 
 				// need to update velocities of ball1 and ball2
@@ -407,9 +412,9 @@ void collision_check() {
 				all_spheres[i].dead = 3;
 				all_spheres[j].dead = 3;
 				
-				printf("after\n");
-				printf("ball i: %f\n", all_spheres[i].velocity);
-				printf("ball j: %f\n", all_spheres[j].velocity);
+				//printf("after\n");
+				//printf("ball i: %f\n", all_spheres[i].velocity);
+				//printf("ball j: %f\n", all_spheres[j].velocity);
 			}
 		}
 		// end ball-ball
