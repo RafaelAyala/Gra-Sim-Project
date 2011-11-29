@@ -19,11 +19,9 @@
 #define PI 3.14159
 
 float x1,y,z1,x2;
-float s,scalex,scaley,scalez;
-float scalex = 1.0;
-float scaley = 1.0;
-float scalez = 1.0;
-int end = 0; //boolean to make the animation oscillate
+float s;
+float radius = 8;
+int switch1 = 0; //boolean to make the animation oscillate
 double ini_time;
 struct timeval tiempo;
 struct timeval t_current;
@@ -57,13 +55,13 @@ void display(void)
     glPushMatrix();
     glTranslatef(x1,y,z1);
     //glScalef(scalex,scaley,scalez);
-    glutSolidSphere(8,25,25);
+    glutSolidSphere(radius,25,25);
     glPopMatrix();
     
     glPushMatrix();
     glTranslatef(x2,y,z1);
     //glScalef(scalex,scaley,scalez);
-    glutSolidSphere(8,25,25);
+    glutSolidSphere(radius,25,25);
     glPopMatrix();
     
     glColor3f(0.0,1.0,0.0);
@@ -77,23 +75,43 @@ void display(void)
 
 void animate(void)
 {
-    if (x1 >= 12.0){ //collision
+    float p = (rand() % 101) /100;
+    if (switch1){ //collision
+        //printf("%f\n",x1);
+        if(radius > 0){
+            if (p < 0.6){
+                radius -= 0.0001;
+            }
+        }
+        x1 -=0.01;
+        x2 +=0.01;
         //printf("HUUURRR\n");
         //Start easing in 
-        
-        glutIdleFunc(NULL);
+        if(x1 <= -10.0){
+            switch1= 0;
+            printf("SWITCH %f\n",x1);
+        }
+        //glutIdleFunc(NULL);
     } else {
-        if(scalex > 0){
-            scalex-=0.0001;
-            scaley-=0.0001;
-            scalez-=0.0001;
+        if(radius > 0){
+            if (p < 0.6){
+                 radius -= 0.0001;
+            }
+        }
+        if (x1 >= 12.0){
+            switch1 = 1;
+            printf("SWITCH %f\n",x1);
+            
+            
         }
         x1 += 0.01;
         x2 -= 0.01;
-        glutPostRedisplay();
+        
+        
     }
+    glutPostRedisplay();
     //printf(%);
-    printf("%f\n",x2);
+    //printf("%f\n",radius);
         
     
 }
@@ -108,6 +126,8 @@ void keyboard(unsigned char key, int x, int y)
         glutIdleFunc(NULL);
         printf("%.42f\n",x1);
         x1 = -10.0;
+        x2 = 50.0;
+        radius = 8;
         glutPostRedisplay();
         //glutIdleFunc(animate);
     }
