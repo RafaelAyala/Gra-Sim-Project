@@ -45,7 +45,7 @@ static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 static double start;
 double current;
 double temp;
-
+int balls;
 // holds 2 floating point number representing a point in 2 space
 struct point2f {
 	double x;
@@ -222,7 +222,8 @@ void animate() {
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
-			printf("spheres left: %d\n", all_spheres.size());
+			//printf("spheres left: %d\n", all_spheres.size());
+			balls--;
 			break;
 		}
 
@@ -442,7 +443,8 @@ void collision_check() {
  * TODO refactor(make a ball generation function)
  */
 void gfxinit() {
-	all_spheres.resize(NUMBER_OF_BALLS);
+	balls = NUMBER_OF_BALLS;
+	all_spheres.resize(balls);
 	
 	start = (double) clock(); 
 	current = 0.0;
@@ -481,40 +483,40 @@ void gfxinit() {
 
 	int k;
 	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
-	all_spheres[k].p1.x = new_random_value();
-	all_spheres[k].p2.x = new_random_value();
-	all_spheres[k].p3.x = new_random_value();
-	all_spheres[k].p4.x = new_random_value();
+		all_spheres[k].p1.x = new_random_value();
+		all_spheres[k].p2.x = new_random_value();
+		all_spheres[k].p3.x = new_random_value();
+		all_spheres[k].p4.x = new_random_value();
 
-	all_spheres[k].p1.y = new_random_value();
-	all_spheres[k].p2.y = new_random_value();
-	all_spheres[k].p3.y = new_random_value();
-	all_spheres[k].p4.y = new_random_value();
+		all_spheres[k].p1.y = new_random_value();
+		all_spheres[k].p2.y = new_random_value();
+		all_spheres[k].p3.y = new_random_value();
+		all_spheres[k].p4.y = new_random_value();
 
-	all_spheres[k].radius = random_radius();
+		all_spheres[k].radius = random_radius();
 
-	// TODO random ball velocity
-	all_spheres[k].velocity = BALL_SPEED;	
+		// TODO random ball velocity
+		all_spheres[k].velocity = BALL_SPEED;	
 
-	// TODO random ball mass for momentum
+		// TODO random ball mass for momentum
 
-	all_spheres[k].curve_length = curve_length( all_spheres[k] );
+		all_spheres[k].curve_length = curve_length( all_spheres[k] );
 
-	// start on a curved path
-	all_spheres[k].path = 1;	
+		// start on a curved path
+		all_spheres[k].path = 1;	
 
-	all_spheres[k].start_time = (double) clock();
-	all_spheres[k].curve_time = all_spheres[k].curve_length / all_spheres[k].velocity;
+		all_spheres[k].start_time = (double) clock();
+		all_spheres[k].curve_time = all_spheres[k].curve_length / all_spheres[k].velocity;
 
-	all_spheres[k].direction.x = new_random_value();
-	all_spheres[k].direction.y = new_random_value();
-	double mag = normalize( all_spheres[k].direction);
-	all_spheres[k].direction.x /= mag;
-	all_spheres[k].direction.y /= mag;
+		all_spheres[k].direction.x = new_random_value();
+		all_spheres[k].direction.y = new_random_value();
+		double mag = normalize( all_spheres[k].direction);
+		all_spheres[k].direction.x /= mag;
+		all_spheres[k].direction.y /= mag;
 
-	all_spheres[k].color = random_color();		
-	all_spheres[k].dead =0;
-		//all_spheres[k] = make_sphere();	
+		all_spheres[k].color = random_color();		
+		all_spheres[k].dead =0;
+			//all_spheres[k] = make_sphere();	
 	}
 }
 
@@ -598,6 +600,50 @@ void display() {
  */
 void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
+		case 97:	// [a] for add ball
+		// TODO spawns at center currently		
+		{
+		balls++;
+		all_spheres.resize(balls);
+		int k = all_spheres.size();
+		//printf("size: %d\n", k);
+		struct sphere ball;
+		ball.p1.x = new_random_value();
+		ball.p2.x = new_random_value();
+		ball.p3.x = new_random_value();
+		ball.p4.x = new_random_value();
+
+		ball.p1.y = new_random_value();
+		ball.p2.y = new_random_value();
+		ball.p3.y = new_random_value();
+		ball.p4.y = new_random_value();
+		ball.pos.x = ball.p1.x;
+		ball.pos.y = ball.p1.y;
+		ball.radius = random_radius();
+
+		ball.velocity = BALL_SPEED;	
+
+		ball.curve_length = curve_length( ball );
+
+		// start on a curved path
+		ball.path = 1;	
+
+		ball.start_time = (double) clock();
+		ball.curve_time = ball.curve_length /ball.velocity;
+
+		ball.direction.x = new_random_value();
+		ball.direction.y = new_random_value();
+		double mag = normalize( ball.direction);
+		ball.direction.x /= mag;
+		ball.direction.y /= mag;
+
+		ball.color = random_color();		
+		ball.dead =0;
+			//all_spheres[k] = make_sphere();	
+		//printf("radius: %f\n",ball.radius);
+		all_spheres.push_back(ball);
+		}
+			break;
 		case 113:		// [q] is quit
 			exit(0);
 			break;
