@@ -26,9 +26,9 @@
 #include <math.h>
 #include <time.h>
 #include <stdlib.h>
-
+#include <vector>
 // configuration
-#define NUMBER_OF_BALLS 20
+#define NUMBER_OF_BALLS 10
 #define DECAY_PROB 0.5
 #define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
@@ -80,7 +80,10 @@ struct sphere{
 	struct vector2f direction;
 	double mass;
 	int dead;
-} all_spheres[NUMBER_OF_BALLS];
+};
+
+std::vector<sphere> all_spheres;
+
 
 // TODO create all random functions
 double new_random_value() {
@@ -209,7 +212,7 @@ void animate() {
 
 	double tempX, tempY;
 
-	for(j = 0; j < NUMBER_OF_BALLS; j++) {
+	for(j = 0; j < all_spheres.size(); j++) {
 		
 		double p = (rand() % 101)/100.;
 
@@ -218,7 +221,9 @@ void animate() {
 				all_spheres[j].radius -= 0.00045;
 			}
 		}else{
-			continue;
+			all_spheres.erase(all_spheres.begin()+j);
+			printf("spheres left: %d\n", all_spheres.size());
+			break;
 		}
 
 		if(all_spheres[j].path == 0) { //linear paths
@@ -278,7 +283,7 @@ void collision_check() {
 	int i, j;
 	double d;
 
-	for(i = 0; i < NUMBER_OF_BALLS; i++) {
+	for(i = 0; i < all_spheres.size(); i++) {
 
 		// ball-wall collisions
 		double dist = 5.0 - all_spheres[i].radius;
@@ -319,7 +324,7 @@ void collision_check() {
 		// end ball-wall collisions	
 
 		// ball-ball collisions
-		for( j=0; j < NUMBER_OF_BALLS; j++) {
+		for( j=0; j < all_spheres.size(); j++) {
 			// check all but itself
 			if( i == j) { continue;}
 
@@ -343,11 +348,11 @@ void collision_check() {
 				b1_v = all_spheres[i].velocity;
 				b2_v = all_spheres[j].velocity;
 				// have before collision velocities stored	
-				printf("###COLLISION### %d vs %d\n", i, j);
-				printf("b1 v before: %f\n", all_spheres[i].velocity);
-				printf("b2 v before: %f\n", b2_v);
-				printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
-				printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
+				//printf("###COLLISION### %d vs %d\n", i, j);
+				//printf("b1 v before: %f\n", all_spheres[i].velocity);
+				//printf("b2 v before: %f\n", b2_v);
+				//printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
+				//printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
 				// need x and y components of speed
 				double b1_vx, b1_vy, b2_vx, b2_vy;
 				b1_vx = (all_spheres[i].direction.x * b1_v);
@@ -357,8 +362,8 @@ void collision_check() {
 				b2_vy = (all_spheres[j].direction.y * b2_v);
 				// have x and y components of speed
 
-				printf("b1 components: %f %f\n", b1_vx, b1_vy);
-				printf("b2 components: %f %f\n", b2_vx, b2_vy);
+				//printf("b1 components: %f %f\n", b1_vx, b1_vy);
+				//printf("b2 components: %f %f\n", b2_vx, b2_vy);
 
 
 				// need ball1 and ball2 masses
@@ -368,8 +373,8 @@ void collision_check() {
 				m1 = all_spheres[i].mass;
 				m2 = all_spheres[j].mass;
 				// have ball masses
-				printf("mass1 %f\n", m1);
-				printf("mass2 %f\n", m2);
+				//printf("mass1 %f\n", m1);
+				//printf("mass2 %f\n", m2);
 
 				// need the new velocity components (after collision)
 				double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
@@ -382,10 +387,10 @@ void collision_check() {
 				b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
 				b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
 				// have new velocity compoents
-				printf("b1 newx: %f\n", b1_vx_new);
-				printf("b1 newy: %f\n", b1_vy_new);
-				printf("b2 newx: %f\n", b2_vx_new);
-				printf("b2 newy: %f\n", b2_vy_new);
+				//printf("b1 newx: %f\n", b1_vx_new);
+				//printf("b1 newy: %f\n", b1_vy_new);
+				//printf("b2 newx: %f\n", b2_vx_new);
+				//printf("b2 newy: %f\n", b2_vy_new);
 
 				// need to change direction to match new speeds
 				all_spheres[i].direction.x = b1_vx_new;
@@ -393,8 +398,8 @@ void collision_check() {
 				double mag1 = normalize(all_spheres[i].direction);
 				all_spheres[i].direction.x /= mag1;
 				all_spheres[i].direction.y /= mag1;
-				printf("ball1 dir: %f\n", all_spheres[i].direction.x);
-				printf("ball1 dir: %f\n", all_spheres[i].direction.y);
+				//printf("ball1 dir: %f\n", all_spheres[i].direction.x);
+				//printf("ball1 dir: %f\n", all_spheres[i].direction.y);
 
 
 				all_spheres[j].direction.x = b2_vx_new;
@@ -402,8 +407,8 @@ void collision_check() {
 				double mag2 = normalize(all_spheres[j].direction);
 				all_spheres[j].direction.x /= mag2;
 				all_spheres[j].direction.y /= mag2;
-				printf("ball2 dir: %f\n", all_spheres[j].direction.x);
-				printf("ball2 dir: %f\n", all_spheres[j].direction.y);
+				//printf("ball2 dir: %f\n", all_spheres[j].direction.x);
+				//printf("ball2 dir: %f\n", all_spheres[j].direction.y);
 				// directions changed, normalized for unit vectors
 
 				// need to update velocities of ball1 and ball2
@@ -421,9 +426,9 @@ void collision_check() {
 				all_spheres[i].dead = 200;
 				all_spheres[j].dead = 200;
 
-				printf("after\n");
-				printf("ball i: %f\n", all_spheres[i].velocity);
-				printf("ball j: %f\n", all_spheres[j].velocity);
+				//printf("after\n");
+				//printf("ball i: %f\n", all_spheres[i].velocity);
+				//printf("ball j: %f\n", all_spheres[j].velocity);
 			}
 		}
 		// end ball-ball
@@ -437,6 +442,8 @@ void collision_check() {
  * TODO refactor(make a ball generation function)
  */
 void gfxinit() {
+	all_spheres.resize(NUMBER_OF_BALLS);
+	
 	start = (double) clock(); 
 	current = 0.0;
 	// LIGHTING 	
@@ -473,7 +480,7 @@ void gfxinit() {
 	srand(time(NULL));	// seed for rand() calls
 
 	int k;
-	for( k = 0; k < NUMBER_OF_BALLS; k++ ) { //setup all ball settings
+	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
 	all_spheres[k].p1.x = new_random_value();
 	all_spheres[k].p2.x = new_random_value();
 	all_spheres[k].p3.x = new_random_value();
@@ -565,7 +572,7 @@ void display() {
 	
 	collision_check();	// check for collisions wall-ball and ball-ball
 	int i;
-	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
+	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
 		glPushMatrix();
 		glColor3f(all_spheres[i].color.red,
 				all_spheres[i].color.green,
