@@ -28,22 +28,23 @@ Description
 TODO Simulation Presentation
 ----------------------------
 [X]	- Decay
-	- Death and Birth of spheres from the system
+[X]	- Death and Birth of spheres from the system
 	- Refactoring
 	- Adjusting curves (probabilites)
 	- Optimize collisions  
 [X]	- random color eqn
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
+	- Optional Decay Equations (optional)
+	- System info via text (optional)
 
 TODO Graphics Presentation
 --------------------------
-	- Constant speed of spheres
-	- Multiple line segments per curve
 	- Mouse and Keyboard scene navigation
 	- Release particles on crash and decay
 	- squish (based on angle of collision) + ease in/out
-	- color based on decay
 	- reflection using stencil buffer
-	- 3D?
-	- transparent cube?
+	- Constant speed of spheres (if not used for spawning only)
+	- 3D (optional)
+	- color based on decay (optional)
+	- transparent cube (optional)

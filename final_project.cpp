@@ -80,6 +80,7 @@ struct sphere{
 	struct vector2f direction;
 	double mass;
 	int dead;
+	int active;
 };
 
 std::vector<sphere> all_spheres;
@@ -296,6 +297,7 @@ void collision_check() {
 			//printf("right\n");
 			//glutIdleFunc(NULL);
 			all_spheres[i].start_time = (double) clock();
+			all_spheres[i].active = 1;
 
 		//left
 		} else if(all_spheres[i].pos.x <= -1*dist){
@@ -305,6 +307,7 @@ void collision_check() {
 			//printf("left\n");
 			//glutIdleFunc(NULL);
 			all_spheres[i].start_time = (double) clock();
+			all_spheres[i].active = 1;
 		//bottom
 		} else if(all_spheres[i].pos.y >= dist ) {
 			all_spheres[i].direction.y *= -1;
@@ -313,6 +316,7 @@ void collision_check() {
 			//printf("bottom\n");
 			//glutIdleFunc(NULL);
 			all_spheres[i].start_time = (double) clock();
+			all_spheres[i].active = 1;
 		//top
 		}else if(all_spheres[i].pos.y <= -1*dist){
 			all_spheres[i].direction.y *= -1;
@@ -321,6 +325,7 @@ void collision_check() {
 			//printf("top\n");
 			//glutIdleFunc(NULL);
 			all_spheres[i].start_time = (double) clock();
+			all_spheres[i].active = 1;
 		}
 		// end ball-wall collisions	
 
@@ -339,6 +344,8 @@ void collision_check() {
 			d = distance(all_spheres[i], all_spheres[j]);
 
 			if( d <= all_spheres[i].radius + all_spheres[j].radius) {
+				all_spheres[i].active = 1;
+				all_spheres[j].active = 1;
 				//printf("ball-ball\n");
 				//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
 				//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
@@ -492,9 +499,12 @@ void gfxinit() {
 		all_spheres[k].p2.y = new_random_value();
 		all_spheres[k].p3.y = new_random_value();
 		all_spheres[k].p4.y = new_random_value();
+		
+		all_spheres[k].pos.x = all_spheres[k].p1.x;
+		all_spheres[k].pos.y = all_spheres[k].p1.y;
 
 		all_spheres[k].radius = random_radius();
-
+		all_spheres[k].active = 0;
 		// TODO random ball velocity
 		all_spheres[k].velocity = BALL_SPEED;	
 
@@ -581,7 +591,11 @@ void display() {
 				all_spheres[i].color.blue);
 		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
 		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
-		glutSolidSphere(all_spheres[i].radius,25,25);
+		if( all_spheres[i].active == 0) {
+			glutWireSphere(all_spheres[i].radius,15,15);
+		}else{
+			glutSolidSphere(all_spheres[i].radius,25,25);
+		}
 		glPopMatrix();
 	}
 
@@ -601,7 +615,6 @@ void display() {
 void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 97:	// [a] for add ball
-		// TODO spawns at center currently		
 		{
 		balls++;
 		all_spheres.resize(balls);
@@ -620,7 +633,9 @@ void keystroke(unsigned char c, int x, int y) {
 		ball.pos.x = ball.p1.x;
 		ball.pos.y = ball.p1.y;
 		ball.radius = random_radius();
+		ball.active = 0;
 
+		// need random speed
 		ball.velocity = BALL_SPEED;	
 
 		ball.curve_length = curve_length( ball );
