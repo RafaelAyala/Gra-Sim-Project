@@ -16,9 +16,13 @@
 #include <OpenGL/gl.h>
 #include <OpenGL/glu.h>
 #else				// Linux OpenGL Libraries
+#include <GL/freeglut.h>
+//#include <GL/freeglut_std.h>
+#include <GL/freeglut_ext.h>
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <GL/gl.h>
+//#include <GL/glui.h>
 #endif
 // Common Libraries
 #include <stdio.h> 
@@ -330,9 +334,10 @@ void collision_check() {
 		// end ball-wall collisions	
 
 		// ball-ball collisions
-		for( j=0; j < all_spheres.size(); j++) {
+		if(i <all_spheres.size()-1){
+		for( j = i+1; j < all_spheres.size(); j++) {
 			// check all but itself
-			if( i == j) { continue;}
+			//if( i == j) { continue;}
 
 			if(all_spheres[j].dead > 0) {
 				all_spheres[j].dead--;
@@ -439,6 +444,7 @@ void collision_check() {
 				//printf("ball j: %f\n", all_spheres[j].velocity);
 			}
 		}
+		}
 		// end ball-ball
 	}
 }
@@ -477,8 +483,8 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    //glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
@@ -537,8 +543,11 @@ void gfxinit() {
  */
 void display() {
 	//printf("%f\n", (double) clock());
-	glClearColor(0.0,0.0,0.0,1.0);	// set the background color
+	//glClearColor(0.0,0.0,0.0,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glMatrixMode (GL_MODELVIEW);
+	//glLoadIdentity();
+	
 	glColor3f(0.5, 0.5, 0.5);
 	// back box
 	glBegin(GL_QUADS);
@@ -599,7 +608,9 @@ void display() {
 		glPopMatrix();
 	}
 
-
+	glRasterPos2i(10, 10);
+	glColor3f(1.0f, 1.0f, 1.0f);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)"dog");
 
 	
 	glutSwapBuffers();
