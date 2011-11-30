@@ -31,7 +31,7 @@ TODO Simulation Presentation
 [X]	- Death and Birth of spheres from the system
 	- Refactoring
 	- Adjusting curves (probabilites)
-	- Optimize collisions  
+[?]	- Optimize collisions  
 [X]	- random color eqn
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
