@@ -28,7 +28,7 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 2
+#define NUMBER_OF_BALLS 20
 //#define INTERVAL 0.0049999
 #define BALL_RADIUS 0.1
 #define BALL_SPEED 4.0 // ASU's per second
@@ -79,7 +79,7 @@ struct sphere{
 	int path;  // flag: 0 is linear path, 1 is a bezier curve
 	struct vector2f direction;
 	double mass;
-	int dead;
+	//int dead;
 } all_spheres[NUMBER_OF_BALLS];
 
 // TODO create all random functions
@@ -314,10 +314,10 @@ void collision_check() {
 			// check all but itself
 			if( i == j) { continue; }
 
-			if(all_spheres[j].dead > 0) {
-				all_spheres[j].dead--;
-				continue;
-			}
+			//if(all_spheres[j].dead > 0) {
+			//	all_spheres[j].dead--;
+			//	continue;
+			//}
 
 
 					
@@ -409,8 +409,8 @@ void collision_check() {
 				all_spheres[i].start_time = (double) clock();
 				all_spheres[j].start_time = (double) clock();
 				
-				all_spheres[i].dead = 3;
-				all_spheres[j].dead = 3;
+				//all_spheres[i].dead = 3;
+				//all_spheres[j].dead = 3;
 				
 				//printf("after\n");
 				//printf("ball i: %f\n", all_spheres[i].velocity);
@@ -497,7 +497,7 @@ void gfxinit() {
 	all_spheres[k].direction.y /= mag;
 
 	all_spheres[k].color = random_color();		
-	all_spheres[k].dead =0;
+	//all_spheres[k].dead =0;
 		//all_spheres[k] = make_sphere();	
 	}
 }
@@ -561,7 +561,7 @@ void display() {
 				all_spheres[i].color.green,
 				all_spheres[i].color.blue);
 		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0.0);
 		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
