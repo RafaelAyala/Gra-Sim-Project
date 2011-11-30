@@ -28,10 +28,10 @@
 #include <stdlib.h>
 
 // configuration
-#define NUMBER_OF_BALLS 3
-//#define INTERVAL 0.0049999
+#define NUMBER_OF_BALLS 20
+#define DECAY_PROB 0.5
 #define BALL_RADIUS 0.1
-#define BALL_SPEED 3.0 // ASU's per second
+#define BALL_SPEED 2.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 16
 #define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 #define DENSITY 1.0
@@ -79,7 +79,7 @@ struct sphere{
 	int path;  // flag: 0 is linear path, 1 is a bezier curve
 	struct vector2f direction;
 	double mass;
-	//int dead;
+	int dead;
 } all_spheres[NUMBER_OF_BALLS];
 
 // TODO create all random functions
@@ -145,13 +145,13 @@ struct point2f get_position( struct sphere ball, double pos) {
 	b = 3 * (ball.p3.x - ball.p2.x) - c;
 	a = ball.p4.x - ball.p1.x - c - b;
 	result.x = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.x;
-	
+
 	// y
 	c = 3 * (ball.p2.y - ball.p1.y);
 	b = 3 * (ball.p3.y - ball.p2.y) - c;
 	a = ball.p4.y - ball.p1.y - c - b;
 	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.y;
-	
+
 	return result;
 }
 
@@ -206,16 +206,25 @@ void animate() {
 
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
-	
+
 	double tempX, tempY;
 
 	for(j = 0; j < NUMBER_OF_BALLS; j++) {
 		
-		
+		double p = (rand() % 101)/100.;
+
+		if( all_spheres[j].radius>0.0) {
+			if( p < DECAY_PROB) {
+				all_spheres[j].radius -= 0.00045;
+			}
+		}else{
+			continue;
+		}
+
 		if(all_spheres[j].path == 0) { //linear paths
 			// TODO
 			double timediff = (current - all_spheres[j].start_time)/(CLOCKS_PER_SEC);
-			
+
 			all_spheres[j].pos.x += all_spheres[j].direction.x * all_spheres[j].velocity * timediff;
 			all_spheres[j].pos.y += all_spheres[j].direction.y * all_spheres[j].velocity * timediff;
 			all_spheres[j].start_time = (double) clock();
@@ -223,7 +232,7 @@ void animate() {
 
 		} else if(all_spheres[j].path == 1) { // bezier curves for path	
 			if( all_spheres[j].interval < 1.0) {
-			
+
 				tempX = all_spheres[j].pos.x;
 				tempY = all_spheres[j].pos.y;
 				//printf("%f %f\n", tempX, tempY);
@@ -237,7 +246,7 @@ void animate() {
 				all_spheres[j].p1.x = all_spheres[j].p4.x;
 				all_spheres[j].p3.x = new_random_value();
 				all_spheres[j].p4.x = new_random_value();
-				
+
 				all_spheres[j].p2.y = (all_spheres[j].p4.y - all_spheres[j].p3.y) + 
 					all_spheres[j].p4.y;
 				all_spheres[j].p1.y = all_spheres[j].p4.y;
@@ -249,7 +258,7 @@ void animate() {
 											all_spheres[j].velocity;
 			}
 		}	
-	
+
 	}
 
 	// set window and call display to refresh screen
@@ -268,9 +277,9 @@ void animate() {
 void collision_check() {
 	int i, j;
 	double d;
-	
+
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {
-		
+
 		// ball-wall collisions
 		double dist = 5.0 - all_spheres[i].radius;
 		//right
@@ -312,23 +321,23 @@ void collision_check() {
 		// ball-ball collisions
 		for( j=0; j < NUMBER_OF_BALLS; j++) {
 			// check all but itself
-			if( i == j) { continue; }
+			if( i == j) { continue;}
 
-			//if(all_spheres[j].dead > 0) {
-			//	all_spheres[j].dead--;
-			//	continue;
-			//}
+			if(all_spheres[j].dead > 0) {
+				all_spheres[j].dead--;
+				continue;
+			}
 
 
-					
+
 			d = distance(all_spheres[i], all_spheres[j]);
 
 			if( d <= all_spheres[i].radius + all_spheres[j].radius) {
-				printf("ball-ball\n");
-				printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
-				printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
+				//printf("ball-ball\n");
+				//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
+				//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
 				//glutIdleFunc(NULL);
-				
+
 				// store before collision velocities
 				double b1_v, b2_v;
 				b1_v = all_spheres[i].velocity;
@@ -347,7 +356,7 @@ void collision_check() {
 				b2_vx = (all_spheres[j].direction.x * b2_v);
 				b2_vy = (all_spheres[j].direction.y * b2_v);
 				// have x and y components of speed
-			
+
 				printf("b1 components: %f %f\n", b1_vx, b1_vy);
 				printf("b2 components: %f %f\n", b2_vx, b2_vy);
 
@@ -364,7 +373,7 @@ void collision_check() {
 
 				// need the new velocity components (after collision)
 				double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
-				
+
 				// ball 1 new components
 				b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
 				b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
@@ -401,17 +410,17 @@ void collision_check() {
 				all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
 				all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
 				// speeds updated
-				
+
 				// TODO change direction here
 
 				all_spheres[i].path = 0;
 				all_spheres[j].path = 0;
 				all_spheres[i].start_time = (double) clock();
 				all_spheres[j].start_time = (double) clock();
-				
-				//all_spheres[i].dead = 3;
-				//all_spheres[j].dead = 3;
-				
+
+				all_spheres[i].dead = 200;
+				all_spheres[j].dead = 200;
+
 				printf("after\n");
 				printf("ball i: %f\n", all_spheres[i].velocity);
 				printf("ball j: %f\n", all_spheres[j].velocity);
@@ -456,7 +465,7 @@ void gfxinit() {
     glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-	
+
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
 	glShadeModel(GL_SMOOTH);
@@ -474,19 +483,19 @@ void gfxinit() {
 	all_spheres[k].p2.y = new_random_value();
 	all_spheres[k].p3.y = new_random_value();
 	all_spheres[k].p4.y = new_random_value();
-	
+
 	all_spheres[k].radius = random_radius();
 
 	// TODO random ball velocity
 	all_spheres[k].velocity = BALL_SPEED;	
-	
+
 	// TODO random ball mass for momentum
 
 	all_spheres[k].curve_length = curve_length( all_spheres[k] );
-	
+
 	// start on a curved path
 	all_spheres[k].path = 1;	
-	
+
 	all_spheres[k].start_time = (double) clock();
 	all_spheres[k].curve_time = all_spheres[k].curve_length / all_spheres[k].velocity;
 
@@ -497,7 +506,7 @@ void gfxinit() {
 	all_spheres[k].direction.y /= mag;
 
 	all_spheres[k].color = random_color();		
-	//all_spheres[k].dead =0;
+	all_spheres[k].dead =0;
 		//all_spheres[k] = make_sphere();	
 	}
 }
@@ -519,7 +528,7 @@ void display() {
 	  glVertex3f( 5,  5, -5);
 	  glVertex3f(-5,  5, -5);
 	glEnd();
-	
+
 	glColor3f(0.4, 0.4, 0.4);
 	// left side
 	glBegin(GL_QUADS);
@@ -536,7 +545,7 @@ void display() {
 	  glVertex3f( 5,  5,  5);
 	  glVertex3f( 5,  5, -5);
 	glEnd();
-	
+
 	glColor3f(0.6, 0.6, 0.6);
 	// bottom
 	glBegin(GL_QUADS);
@@ -554,6 +563,7 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
+	collision_check();	// check for collisions wall-ball and ball-ball
 	int i;
 	for(i = 0; i < NUMBER_OF_BALLS; i++) {	// draw all spheres
 		glPushMatrix();
@@ -561,14 +571,14 @@ void display() {
 				all_spheres[i].color.green,
 				all_spheres[i].color.blue);
 		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
-		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0.0);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
 		glutSolidSphere(all_spheres[i].radius,25,25);
 		glPopMatrix();
 	}
 
 
 
-	collision_check();	// check for collisions wall-ball and ball-ball
+	
 	glutSwapBuffers();
 }
 
@@ -606,3 +616,4 @@ int main(int argc, char **argv) {
 	 gfxinit();
      glutMainLoop(); // start the animation
 }
+
