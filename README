@@ -27,13 +27,13 @@ Description
 
 TODO Simulation Presentation
 ----------------------------
-	- Decay
+[X]	- Decay
 	- Death and Birth of spheres from the system
 	- Refactoring
 	- Adjusting curves (probabilites)
 	- Optimize collisions  
 [X]	- random color eqn
-	- mass and momentum
+[?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
 
 TODO Graphics Presentation
