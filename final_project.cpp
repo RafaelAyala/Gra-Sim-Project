@@ -91,7 +91,7 @@ std::vector<sphere> all_spheres;
 
 
 // TODO create all random functions
-double new_random_value() {
+double ranged_random_value() {
 	return ((rand() % (101)/100.)*10)-5.0;	
 }
 
@@ -255,14 +255,14 @@ void animate() {
 				all_spheres[j].p2.x = (all_spheres[j].p4.x - all_spheres[j].p3.x) + 
 					all_spheres[j].p4.x;
 				all_spheres[j].p1.x = all_spheres[j].p4.x;
-				all_spheres[j].p3.x = new_random_value();
-				all_spheres[j].p4.x = new_random_value();
+				all_spheres[j].p3.x = ranged_random_value();
+				all_spheres[j].p4.x = ranged_random_value();
 
 				all_spheres[j].p2.y = (all_spheres[j].p4.y - all_spheres[j].p3.y) + 
 					all_spheres[j].p4.y;
 				all_spheres[j].p1.y = all_spheres[j].p4.y;
-				all_spheres[j].p3.y = new_random_value();
-				all_spheres[j].p4.y = new_random_value();
+				all_spheres[j].p3.y = ranged_random_value();
+				all_spheres[j].p4.y = ranged_random_value();
 				all_spheres[j].curve_length = curve_length( all_spheres[j] );
 				all_spheres[j].start_time = (double) clock();
 				all_spheres[j].curve_time = all_spheres[j].curve_length / 
@@ -450,44 +450,79 @@ void collision_check() {
 }
 
 /*
- * void generate_sphere_info()
+ * struct point2f random_ranged_point();
+ *
+ * Returns a randomized 2D point within a bounded 2D area.
+ */
+struct point2f random_ranged_point() {
+		struct point2f point;
+		//point.x = ranged_random_value();
+		//point.y = ranged_random_value();
+		return point = {ranged_random_value(), ranged_random_value()};
+}
+
+/*
+ * struct vector2f random_direction();
+ *
+ * Returns a random direction vector that has been normalized.
+ */
+struct vector2f random_direction(){
+		struct vector2f direction;
+		direction.x = ranged_random_value();
+		direction.y = ranged_random_value();
+		double mag = normalize(direction);
+		direction.x /= mag;
+		direction.y /= mag;
+		return direction;
+}
+
+/*
+ * double random_velocity();
+ *
+ * Returns a random speed between 0.0 and BALL_SPEED
+ */
+double random_velocity() {
+	double velocity;
+	velocity = ((rand() % 101)/100. * BALL_SPEED/2.) + (BALL_SPEED/2.);
+	printf("velocity %f\n", velocity);
+	return velocity;
+}
+
+/*
+ * struct sphere generate_sphere();
  * 
+ * return a ball 
  */
 struct sphere generate_sphere() {
 		struct sphere ball;
-		ball.p1.x = new_random_value();
-		ball.p2.x = new_random_value();
-		ball.p3.x = new_random_value();
-		ball.p4.x = new_random_value();
+	
+		// gets 4 random points for the bezier curve
+		ball.p1 = random_ranged_point();
+		ball.p2 = random_ranged_point();
+		ball.p3 = random_ranged_point();
+		ball.p4 = random_ranged_point();
+		
+		// position starts at p1
+		ball.pos = ball.p1;
+		// TODO confirm random_direction is a waste
+		// gets a random direction, this might be a wasted step
+		ball.direction = random_direction();
 
-		ball.p1.y = new_random_value();
-		ball.p2.y = new_random_value();
-		ball.p3.y = new_random_value();
-		ball.p4.y = new_random_value();
-		ball.pos.x = ball.p1.x;
-		ball.pos.y = ball.p1.y;
 		ball.radius = random_radius();
 		ball.active = 0;
 
-		// need random speed
-		ball.velocity = BALL_SPEED;	
-
-		ball.curve_length = curve_length( ball );
+		ball.velocity = random_velocity();	
 
 		// start on a curved path
-		ball.path = 1;	
+		ball.path = 1;
+		// dead variable is set to 0, used to prevent collisions
+		ball.dead = 0;
+		ball.color = random_color();		
 
+		ball.curve_length = curve_length( ball );
 		ball.start_time = (double) clock();
 		ball.curve_time = ball.curve_length /ball.velocity;
-
-		ball.direction.x = new_random_value();
-		ball.direction.y = new_random_value();
-		double mag = normalize( ball.direction);
-		ball.direction.x /= mag;
-		ball.direction.y /= mag;
-
-		ball.color = random_color();		
-		ball.dead = 0;
+		
 		return ball;
 }
 
@@ -639,15 +674,15 @@ void keystroke(unsigned char c, int x, int y) {
 		//int k = all_spheres.size();
 		//printf("size: %d\n", k);
 		struct sphere ball;
-		ball.p1.x = new_random_value();
-		ball.p2.x = new_random_value();
-		ball.p3.x = new_random_value();
-		ball.p4.x = new_random_value();
+		ball.p1.x = ranged_random_value();
+		ball.p2.x = ranged_random_value();
+		ball.p3.x = ranged_random_value();
+		ball.p4.x = ranged_random_value();
 
-		ball.p1.y = new_random_value();
-		ball.p2.y = new_random_value();
-		ball.p3.y = new_random_value();
-		ball.p4.y = new_random_value();
+		ball.p1.y = ranged_random_value();
+		ball.p2.y = ranged_random_value();
+		ball.p3.y = ranged_random_value();
+		ball.p4.y = ranged_random_value();
 		ball.pos.x = ball.p1.x;
 		ball.pos.y = ball.p1.y;
 		ball.radius = random_radius();
@@ -664,14 +699,14 @@ void keystroke(unsigned char c, int x, int y) {
 		ball.start_time = (double) clock();
 		ball.curve_time = ball.curve_length /ball.velocity;
 
-		ball.direction.x = new_random_value();
-		ball.direction.y = new_random_value();
+		ball.direction.x = ranged_random_value();
+		ball.direction.y = ranged_random_value();
 		double mag = normalize( ball.direction);
 		ball.direction.x /= mag;
 		ball.direction.y /= mag;
 
 		ball.color = random_color();		
-		ball.dead =0;
+		ball.dead = 0;
 			//all_spheres[k] = make_sphere();	
 		//printf("radius: %f\n",ball.radius);
 		all_spheres.push_back(ball);
