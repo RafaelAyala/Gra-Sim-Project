@@ -450,6 +450,48 @@ void collision_check() {
 }
 
 /*
+ * void generate_sphere_info()
+ * 
+ */
+struct sphere generate_sphere() {
+		struct sphere ball;
+		ball.p1.x = new_random_value();
+		ball.p2.x = new_random_value();
+		ball.p3.x = new_random_value();
+		ball.p4.x = new_random_value();
+
+		ball.p1.y = new_random_value();
+		ball.p2.y = new_random_value();
+		ball.p3.y = new_random_value();
+		ball.p4.y = new_random_value();
+		ball.pos.x = ball.p1.x;
+		ball.pos.y = ball.p1.y;
+		ball.radius = random_radius();
+		ball.active = 0;
+
+		// need random speed
+		ball.velocity = BALL_SPEED;	
+
+		ball.curve_length = curve_length( ball );
+
+		// start on a curved path
+		ball.path = 1;	
+
+		ball.start_time = (double) clock();
+		ball.curve_time = ball.curve_length /ball.velocity;
+
+		ball.direction.x = new_random_value();
+		ball.direction.y = new_random_value();
+		double mag = normalize( ball.direction);
+		ball.direction.x /= mag;
+		ball.direction.y /= mag;
+
+		ball.color = random_color();		
+		ball.dead = 0;
+		return ball;
+}
+
+/*
  * void gfxinit();
  *
  * initializes the system prior to animating
@@ -483,8 +525,8 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(60.0, 16/9., 1.0, 20.0);
-    //glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+    //gluPerspective(60.0, 16/9., 1.0, 20.0);
+    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
@@ -494,45 +536,10 @@ void gfxinit() {
 
 	srand(time(NULL));	// seed for rand() calls
 
+	// create all spheres for the initial system state
 	int k;
 	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
-		all_spheres[k].p1.x = new_random_value();
-		all_spheres[k].p2.x = new_random_value();
-		all_spheres[k].p3.x = new_random_value();
-		all_spheres[k].p4.x = new_random_value();
-
-		all_spheres[k].p1.y = new_random_value();
-		all_spheres[k].p2.y = new_random_value();
-		all_spheres[k].p3.y = new_random_value();
-		all_spheres[k].p4.y = new_random_value();
-		
-		all_spheres[k].pos.x = all_spheres[k].p1.x;
-		all_spheres[k].pos.y = all_spheres[k].p1.y;
-
-		all_spheres[k].radius = random_radius();
-		all_spheres[k].active = 0;
-		// TODO random ball velocity
-		all_spheres[k].velocity = BALL_SPEED;	
-
-		// TODO random ball mass for momentum
-
-		all_spheres[k].curve_length = curve_length( all_spheres[k] );
-
-		// start on a curved path
-		all_spheres[k].path = 1;	
-
-		all_spheres[k].start_time = (double) clock();
-		all_spheres[k].curve_time = all_spheres[k].curve_length / all_spheres[k].velocity;
-
-		all_spheres[k].direction.x = new_random_value();
-		all_spheres[k].direction.y = new_random_value();
-		double mag = normalize( all_spheres[k].direction);
-		all_spheres[k].direction.x /= mag;
-		all_spheres[k].direction.y /= mag;
-
-		all_spheres[k].color = random_color();		
-		all_spheres[k].dead =0;
-			//all_spheres[k] = make_sphere();	
+		all_spheres[k] = generate_sphere();
 	}
 }
 
@@ -629,7 +636,7 @@ void keystroke(unsigned char c, int x, int y) {
 		{
 		balls++;
 		all_spheres.resize(balls);
-		int k = all_spheres.size();
+		//int k = all_spheres.size();
 		//printf("size: %d\n", k);
 		struct sphere ball;
 		ball.p1.x = new_random_value();
