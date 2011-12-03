@@ -18,7 +18,7 @@
 #else				// Linux OpenGL Libraries
 #include <GL/freeglut.h>
 //#include <GL/freeglut_std.h>
-#include <GL/freeglut_ext.h>
+//#include <GL/freeglut_ext.h>
 #include <GL/glut.h>
 #include <GL/glu.h>
 #include <GL/gl.h>
@@ -32,6 +32,7 @@
 #include <stdlib.h>
 #include <vector>
 // configuration
+// TODO clean defines
 #define NUMBER_OF_BALLS 10
 #define DECAY_PROB 0.5
 #define BALL_RADIUS 0.1
@@ -556,7 +557,6 @@ struct sphere generate_sphere() {
  * void gfxinit();
  *
  * initializes the system prior to animating
- * TODO refactor(make a ball generation function)
  */
 void gfxinit() {
 	balls = NUMBER_OF_BALLS;
@@ -610,11 +610,7 @@ void gfxinit() {
  * The display function displays the animation to the users screen.
  */
 void display() {
-	//printf("%f\n", (double) clock());
-	//glClearColor(0.0,0.0,0.0,1.0);	// set the background color
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glMatrixMode (GL_MODELVIEW);
-	//glLoadIdentity();
 	
 	glColor3f(0.5, 0.5, 0.5);
 	// back box
@@ -666,20 +662,14 @@ void display() {
 		glColor3f(all_spheres[i].color.red,
 				all_spheres[i].color.green,
 				all_spheres[i].color.blue);
-		//glColor3f(all_spheres[i].red,all_spheres[i].green,all_spheres[i].blue);
 		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
 		if( all_spheres[i].active == 0) {
-			glutWireSphere(all_spheres[i].radius,15,15);
+			glutWireSphere(all_spheres[i].radius, 5, 5);
 		}else{
-			glutSolidSphere(all_spheres[i].radius,25,25);
+			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
 		glPopMatrix();
 	}
-
-	glRasterPos2i(10, 10);
-	glColor3f(1.0f, 1.0f, 1.0f);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)"dog");
-
 	
 	glutSwapBuffers();
 }
