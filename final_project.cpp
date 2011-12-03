@@ -150,20 +150,20 @@ double get_mass(struct sphere ball) {
  *
  * returns the position of the ball on a curve
  */
-struct point2f get_position( struct sphere ball, double pos) {
+struct point2f get_position( struct sphere *ball, double pos) {
 	double a, b, c;
 	struct point2f result;
 	// x
-	c = 3 * (ball.p2.x - ball.p1.x);
-	b = 3 * (ball.p3.x - ball.p2.x) - c;
-	a = ball.p4.x - ball.p1.x - c - b;
-	result.x = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.x;
+	c = 3 * (ball->p2.x - ball->p1.x);
+	b = 3 * (ball->p3.x - ball->p2.x) - c;
+	a = ball->p4.x - ball->p1.x - c - b;
+	result.x = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball->p1.x;
 
 	// y
-	c = 3 * (ball.p2.y - ball.p1.y);
-	b = 3 * (ball.p3.y - ball.p2.y) - c;
-	a = ball.p4.y - ball.p1.y - c - b;
-	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball.p1.y;
+	c = 3 * (ball->p2.y - ball->p1.y);
+	b = 3 * (ball->p3.y - ball->p2.y) - c;
+	a = ball->p4.y - ball->p1.y - c - b;
+	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball->p1.y;
 
 	return result;
 }
@@ -174,7 +174,7 @@ struct point2f get_position( struct sphere ball, double pos) {
  * returns a double value representing the approximate length of the bezier
  * curve
  */
-double curve_length( struct sphere ball ) {
+double curve_length( struct sphere *ball ) {
 	double i;
 	double x1, y1, x2, y2;
 	double total = 0;
@@ -229,39 +229,40 @@ struct sphere move_on_vector( struct sphere ball ) {
  *
  * advances the sphere along the curved path
  */
-struct sphere move_on_curve( struct sphere ball ) {
+//struct sphere move_on_curve( struct sphere *ball ) {
+void move_on_curve( struct sphere *ball ) {
 	// store previous position
-	ball.previous_pos = ball.pos;
-	ball.interval =( current - ball.start_time )/
-		( CLOCKS_PER_SEC * ball.curve_time );
-	ball.pos = get_position( ball, ball.interval );
+	ball->previous_pos = ball->pos;
+	ball->interval =( current - ball->start_time )/
+		( CLOCKS_PER_SEC * ball->curve_time );
+	ball->pos = get_position( ball, ball->interval );
 	
-	return ball;
+	//return ball;
 }
 
 /*
- * struct sphere generate_curve( struct sphere ball);
+ * void generate_curve( struct sphere ball);
  *
  * generates a new bezier curve based on a previous one
  */
-struct sphere generate_curve( struct sphere ball) {
+void generate_curve( struct sphere *ball) {
 	// store previous position
-	ball.previous_pos = ball.pos;
+	ball->previous_pos = ball->pos;
 	
-	ball.interval = 0.0;
-	ball.p2.x = ( ball.p4.x - ball.p3.x ) + ball.p4.x;
-	ball.p1.x = ball.p4.x;
-	ball.p3.x = ranged_random_value();
-	ball.p4.x = ranged_random_value();
+	ball->interval = 0.0;
+	ball->p2.x = ( ball->p4.x - ball->p3.x ) + ball->p4.x;
+	ball->p1.x = ball->p4.x;
+	ball->p3.x = ranged_random_value();
+	ball->p4.x = ranged_random_value();
 
-	ball.p2.y = ( ball.p4.y - ball.p3.y ) + ball.p4.y;
-	ball.p1.y = ball.p4.y;
-	ball.p3.y = ranged_random_value();
-	ball.p4.y = ranged_random_value();
-	ball.curve_length = curve_length( ball );
-	ball.start_time = (double) clock();
-	ball.curve_time = ball.curve_length / ball.velocity;
-	return ball;
+	ball->p2.y = ( ball->p4.y - ball->p3.y ) + ball->p4.y;
+	ball->p1.y = ball->p4.y;
+	ball->p3.y = ranged_random_value();
+	ball->p4.y = ranged_random_value();
+	ball->curve_length = curve_length( ball );
+	ball->start_time = (double) clock();
+	ball->curve_time = ball->curve_length / ball->velocity;
+	//return ball;
 }
 
 /*
@@ -301,10 +302,11 @@ void animate() {
 			
 			if( all_spheres[j].interval < 1.0) {
 				// advance position on curve
-				all_spheres[j] = move_on_curve(all_spheres[j]);
+				//all_spheres[j] = move_on_curve(all_spheres[j]);
+				move_on_curve(&all_spheres[j]);
 			} else { 
 				// generate a new curve
-				all_spheres[j] = generate_curve(all_spheres[j]);		
+				generate_curve(&all_spheres[j]);		
 			}
 		}	
 	}
@@ -799,7 +801,7 @@ struct sphere generate_sphere() {
 			//ball.dead = 0;
 			ball.color = random_color();		
 
-			ball.curve_length = curve_length( ball );
+			ball.curve_length = curve_length( &ball );
 			ball.start_time = (double) clock();
 			ball.curve_time = ball.curve_length / ball.velocity;
 		}while(collision_detection(ball) == 1 );	
