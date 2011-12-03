@@ -1,9 +1,7 @@
 /*
  * Rafael Ayala
- * 100XXXXXX
  *
  * Jordan Stadler
- * 100366066
  *
  * Final Project
  *
@@ -90,8 +88,11 @@ struct sphere{
 
 std::vector<sphere> all_spheres;
 
-
-// TODO create all random functions
+/*
+ * double ranged_random_value();
+ *
+ * returns a random value based on the the bounds of the system
+ */ 
 double ranged_random_value() {
 	return ((rand() % (101)/100.)*9)-4.5;	
 }
@@ -248,9 +249,11 @@ void animate() {
 				tempX = all_spheres[j].pos.x;
 				tempY = all_spheres[j].pos.y;
 				//printf("%f %f\n", tempX, tempY);
-				all_spheres[j].interval = (current - all_spheres[j].start_time)/ 
-											(CLOCKS_PER_SEC * all_spheres[j].curve_time);
-				all_spheres[j].pos = get_position( all_spheres[j], all_spheres[j].interval );
+				all_spheres[j].interval = 
+					( current - all_spheres[j].start_time )/ 
+					( CLOCKS_PER_SEC * all_spheres[j].curve_time );
+				all_spheres[j].pos = 
+					get_position( all_spheres[j], all_spheres[j].interval );
 			} else {
 				all_spheres[j].interval = 0.0;
 				all_spheres[j].p2.x = ( all_spheres[j].p4.x - 
@@ -346,48 +349,9 @@ void collision_check() {
 	for(i = 0; i < all_spheres.size(); i++) {
 
 		// ball-wall collisions
-		//double dist = 5.0 - all_spheres[i].radius;
-		////right
-		//if(all_spheres[i].pos.x >= dist ) {
-		//	all_spheres[i].direction.x *= -1;
-		//	all_spheres[i].pos.x = dist;
-		//	all_spheres[i].path = 0;
-		//	//printf("right\n");
-		//	//glutIdleFunc(NULL);
-		//	all_spheres[i].start_time = (double) clock();
-		//	all_spheres[i].active = 1;
-
-		////left
-		//} else if(all_spheres[i].pos.x <= -1*dist){
-		//	all_spheres[i].direction.x *= -1;
-		//	all_spheres[i].pos.x = -1*dist;
-		//	all_spheres[i].path = 0;
-		//	//printf("left\n");
-		//	//glutIdleFunc(NULL);
-		//	all_spheres[i].start_time = (double) clock();
-		//	all_spheres[i].active = 1;
-		////bottom
-		//} else if(all_spheres[i].pos.y >= dist ) {
-		//	all_spheres[i].direction.y *= -1;
-		//	all_spheres[i].pos.y = dist;
-		//	all_spheres[i].path = 0;
-		//	//printf("bottom\n");
-		//	//glutIdleFunc(NULL);
-		//	all_spheres[i].start_time = (double) clock();
-		//	all_spheres[i].active = 1;
-		////top
-		//}else if(all_spheres[i].pos.y <= -1*dist){
-		//	all_spheres[i].direction.y *= -1;
-		//	all_spheres[i].pos.y = -1*dist;
-		//	all_spheres[i].path = 0;
-		//	//printf("top\n");
-		//	//glutIdleFunc(NULL);
-		//	all_spheres[i].start_time = (double) clock();
-		//	all_spheres[i].active = 1;
-		//}
-		// end ball-wall collisions	
 		all_spheres[i] = wall_check(all_spheres[i]);
 		// ball-ball collisions
+		
 		if( i < all_spheres.size()-1 ){
 			for( j = i+1; j < all_spheres.size(); j++) {
 				// check all but itself
@@ -488,8 +452,8 @@ void collision_check() {
 					all_spheres[i].start_time = (double) clock();
 					all_spheres[j].start_time = (double) clock();
 
-					all_spheres[i].dead = 200;
-					all_spheres[j].dead = 200;
+					//all_spheres[i].dead = 200;
+					//all_spheres[j].dead = 200;
 
 					//printf("after\n");
 					//printf("ball i: %f\n", all_spheres[i].velocity);
