@@ -36,6 +36,7 @@ TODO Simulation Presentation
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
 	- Optional Decay Equations (optional)
+	- Decay on collision
 	- System info via text (optional)
 
 TODO Graphics Presentation

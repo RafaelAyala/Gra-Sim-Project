@@ -31,7 +31,7 @@
 #include <vector>
 // configuration
 // TODO clean defines
-#define NUMBER_OF_BALLS 10
+#define NUMBER_OF_BALLS 30
 #define DECAY_PROB 0.5
 #define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
@@ -72,6 +72,7 @@ struct color3f {
 struct sphere{
 	double interval;
 	struct point2f pos;
+	struct point2f prevous_pos;
 	struct point2f p1,p2,p3,p4;
 	double radius;
 	struct color3f color;
@@ -221,10 +222,11 @@ void animate() {
 
 	for(j = 0; j < all_spheres.size(); j++) {
 		
-		double p = (rand() % 101)/100.;
+		// 
+		double decay = (rand() % 101)/100.;
 
 		if( all_spheres[j].radius>0.0) {
-			if( p < DECAY_PROB) {
+			if( decay <= DECAY_PROB) {
 				all_spheres[j].radius -= 0.00045;
 			}
 		}else{
@@ -290,21 +292,17 @@ void animate() {
  * returns 0 when no collisions detected with ball
  */
 int collision_detection( struct sphere ball ) {
-	int i, d, count;
+	int i, count;
+	double d;
 	count = 0;
 	for( i = 0; i < all_spheres.size(); i++ ) {
 		d = distance(ball, all_spheres[i]);
-
-		if( d <= ball.radius + all_spheres[i].radius ) {
+		
+		if( d <= ball.radius + all_spheres[i].radius) {
 			count++;
 		}
 	}
-
-	if(count>1){
-		return 1;
-	}else{
-		return 0;
-	}
+	return (count>0) ? 1 : 0;
 }
 
 /*
@@ -365,24 +363,16 @@ void collision_check() {
 				d = distance(all_spheres[i], all_spheres[j]);
 
 				if( d <= all_spheres[i].radius + all_spheres[j].radius) {
+					
+					// COLLISION RESPONSE STARTS
+					
 					all_spheres[i].active = 1;
 					all_spheres[j].active = 1;
-					//printf("ball-ball\n");
-					//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
-					//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
-					//glutIdleFunc(NULL);
 
 					// store before collision velocities
 					double b1_v, b2_v;
 					b1_v = all_spheres[i].velocity;
 					b2_v = all_spheres[j].velocity;
-					// have before collision velocities stored	
-					//printf("###COLLISION### %d vs %d\n", i, j);
-					//printf("b1 v before: %f\n", all_spheres[i].velocity);
-					//printf("b2 v before: %f\n", b2_v);
-					//printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
-					//printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
-					// need x and y components of speed
 					double b1_vx, b1_vy, b2_vx, b2_vy;
 					b1_vx = (all_spheres[i].direction.x * b1_v);
 					b1_vy = (all_spheres[i].direction.y * b1_v);
@@ -391,8 +381,6 @@ void collision_check() {
 					b2_vy = (all_spheres[j].direction.y * b2_v);
 					// have x and y components of speed
 
-					//printf("b1 components: %f %f\n", b1_vx, b1_vy);
-					//printf("b2 components: %f %f\n", b2_vx, b2_vy);
 
 
 					// need ball1 and ball2 masses
@@ -402,8 +390,6 @@ void collision_check() {
 					m1 = all_spheres[i].mass;
 					m2 = all_spheres[j].mass;
 					// have ball masses
-					//printf("mass1 %f\n", m1);
-					//printf("mass2 %f\n", m2);
 
 					// need the new velocity components (after collision)
 					double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
@@ -415,11 +401,6 @@ void collision_check() {
 					// ball 2 new components
 					b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
 					b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
-					// have new velocity compoents
-					//printf("b1 newx: %f\n", b1_vx_new);
-					//printf("b1 newy: %f\n", b1_vy_new);
-					//printf("b2 newx: %f\n", b2_vx_new);
-					//printf("b2 newy: %f\n", b2_vy_new);
 
 					// need to change direction to match new speeds
 					all_spheres[i].direction.x = b1_vx_new;
@@ -427,8 +408,6 @@ void collision_check() {
 					double mag1 = normalize(all_spheres[i].direction);
 					all_spheres[i].direction.x /= mag1;
 					all_spheres[i].direction.y /= mag1;
-					//printf("ball1 dir: %f\n", all_spheres[i].direction.x);
-					//printf("ball1 dir: %f\n", all_spheres[i].direction.y);
 
 
 					all_spheres[j].direction.x = b2_vx_new;
@@ -436,11 +415,6 @@ void collision_check() {
 					double mag2 = normalize(all_spheres[j].direction);
 					all_spheres[j].direction.x /= mag2;
 					all_spheres[j].direction.y /= mag2;
-					//printf("ball2 dir: %f\n", all_spheres[j].direction.x);
-					//printf("ball2 dir: %f\n", all_spheres[j].direction.y);
-					// directions changed, normalized for unit vectors
-
-					// need to update velocities of ball1 and ball2
 					all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
 					all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
 					// speeds updated
@@ -452,12 +426,6 @@ void collision_check() {
 					all_spheres[i].start_time = (double) clock();
 					all_spheres[j].start_time = (double) clock();
 
-					//all_spheres[i].dead = 200;
-					//all_spheres[j].dead = 200;
-
-					//printf("after\n");
-					//printf("ball i: %f\n", all_spheres[i].velocity);
-					//printf("ball j: %f\n", all_spheres[j].velocity);
 				}
 			}
 		}
@@ -497,7 +465,7 @@ struct vector2f random_direction(){
 double random_velocity() {
 	double velocity;
 	velocity = ((rand() % 101)/100. * BALL_SPEED/2.) + (BALL_SPEED/2.);
-	printf("velocity %f\n", velocity);
+	//printf("velocity %f\n", velocity);
 	return velocity;
 }
 
@@ -535,63 +503,11 @@ struct sphere generate_sphere() {
 
 			ball.curve_length = curve_length( ball );
 			ball.start_time = (double) clock();
-			ball.curve_time = ball.curve_length /ball.velocity;
-		}while(collision_detection(ball) == 1);	
+			ball.curve_time = ball.curve_length / ball.velocity;
+		}while(collision_detection(ball) == 1 );	
 		
 		return ball;
 }
-
-/*
- * void gfxinit();
- *
- * initializes the system prior to animating
- */
-void gfxinit() {
-	balls = NUMBER_OF_BALLS;
-	all_spheres.resize(balls);
-	
-	start = (double) clock(); 
-	current = 0.0;
-	// LIGHTING 	
-    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
-    GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
-    GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
-    GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
-
-    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
-    // set the ambient light colour
-    glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
-    // set the diffuse light colour
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
-	// global ambient
-    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
-	// turn on lighting
-    glEnable(GL_LIGHTING);
-    // enable light 0, all the other lights are off
-    glEnable(GL_LIGHT0);
-
-    // enable the depth buffer
-    glEnable(GL_DEPTH_TEST);
-   
-    glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
-	glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-	glEnable ( GL_COLOR_MATERIAL ) ;
-	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
-	glShadeModel(GL_SMOOTH);
-
-	srand(time(NULL));	// seed for rand() calls
-
-	// create all spheres for the initial system state
-	int k;
-	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
-		all_spheres[k] = generate_sphere();
-	}
-}
-
 /*
  * void display();
  *
@@ -643,7 +559,9 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
-	collision_check();	// check for collisions wall-ball and ball-ball
+	// MUST BE BEFORE SPHERES ARE DRAWN
+	collision_check();
+	
 	int i;
 	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
 		glPushMatrix();
@@ -661,7 +579,61 @@ void display() {
 	}
 	
 	glutSwapBuffers();
+	glutIdleFunc(NULL);
 }
+
+/*
+ * void gfxinit();
+ *
+ * initializes the system prior to animating
+ */
+void gfxinit() {
+	balls = NUMBER_OF_BALLS;
+	all_spheres.resize(balls);
+	
+	start = (double) clock(); 
+	current = 0.0;
+	// LIGHTING 	
+    GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
+    GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
+    GLfloat lightdif[4] = { 1.0, 1.0, 1.0, 1.0 };     // diffuse colour
+    GLfloat global_ambient[4] = {0.2, 0.2, 0.2, 1};
+
+    glLightfv(GL_LIGHT0, GL_POSITION, lightpos);
+    // set the ambient light colour
+    glLightfv(GL_LIGHT0, GL_AMBIENT, lightamb);
+    // set the diffuse light colour
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightdif);
+	// global ambient
+    glLightModelfv(GL_LIGHT_MODEL_AMBIENT, global_ambient);
+	// turn on lighting
+    glEnable(GL_LIGHTING);
+    // enable light 0, all the other lights are off
+    glEnable(GL_LIGHT0);
+
+    // enable the depth buffer
+    glEnable(GL_DEPTH_TEST);
+   
+    glMatrixMode(GL_PROJECTION);
+    //gluPerspective(60.0, 16/9., 1.0, 20.0);
+    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+	glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	glEnable ( GL_COLOR_MATERIAL ) ;
+	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
+	glShadeModel(GL_SMOOTH);
+
+	srand(time(NULL));	// seed for rand() calls
+
+	// create all spheres for the initial system state
+	int k;
+	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
+		printf("%d\n",k);
+		all_spheres[k] = generate_sphere();
+	}
+}
+
 
 
 /*
@@ -676,45 +648,8 @@ void keystroke(unsigned char c, int x, int y) {
 		{
 		balls++;
 		all_spheres.resize(balls);
-		//int k = all_spheres.size();
-		//printf("size: %d\n", k);
 		struct sphere ball;
 		ball = generate_sphere();
-		//ball.p1.x = ranged_random_value();
-		//ball.p2.x = ranged_random_value();
-		//ball.p3.x = ranged_random_value();
-		//ball.p4.x = ranged_random_value();
-
-		//ball.p1.y = ranged_random_value();
-		//ball.p2.y = ranged_random_value();
-		//ball.p3.y = ranged_random_value();
-		//ball.p4.y = ranged_random_value();
-		//ball.pos.x = ball.p1.x;
-		//ball.pos.y = ball.p1.y;
-		//ball.radius = random_radius();
-		//ball.active = 0;
-
-		//// need random speed
-		//ball.velocity = BALL_SPEED;	
-
-		//ball.curve_length = curve_length( ball );
-
-		//// start on a curved path
-		//ball.path = 1;	
-
-		//ball.start_time = (double) clock();
-		//ball.curve_time = ball.curve_length /ball.velocity;
-
-		//ball.direction.x = ranged_random_value();
-		//ball.direction.y = ranged_random_value();
-		//double mag = normalize( ball.direction);
-		//ball.direction.x /= mag;
-		//ball.direction.y /= mag;
-
-		//ball.color = random_color();		
-		//ball.dead = 0;
-			//all_spheres[k] = make_sphere();	
-		//printf("radius: %f\n",ball.radius);
 		all_spheres.push_back(ball);
 		}
 			break;
@@ -743,4 +678,3 @@ int main(int argc, char **argv) {
 	 gfxinit();
      glutMainLoop(); // start the animation
 }
-
