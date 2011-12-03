@@ -10,18 +10,15 @@
  */
 
 #ifdef __APPLE__  	// Mac OpenGL Libraries
-#include <GLUT/glut.h>
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+ #include <GLUT/glut.h>
+ #include <OpenGL/gl.h>
+ #include <OpenGL/glu.h>
 #else				// Linux OpenGL Libraries
-#include <GL/freeglut.h>
-//#include <GL/freeglut_std.h>
-//#include <GL/freeglut_ext.h>
-#include <GL/glut.h>
-#include <GL/glu.h>
-#include <GL/gl.h>
-//#include <GL/glui.h>
+ #include <GL/glut.h>
+ #include <GL/glu.h>
+ #include <GL/gl.h>
 #endif
+
 // Common Libraries
 #include <stdio.h> 
 #include <string.h>
@@ -29,14 +26,12 @@
 #include <time.h>
 #include <stdlib.h>
 #include <vector>
-// configuration
-// TODO clean defines
+
+// user defined values
 #define NUMBER_OF_BALLS 2
 #define DECAY_PROB 0.5
-//#define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 16
-//#define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 #define DENSITY 1.0
 #define PI 3.14159
 
@@ -69,24 +64,25 @@ struct color3f {
 	double blue;
 };
 
-// TODO clean sphere struct
 // holds all information pertaining to a single sphere
 struct sphere{
-	double interval;
 	struct point2f pos;
-	struct point2f previous_pos;
-	struct point2f p1,p2,p3,p4;
-	double radius;
-	struct color3f color;
 	double velocity;
-	double curve_length;
-	double start_time;
-	double curve_time;
-	int path;  // flag: 0 is linear path, 1 is a bezier curve
 	struct vector2f direction;
-	double mass;
-	//int dead;
+	//double mass;
+	double radius;
+	
+	int path;  // flag: 0 is linear path, 1 is a bezier curve
 	int active;
+	struct color3f color;
+	double start_time;
+
+
+	struct point2f p1,p2,p3,p4;
+	struct point2f previous_pos;
+	double interval;
+	double curve_length;
+	double curve_time;
 };
 
 std::vector<sphere> all_spheres;
@@ -193,8 +189,10 @@ double curve_length( struct sphere *ball ) {
  *
  * normalizes the delta_x and delta_y components of a sphere
  */
-double normalize(struct vector2f dir) {
-	return sqrt(pow(dir.x,2) + pow(dir.y,2));
+void normalize_dir(struct sphere *ball) {
+	double mag = sqrt(pow(ball->direction.x,2) + pow(ball->direction.y,2));
+	ball->direction.x /= mag;
+	ball->direction.y /= mag;
 }
 
 /*
@@ -236,8 +234,6 @@ void move_on_curve( struct sphere *ball ) {
 	ball->interval =( current - ball->start_time )/
 		( CLOCKS_PER_SEC * ball->curve_time );
 	ball->pos = get_position( ball, ball->interval );
-	
-	//return ball;
 }
 
 /*
@@ -288,7 +284,6 @@ void animate() {
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
-			//printf("spheres left: %d\n", all_spheres.size());
 			balls--;
 			break;
 		}
@@ -302,7 +297,6 @@ void animate() {
 			
 			if( all_spheres[j].interval < 1.0) {
 				// advance position on curve
-				//all_spheres[j] = move_on_curve(all_spheres[j]);
 				move_on_curve(&all_spheres[j]);
 			} else { 
 				// generate a new curve
@@ -341,16 +335,13 @@ int collision_detection( struct sphere ball ) {
  * checks for a ball to wall collision
  */ 
 //struct sphere wall_check( struct sphere ball ) {
-void wall_check( struct sphere *ball ) {
-		
+void wall_check( struct sphere *ball ) {	
 		//return ball;
 		double dist = 5.0 - ball->radius;
 		if(ball->path == 1) {
 			ball->direction.x = ball->pos.x - ball->previous_pos.x;
 			ball->direction.y = ball->pos.y - ball->previous_pos.y;
-			double mag1 = normalize(ball->direction);
-			ball->direction.x /= mag1;
-			ball->direction.y /= mag1;
+			normalize_dir(ball);
 		}
 		if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
 			ball->direction.x *= -1;
@@ -382,15 +373,14 @@ void nudge_spheres( struct sphere *b1, struct sphere *b2, double d) {
 	ipen *= penetration;
 	jpen *= penetration;
 	
-	double i_dir_mag = normalize(b1->direction);
+	double i_dir_mag = sqrt(pow(b1->direction.x,2) + pow(b1->direction.y,2));
 	
 	b1->pos.x -= (ipen * b1->direction.x ) / i_dir_mag;
 	b1->pos.y -= (ipen * b1->direction.y ) /i_dir_mag;
 	
-	double j_dir_mag = normalize(b2->direction);
+	double j_dir_mag = sqrt(pow(b2->direction.x,2) + pow(b2->direction.y,2));
 	b2->pos.x -= (jpen * b2->direction.x ) / j_dir_mag;
 	b2->pos.y -= (jpen * b2->direction.y ) /j_dir_mag;	
-
 }
 
 /*
@@ -402,9 +392,7 @@ void nudge_spheres( struct sphere *b1, struct sphere *b2, double d) {
 void update_direction( struct sphere *ball ) {
 	ball->direction.x = ball->pos.x - ball->previous_pos.x;
 	ball->direction.y = ball->pos.y - ball->previous_pos.y;
-	double mag1 = normalize(ball->direction);
-	ball->direction.x /= mag1;
-	ball->direction.y /= mag1;
+	normalize_dir(ball);
 }
 
 /*
@@ -430,13 +418,8 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	b2_vy = (b2->direction.y * b2_v);
 	// have x and y components of speed
 
-	// need ball1 and ball2 masses
-	b1->mass = get_mass(*b1);	
-	b2->mass = get_mass(*b2);	
-	double m1, m2;
-	m1 = b1->mass;
-	m2 = b2->mass;
-	// have ball masses
+	// get ball masses
+	double m1 = get_mass(*b1), m2 = get_mass(*b2);
 
 	// need the new velocity components (after collision)
 	double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
@@ -452,16 +435,12 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	// need to change direction to match new speeds
 	b1->direction.x = b1_vx_new;
 	b1->direction.y = b1_vy_new;
-	double mag1 = normalize(b1->direction);
-	b1->direction.x /= mag1;
-	b1->direction.y /= mag1;
-
+	normalize_dir(b1);
 
 	b2->direction.x = b2_vx_new;
 	b2->direction.y = b2_vy_new;
-	double mag2 = normalize(b2->direction);
-	b2->direction.x /= mag2;
-	b2->direction.y /= mag2;
+	normalize_dir(b2);
+	
 	b1->velocity = 
 		sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
 	b2->velocity = 
@@ -541,7 +520,7 @@ struct vector2f random_direction(){
 		struct vector2f direction;
 		direction.x = ranged_random_value();
 		direction.y = ranged_random_value();
-		double mag = normalize(direction);
+		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2));
 		direction.x /= mag;
 		direction.y /= mag;
 		return direction;
@@ -608,22 +587,25 @@ struct sphere generate_sphere() {
 void print_sphere( struct sphere *ball) {
 	printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
 	printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
-	printf("prev:");
-	//double interval;
-	//struct point2f pos;
-	//struct point2f previous_pos;
-	//struct point2f p1,p2,p3,p4;
-	//double radius;
-	//struct color3f color;
-	//double velocity;
-	//double curve_length;
-	//double start_time;
-	//double curve_time;
-	//int path;  // flag: 0 is linear path, 1 is a bezier curve
-	//struct vector2f direction;
-	//double mass;
-	////int dead;
-	//int active;
+	printf("interval: %f\n", ball->interval);
+	printf("pos -- x: %f y: %f\n", ball->pos.x, ball->pos.y); 
+	printf("prev pos -- x: %f y: %f\n", ball->previous_pos.x,
+			ball->previous_pos.y);
+	printf("p1 -- x: %f y: %f\n", ball->p1.x, ball->p1.y);
+	printf("p2 -- x: %f y: %f\n", ball->p2.x, ball->p2.y);
+	printf("p3 -- x: %f y: %f\n", ball->p3.x, ball->p3.y);
+	printf("p4 -- x: %f y: %f\n", ball->p4.x, ball->p4.y);
+	printf("radius: %f", ball->radius);
+	printf("color: %f %f %f\n",
+			ball->color.red,
+			ball->color.green,
+			ball->color.blue);
+	printf("velocity: %f\n", ball->velocity);
+	printf("curve length: %f\n", ball->curve_length);
+	printf("start time: %f\n", ball->start_time);
+	printf("curve time: %f\n", ball->curve_time);
+	printf("path: %d\n", ball->path);
+	printf("active:	%d\n", ball->active);
 }
 
 /*
