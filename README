@@ -39,6 +39,10 @@ TODO Simulation Presentation
 	- Optional Decay Equations (optional)
 	- Decay on collision
 	- System info via text (optional)
+	- Sort out RNG
+	- Fix collision detection
+	- Camera Controls
+	- Automate spawning based on mass loss
 
 TODO Graphics Presentation
 --------------------------
@@ -50,3 +54,5 @@ TODO Graphics Presentation
 	- 3D (optional)
 	- color based on decay (optional)
 	- transparent cube (optional)
+	- release particles
+	- stencil reflections
