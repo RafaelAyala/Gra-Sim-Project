@@ -37,11 +37,9 @@ TODO Simulation Presentation
 [X]	- random sizes(0.15 0.75)
 [X]	- Nudge collisions
 	- Optional Decay Equations (optional)
-	- Decay on collision
-	- System info via text (optional)
+	- Decay on collision	
 	- Sort out RNG
-	- Fix collision detection
-	- Camera Controls
+[X]	- Fix collision detection
 	- Automate spawning based on mass loss
 
 TODO Graphics Presentation
@@ -56,3 +54,5 @@ TODO Graphics Presentation
 	- transparent cube (optional)
 	- release particles
 	- stencil reflections
+	- Camera Controls
+	- System info via text (optional)
