@@ -5,8 +5,7 @@
  *
  * Final Project
  *
- * TODO decay
- * TODO mass for momentum
+ * TODO decay on collide
  */
 
 #ifdef __APPLE__  	// Mac OpenGL Libraries
@@ -31,7 +30,7 @@
 #include <vector>
 // configuration
 // TODO clean defines
-#define NUMBER_OF_BALLS 30
+#define NUMBER_OF_BALLS 2
 #define DECAY_PROB 0.5
 #define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
@@ -200,8 +199,8 @@ double normalize(struct vector2f dir) {
  *
  * returns the distance between two parameter spheres
  */
-double distance( struct sphere ball1, struct sphere ball2 ) {
-	return sqrt( pow(ball1.pos.x - ball2.pos.x,2) + pow(ball1.pos.y - ball2.pos.y,2));
+double distance( struct sphere b1, struct sphere b2 ) {
+	return sqrt( pow(b1.pos.x - b2.pos.x,2) + pow(b1.pos.y - b2.pos.y,2));
 }
 
 /*
@@ -237,7 +236,9 @@ void animate() {
 		}
 
 		if(all_spheres[j].path == 0) { //linear paths
-			double timediff = (current - all_spheres[j].start_time)/(CLOCKS_PER_SEC);
+			double timediff = ( current - 
+					all_spheres[j].start_time ) / 
+					( CLOCKS_PER_SEC );
 
 			//store previous positions
 			all_spheres[j].previous_pos = all_spheres[j].pos;
@@ -351,8 +352,7 @@ struct sphere wall_check( struct sphere ball ) {
  * void collision_check();
  *
  * determines if any ball-wall or ball-ball collisions occur
- * TODO velocitys are hard coded,
- * TODO tangents need to be used
+ * TODO curve-wall proper
  */
 void collision_check() {
 	int i, j;
@@ -390,13 +390,15 @@ void collision_check() {
 							double penetration = (all_spheres[i].radius +
 								all_spheres[j].radius) - d;
 							double ipen, jpen, ij;
-							ij = all_spheres[i].velocity + all_spheres[j].velocity;
+							ij = all_spheres[i].velocity + 
+								 all_spheres[j].velocity;
 							ipen = all_spheres[i].velocity / ij; // 0-1
 							jpen = all_spheres[j].velocity / ij; // 0-1
 							ipen *= penetration;
 							jpen *= penetration;
 							
-							double i_dir_mag = normalize(all_spheres[i].direction);
+							double i_dir_mag = 
+								normalize(all_spheres[i].direction);
 							
 							all_spheres[i].pos.x -= (ipen * 
 									all_spheres[i].direction.x ) /
@@ -404,7 +406,8 @@ void collision_check() {
 							all_spheres[i].pos.y -= (ipen * 
 									all_spheres[i].direction.y ) /
 									i_dir_mag;
-							double j_dir_mag = normalize(all_spheres[j].direction);
+							double j_dir_mag = 
+								normalize(all_spheres[j].direction);
 							all_spheres[j].pos.x -= (jpen * 
 									all_spheres[j].direction.x ) /
 									j_dir_mag;
@@ -437,12 +440,12 @@ void collision_check() {
 						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
 						// ball 1 new components
-						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
-						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+						b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
+						b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
 
 						// ball 2 new components
-						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
-						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+						b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
+						b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
 
 						// need to change direction to match new speeds
 						all_spheres[i].direction.x = b1_vx_new;
@@ -457,8 +460,10 @@ void collision_check() {
 						double mag2 = normalize(all_spheres[j].direction);
 						all_spheres[j].direction.x /= mag2;
 						all_spheres[j].direction.y /= mag2;
-						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
-						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						all_spheres[i].velocity = 
+							sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+						all_spheres[j].velocity = 
+							sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
 						// speeds updated
 
 						all_spheres[i].path = 0;
@@ -467,20 +472,23 @@ void collision_check() {
 						all_spheres[j].start_time = (double) clock();
 						// END BALL-BALL
 					
-					}else if(all_spheres[i].path == 1 && all_spheres[j].path == 1){
+					}else if(
+						all_spheres[i].path == 1 && all_spheres[j].path == 1){
 						{
 						// START CURVE-CURVE
 						// NUDGE
 							double penetration = (all_spheres[i].radius +
 								all_spheres[j].radius) - d;
 							double ipen, jpen, ij;
-							ij = all_spheres[i].velocity + all_spheres[j].velocity;
+							ij = all_spheres[i].velocity +
+								 all_spheres[j].velocity;
 							ipen = all_spheres[i].velocity / ij; // 0-1
 							jpen = all_spheres[j].velocity / ij; // 0-1
 							ipen *= penetration;
 							jpen *= penetration;
 							
-							double i_dir_mag = normalize(all_spheres[i].direction);
+							double i_dir_mag = 
+								normalize(all_spheres[i].direction);
 							
 							all_spheres[i].pos.x -= (ipen * 
 									all_spheres[i].direction.x ) /
@@ -488,7 +496,8 @@ void collision_check() {
 							all_spheres[i].pos.y -= (ipen * 
 									all_spheres[i].direction.y ) /
 									i_dir_mag;
-							double j_dir_mag = normalize(all_spheres[j].direction);
+							double j_dir_mag = 
+								normalize(all_spheres[j].direction);
 							all_spheres[j].pos.x -= (jpen * 
 									all_spheres[j].direction.x ) /
 									j_dir_mag;
@@ -497,16 +506,20 @@ void collision_check() {
 									j_dir_mag;	
 						// END NUDGE
 							double temp1, temp2, temp3;
-							temp1 = all_spheres[i].pos.x - all_spheres[i].previous_pos.x;
-							temp2 = all_spheres[i].pos.y - all_spheres[i].previous_pos.y;
+							temp1 = all_spheres[i].pos.x - 
+								all_spheres[i].previous_pos.x;
+							temp2 = all_spheres[i].pos.y - 
+								all_spheres[i].previous_pos.y;
 							all_spheres[i].direction.x = temp1;
 							all_spheres[i].direction.y = temp2;
 							double mag1 = normalize(all_spheres[i].direction);
 							all_spheres[i].direction.x /= mag1;
 							all_spheres[i].direction.y /= mag1;
 							
-							temp1 = all_spheres[j].pos.x - all_spheres[j].previous_pos.x;
-							temp2 = all_spheres[j].pos.y - all_spheres[j].previous_pos.y;
+							temp1 = all_spheres[j].pos.x - 
+								all_spheres[j].previous_pos.x;
+							temp2 = all_spheres[j].pos.y - 
+								all_spheres[j].previous_pos.y;
 							all_spheres[j].direction.x = temp1;
 							all_spheres[j].direction.y = temp2;	
 							double mag2 = normalize(all_spheres[j].direction);
@@ -542,12 +555,12 @@ void collision_check() {
 						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
 						// ball 1 new components
-						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
-						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+						b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
+						b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
 
 						// ball 2 new components
-						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
-						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+						b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
+						b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
 
 						// need to change direction to match new speeds
 						all_spheres[i].direction.x = b1_vx_new;
@@ -562,11 +575,11 @@ void collision_check() {
 						double mag2 = normalize(all_spheres[j].direction);
 						all_spheres[j].direction.x /= mag2;
 						all_spheres[j].direction.y /= mag2;
-						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
-						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) +
+								pow(b1_vy_new,2));
+						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) +
+								pow(b2_vy_new,2));
 						// speeds updated
-
-						// TODO change direction here
 
 						all_spheres[i].path = 0;
 						all_spheres[j].path = 0;
@@ -579,13 +592,15 @@ void collision_check() {
 							double penetration = (all_spheres[i].radius +
 								all_spheres[j].radius) - d;
 							double ipen, jpen, ij;
-							ij = all_spheres[i].velocity + all_spheres[j].velocity;
+							ij = all_spheres[i].velocity +
+								all_spheres[j].velocity;
 							ipen = all_spheres[i].velocity / ij; // 0-1
 							jpen = all_spheres[j].velocity / ij; // 0-1
 							ipen *= penetration;
 							jpen *= penetration;
 							
-							double i_dir_mag = normalize(all_spheres[i].direction);
+							double i_dir_mag = 
+								normalize(all_spheres[i].direction);
 							
 							all_spheres[i].pos.x -= (ipen * 
 									all_spheres[i].direction.x ) /
@@ -593,7 +608,8 @@ void collision_check() {
 							all_spheres[i].pos.y -= (ipen * 
 									all_spheres[i].direction.y ) /
 									i_dir_mag;
-							double j_dir_mag = normalize(all_spheres[j].direction);
+							double j_dir_mag = 
+								normalize(all_spheres[j].direction);
 							all_spheres[j].pos.x -= (jpen * 
 									all_spheres[j].direction.x ) /
 									j_dir_mag;
@@ -607,8 +623,10 @@ void collision_check() {
 						// if [i] is the curved ball
 						if(all_spheres[i].path == 1) {
 							double temp1, temp2, temp3;
-							temp1 = all_spheres[i].pos.x - all_spheres[i].previous_pos.x;
-							temp2 = all_spheres[i].pos.y - all_spheres[i].previous_pos.y;
+							temp1 = all_spheres[i].pos.x - 
+								all_spheres[i].previous_pos.x;
+							temp2 = all_spheres[i].pos.y - 
+								all_spheres[i].previous_pos.y;
 							all_spheres[i].direction.x = temp1;
 							all_spheres[i].direction.y = temp2;
 							double mag1 = normalize(all_spheres[i].direction);
@@ -616,8 +634,10 @@ void collision_check() {
 							all_spheres[i].direction.y /= mag1;
 						}else{ // [j] is the curved ball
 							double temp1, temp2, temp3;
-							temp1 = all_spheres[j].pos.x - all_spheres[j].previous_pos.x;
-							temp2 = all_spheres[j].pos.y - all_spheres[j].previous_pos.y;
+							temp1 = all_spheres[j].pos.x - 
+								all_spheres[j].previous_pos.x;
+							temp2 = all_spheres[j].pos.y - 
+								all_spheres[j].previous_pos.y;
 							all_spheres[j].direction.x = temp1;
 							all_spheres[j].direction.y = temp2;	
 							double mag2 = normalize(all_spheres[j].direction);
@@ -654,12 +674,12 @@ void collision_check() {
 						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
 						// ball 1 new components
-						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
-						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+						b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
+						b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
 
 						// ball 2 new components
-						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
-						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+						b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
+						b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
 
 						// need to change direction to match new speeds
 						all_spheres[i].direction.x = b1_vx_new;
@@ -674,11 +694,11 @@ void collision_check() {
 						double mag2 = normalize(all_spheres[j].direction);
 						all_spheres[j].direction.x /= mag2;
 						all_spheres[j].direction.y /= mag2;
-						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
-						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) +
+								pow(b1_vy_new,2));
+						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) +
+								pow(b2_vy_new,2));
 						// speeds updated
-
-						// TODO change direction here
 
 						all_spheres[i].path = 0;
 						all_spheres[j].path = 0;
@@ -750,7 +770,6 @@ struct sphere generate_sphere() {
 			ball.pos = ball.p1;
 			ball.previous_pos = ball.pos;
 			
-			// TODO confirm random_direction is a waste
 			// gets a random direction, this might be a wasted step
 			ball.direction = random_direction();
 
