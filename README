@@ -35,7 +35,7 @@ TODO Simulation Presentation
 [X]	- random color eqn
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
-	- Nudge collisions
+[X]	- Nudge collisions
 	- Optional Decay Equations (optional)
 	- Decay on collision
 	- System info via text (optional)
