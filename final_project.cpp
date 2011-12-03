@@ -808,10 +808,16 @@ struct sphere generate_sphere() {
 		
 		return ball;
 }
+
+/*
+ * void print_sphere( struct sphere *ball);
+ *
+ * prints sphere info, used for debugging
+ */
 void print_sphere( struct sphere *ball) {
 	printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
 	printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
-	printf("prev");
+	printf("prev:");
 	//double interval;
 	//struct point2f pos;
 	//struct point2f previous_pos;
@@ -827,7 +833,6 @@ void print_sphere( struct sphere *ball) {
 	//double mass;
 	////int dead;
 	//int active;
-
 }
 
 /*
