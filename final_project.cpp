@@ -328,7 +328,7 @@ int collision_detection( struct sphere ball ) {
 	for( i = 0; i < all_spheres.size(); i++ ) {
 		d = distance(ball, all_spheres[i]);
 		
-		if( d <= ball.radius + all_spheres[i].radius) {
+		if( d <= ball.radius + all_spheres[i].radius + 0.0001) {
 			count++;
 		}
 	}
@@ -785,7 +785,7 @@ struct sphere generate_sphere() {
 			
 			// position starts at p1
 			ball.pos = ball.p1;
-			ball.previous_pos = ball.pos;
+			ball.previous_pos = {0.0, 0.0};
 			
 			// gets a random direction, this might be a wasted step
 			ball.direction = random_direction();
@@ -808,6 +808,28 @@ struct sphere generate_sphere() {
 		
 		return ball;
 }
+void print_sphere( struct sphere *ball) {
+	printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
+	printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
+	printf("prev");
+	//double interval;
+	//struct point2f pos;
+	//struct point2f previous_pos;
+	//struct point2f p1,p2,p3,p4;
+	//double radius;
+	//struct color3f color;
+	//double velocity;
+	//double curve_length;
+	//double start_time;
+	//double curve_time;
+	//int path;  // flag: 0 is linear path, 1 is a bezier curve
+	//struct vector2f direction;
+	//double mass;
+	////int dead;
+	//int active;
+
+}
+
 /*
  * void display();
  *
@@ -864,6 +886,7 @@ void display() {
 	
 	int i;
 	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
+		//printf("%f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
 		glPushMatrix();
 		glColor3f(all_spheres[i].color.red,
 				all_spheres[i].color.green,
@@ -876,8 +899,11 @@ void display() {
 			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
 		glPopMatrix();
+		if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
+			print_sphere(&all_spheres[i]);
+		}
 	}
-	printf("spheres: %d\n", all_spheres.size());
+	//printf("spheres: %d\n", all_spheres.size());
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
 }
@@ -971,7 +997,8 @@ void keystroke(unsigned char c, int x, int y) {
 int main(int argc, char **argv) {
      glutInit(&argc,argv);
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
-     window = glutCreateWindow("Sphere Collisions"); //window title
+     
+	 window = glutCreateWindow("Sphere Collisions"); //window title
      glutDisplayFunc(display);
      glutIdleFunc(animate);	// call animate() when idle
      glutKeyboardFunc(keystroke);	//handles user input
