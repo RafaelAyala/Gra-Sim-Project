@@ -268,7 +268,6 @@ struct sphere generate_curve( struct sphere ball) {
  *
  * This acts as the idle function, whenever the system is idle, animte() is
  * called.  The end of animate() forces display() to refresh
- * TODO clean animate
  */
 void animate() {
 	int j;
