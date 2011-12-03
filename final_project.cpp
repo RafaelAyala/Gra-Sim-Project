@@ -303,7 +303,35 @@ int collision_detection( struct sphere ball ) {
 		return 0;
 	}
 }
-	
+
+/*
+ * void wall_check( struct sphere ball );
+ *
+ * checks for a ball to wall collision
+ */ 
+struct sphere wall_check( struct sphere ball ) {
+		
+		double dist = 5.0 - ball.radius;
+		int collision = 0;	
+		// right
+		if( ball.pos.x >= dist || ball.pos.x <= -1*dist) {
+			ball.direction.x *= -1;
+			//ball.pos.x = dist;
+			ball.pos.x = ( ball.pos.x < 0.0  ) ? -1*dist : dist;
+			ball.path = 0;
+			ball.start_time = (double) clock();
+			ball.active = 1;
+		} else if(ball.pos.y >= dist || ball.pos.y <= -1*dist) {
+			ball.direction.y *= -1;
+			ball.pos.y = ( ball.pos.y < 0.0 ) ? -1*dist : dist;
+			ball.path = 0;
+			ball.start_time = (double) clock();
+			ball.active = 1;
+		}
+		
+		return ball;
+}
+
 /*
  * void collision_check();
  *
@@ -318,47 +346,47 @@ void collision_check() {
 	for(i = 0; i < all_spheres.size(); i++) {
 
 		// ball-wall collisions
-		double dist = 5.0 - all_spheres[i].radius;
-		//right
-		if(all_spheres[i].pos.x >= dist ) {
-			all_spheres[i].direction.x *= -1;
-			all_spheres[i].pos.x = dist;
-			all_spheres[i].path = 0;
-			//printf("right\n");
-			//glutIdleFunc(NULL);
-			all_spheres[i].start_time = (double) clock();
-			all_spheres[i].active = 1;
+		//double dist = 5.0 - all_spheres[i].radius;
+		////right
+		//if(all_spheres[i].pos.x >= dist ) {
+		//	all_spheres[i].direction.x *= -1;
+		//	all_spheres[i].pos.x = dist;
+		//	all_spheres[i].path = 0;
+		//	//printf("right\n");
+		//	//glutIdleFunc(NULL);
+		//	all_spheres[i].start_time = (double) clock();
+		//	all_spheres[i].active = 1;
 
-		//left
-		} else if(all_spheres[i].pos.x <= -1*dist){
-			all_spheres[i].direction.x *= -1;
-			all_spheres[i].pos.x = -1*dist;
-			all_spheres[i].path = 0;
-			//printf("left\n");
-			//glutIdleFunc(NULL);
-			all_spheres[i].start_time = (double) clock();
-			all_spheres[i].active = 1;
-		//bottom
-		} else if(all_spheres[i].pos.y >= dist ) {
-			all_spheres[i].direction.y *= -1;
-			all_spheres[i].pos.y = dist;
-			all_spheres[i].path = 0;
-			//printf("bottom\n");
-			//glutIdleFunc(NULL);
-			all_spheres[i].start_time = (double) clock();
-			all_spheres[i].active = 1;
-		//top
-		}else if(all_spheres[i].pos.y <= -1*dist){
-			all_spheres[i].direction.y *= -1;
-			all_spheres[i].pos.y = -1*dist;
-			all_spheres[i].path = 0;
-			//printf("top\n");
-			//glutIdleFunc(NULL);
-			all_spheres[i].start_time = (double) clock();
-			all_spheres[i].active = 1;
-		}
+		////left
+		//} else if(all_spheres[i].pos.x <= -1*dist){
+		//	all_spheres[i].direction.x *= -1;
+		//	all_spheres[i].pos.x = -1*dist;
+		//	all_spheres[i].path = 0;
+		//	//printf("left\n");
+		//	//glutIdleFunc(NULL);
+		//	all_spheres[i].start_time = (double) clock();
+		//	all_spheres[i].active = 1;
+		////bottom
+		//} else if(all_spheres[i].pos.y >= dist ) {
+		//	all_spheres[i].direction.y *= -1;
+		//	all_spheres[i].pos.y = dist;
+		//	all_spheres[i].path = 0;
+		//	//printf("bottom\n");
+		//	//glutIdleFunc(NULL);
+		//	all_spheres[i].start_time = (double) clock();
+		//	all_spheres[i].active = 1;
+		////top
+		//}else if(all_spheres[i].pos.y <= -1*dist){
+		//	all_spheres[i].direction.y *= -1;
+		//	all_spheres[i].pos.y = -1*dist;
+		//	all_spheres[i].path = 0;
+		//	//printf("top\n");
+		//	//glutIdleFunc(NULL);
+		//	all_spheres[i].start_time = (double) clock();
+		//	all_spheres[i].active = 1;
+		//}
 		// end ball-wall collisions	
-
+		all_spheres[i] = wall_check(all_spheres[i]);
 		// ball-ball collisions
 		if( i < all_spheres.size()-1 ){
 			for( j = i+1; j < all_spheres.size(); j++) {
@@ -460,8 +488,8 @@ void collision_check() {
 					all_spheres[i].start_time = (double) clock();
 					all_spheres[j].start_time = (double) clock();
 
-					//all_spheres[i].dead = 200;
-					//all_spheres[j].dead = 200;
+					all_spheres[i].dead = 200;
+					all_spheres[j].dead = 200;
 
 					//printf("after\n");
 					//printf("ball i: %f\n", all_spheres[i].velocity);
@@ -479,10 +507,7 @@ void collision_check() {
  * Returns a randomized 2D point within a bounded 2D area.
  */
 struct point2f random_ranged_point() {
-		struct point2f point;
-		//point.x = ranged_random_value();
-		//point.y = ranged_random_value();
-		return point = {ranged_random_value(), ranged_random_value()};
+		return (struct point2f) {ranged_random_value(), ranged_random_value()};
 }
 
 /*
