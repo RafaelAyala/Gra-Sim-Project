@@ -6,6 +6,7 @@
  * Final Project
  *
  * TODO decay on collide
+ * remove dead variable
  */
 
 #ifdef __APPLE__  	// Mac OpenGL Libraries
@@ -32,10 +33,10 @@
 // TODO clean defines
 #define NUMBER_OF_BALLS 2
 #define DECAY_PROB 0.5
-#define BALL_RADIUS 0.1
+//#define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 16
-#define RAINBOW 1 // 1 = multi colored spheres, 0 = red
+//#define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 #define DENSITY 1.0
 #define PI 3.14159
 
@@ -84,7 +85,7 @@ struct sphere{
 	int path;  // flag: 0 is linear path, 1 is a bezier curve
 	struct vector2f direction;
 	double mass;
-	int dead;
+	//int dead;
 	int active;
 };
 
@@ -337,27 +338,31 @@ int collision_detection( struct sphere ball ) {
  *
  * checks for a ball to wall collision
  */ 
-struct sphere wall_check( struct sphere ball ) {
+//struct sphere wall_check( struct sphere ball ) {
+void wall_check( struct sphere *ball ) {
 		
-		double dist = 5.0 - ball.radius;
-		int collision = 0;	
-		// right
-		if( ball.pos.x >= dist || ball.pos.x <= -1*dist) {
-			ball.direction.x *= -1;
-			//ball.pos.x = dist;
-			ball.pos.x = ( ball.pos.x < 0.0  ) ? -1*dist : dist;
-			ball.path = 0;
-			ball.start_time = (double) clock();
-			ball.active = 1;
-		} else if(ball.pos.y >= dist || ball.pos.y <= -1*dist) {
-			ball.direction.y *= -1;
-			ball.pos.y = ( ball.pos.y < 0.0 ) ? -1*dist : dist;
-			ball.path = 0;
-			ball.start_time = (double) clock();
-			ball.active = 1;
+		//return ball;
+		double dist = 5.0 - ball->radius;
+		if(ball->path == 1) {
+			ball->direction.x = ball->pos.x - ball->previous_pos.x;
+			ball->direction.y = ball->pos.y - ball->previous_pos.y;
+			double mag1 = normalize(ball->direction);
+			ball->direction.x /= mag1;
+			ball->direction.y /= mag1;
 		}
-		
-		return ball;
+		if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
+			ball->direction.x *= -1;
+			ball->pos.x = ( ball->pos.x < 0.0  ) ? -1*dist : dist;
+			ball->path = 0;
+			ball->start_time = (double) clock();
+			ball->active = 1;
+		} else if(ball->pos.y >= dist || ball->pos.y <= -1*dist) {
+			ball->direction.y *= -1;
+			ball->pos.y = ( ball->pos.y < 0.0 ) ? -1*dist : dist;
+			ball->path = 0;
+			ball->start_time = (double) clock();
+			ball->active = 1;
+		}
 }
 
 /*
@@ -372,10 +377,7 @@ void collision_check() {
 
 	for(i = 0; i < all_spheres.size(); i++) {
 
-		// ball-wall collisions
-		// TODO curve-wall collision
-		all_spheres[i] = wall_check(all_spheres[i]);
-		
+		wall_check(&all_spheres[i]);
 		
 		// ball-ball collisions
 		if( i < all_spheres.size()-1 ){
@@ -383,13 +385,14 @@ void collision_check() {
 				// check all but itself
 				//if( i == j) { continue;}
 
-				if(all_spheres[j].dead > 0) {
-					all_spheres[j].dead--;
-					continue;
-				}
+				//if(all_spheres[j].dead > 0) {
+				//	all_spheres[j].dead--;
+				//	continue;
+				//}
 
 				d = distance(all_spheres[i], all_spheres[j]);
-
+				
+				// if a collision
 				if( d <= all_spheres[i].radius + all_spheres[j].radius) {
 					
 					// COLLISION RESPONSE STARTS
@@ -793,7 +796,7 @@ struct sphere generate_sphere() {
 			// start on a curved path
 			ball.path = 1;
 			// dead variable is set to 0, used to prevent collisions
-			ball.dead = 0;
+			//ball.dead = 0;
 			ball.color = random_color();		
 
 			ball.curve_length = curve_length( ball );
