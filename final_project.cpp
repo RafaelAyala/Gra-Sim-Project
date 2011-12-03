@@ -31,7 +31,7 @@
 #include <vector>
 // configuration
 // TODO clean defines
-#define NUMBER_OF_BALLS 2
+#define NUMBER_OF_BALLS 1
 #define DECAY_PROB 0.5
 //#define BALL_RADIUS 0.1
 #define BALL_SPEED 2.0 // ASU's per second
@@ -39,6 +39,17 @@
 //#define RAINBOW 1 // 1 = multi colored spheres, 0 = red
 #define DENSITY 1.0
 #define PI 3.14159
+
+///Probabilities for the directions p3 and p4 will go in bezier curves
+#define N 0.0
+#define S 0.0
+#define E 0.0
+#define W 0.0
+#define NW 1.0
+#define SE 0.0
+#define SW 0.0
+#define NE 0.0
+#define STEP 3.0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -240,6 +251,68 @@ void move_on_curve( struct sphere *ball ) {
 	//return ball;
 }
 
+struct point2f new_curve_point(struct point2f origin){
+
+	double p = (rand() % 101)/100.;
+	//printf("%f \n", p);
+	double pWest,pEast,pNorth,pSouth;
+	double pNE,pNW,pSE,pSW;	
+	struct point2f result;
+	
+	pWest =  W;
+	pEast = W + E;
+	pNorth = E + N;
+	pSouth = N + S;
+	pNE = S + NE;
+	pNW = NE + NW;
+	pSE = NW + SE;
+	pSW = SE + SW;
+
+	if(p < pWest){
+	//Move left
+		result.x = origin.x - STEP;
+		result.y = 0.0;
+		return result;
+	} else if (p < pEast){
+	//Move Right
+		result.x = origin.x + STEP;
+		result.y = 0.0;
+		return result;
+	} else if(p < pNorth){
+	//Move Up
+		result.x = 0.0;
+		result.y = origin.y + STEP;
+		return result;
+	} else if (p < pSouth){
+		result.x = 0.0;
+		result.y = origin.y - STEP;
+		return result;
+	} else if (p < pNE){
+	//Move north east
+		result.x = origin.x + STEP;
+		result.y = origin.y + STEP;
+		return result;
+	} else if (p < pNW){
+		//printf("NORTHWEST\n");
+	//move north west
+		result.x = origin.x - STEP;
+		result.y = origin.y + STEP;
+		//printf("x:%f y:%f xnew:%f ynew:%f\n",origin.x,origin.y,result.x,result.y); 
+		return result;
+	} else if (p < pSE){
+	//move south east
+		result.x = origin.x + STEP;
+		result.y = origin.y - STEP;
+		return result;
+	} else {
+		result.x = origin.x - STEP;
+		result.y = origin.y - STEP;
+		return result;
+	//move south west
+	}
+}
+
+
 /*
  * void generate_curve( struct sphere ball);
  *
@@ -248,17 +321,26 @@ void move_on_curve( struct sphere *ball ) {
 void generate_curve( struct sphere *ball) {
 	// store previous position
 	ball->previous_pos = ball->pos;
-	
 	ball->interval = 0.0;
-	ball->p2.x = ( ball->p4.x - ball->p3.x ) + ball->p4.x;
+	
 	ball->p1.x = ball->p4.x;
-	ball->p3.x = ranged_random_value();
-	ball->p4.x = ranged_random_value();
+	ball->p2.x = ( ball->p4.x - ball->p3.x ) + ball->p4.x;
+	
+	//ball->p3.x = ranged_random_value();
+	//ball->p4.x = ranged_random_value();
 
 	ball->p2.y = ( ball->p4.y - ball->p3.y ) + ball->p4.y;
 	ball->p1.y = ball->p4.y;
-	ball->p3.y = ranged_random_value();
-	ball->p4.y = ranged_random_value();
+	
+	//ball->p3.y = ranged_random_value();
+	//ball->p4.y = ranged_random_value();
+	
+	
+	ball->p3 = new_curve_point(ball->p2);
+	printf("    x:%f y:%f\n",ball->p3.x,ball->p3.y); 
+	ball->p4 = new_curve_point(ball->p3);
+	printf("    x:%f y:%f\n",ball->p4.x,ball->p4.y);
+	
 	ball->curve_length = curve_length( ball );
 	ball->start_time = (double) clock();
 	ball->curve_time = ball->curve_length / ball->velocity;
@@ -947,7 +1029,7 @@ void gfxinit() {
    
     glMatrixMode(GL_PROJECTION);
     //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,5.0,-5.0,1.0,20.0);
+    glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
@@ -1001,6 +1083,7 @@ void keystroke(unsigned char c, int x, int y) {
  */
 int main(int argc, char **argv) {
      glutInit(&argc,argv);
+     glutInitWindowSize(800,800);
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
      
 	 window = glutCreateWindow("Sphere Collisions"); //window title
