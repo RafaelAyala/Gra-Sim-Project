@@ -253,14 +253,16 @@ void animate() {
 				all_spheres[j].pos = get_position( all_spheres[j], all_spheres[j].interval );
 			} else {
 				all_spheres[j].interval = 0.0;
-				all_spheres[j].p2.x = (all_spheres[j].p4.x - all_spheres[j].p3.x) + 
-					all_spheres[j].p4.x;
+				all_spheres[j].p2.x = ( all_spheres[j].p4.x - 
+										all_spheres[j].p3.x ) + 
+										all_spheres[j].p4.x;
 				all_spheres[j].p1.x = all_spheres[j].p4.x;
 				all_spheres[j].p3.x = ranged_random_value();
 				all_spheres[j].p4.x = ranged_random_value();
 
-				all_spheres[j].p2.y = (all_spheres[j].p4.y - all_spheres[j].p3.y) + 
-					all_spheres[j].p4.y;
+				all_spheres[j].p2.y = ( all_spheres[j].p4.y - 
+										all_spheres[j].p3.y ) + 
+										all_spheres[j].p4.y;
 				all_spheres[j].p1.y = all_spheres[j].p4.y;
 				all_spheres[j].p3.y = ranged_random_value();
 				all_spheres[j].p4.y = ranged_random_value();
@@ -290,7 +292,7 @@ int collision_detection( struct sphere ball ) {
 	for( i = 0; i < all_spheres.size(); i++ ) {
 		d = distance(ball, all_spheres[i]);
 
-		if( d <= ball.radius + all_spheres[i].radius + 0.001) {
+		if( d <= ball.radius + all_spheres[i].radius ) {
 			count++;
 		}
 	}
@@ -308,7 +310,6 @@ int collision_detection( struct sphere ball ) {
  * determines if any ball-wall or ball-ball collisions occur
  * TODO velocitys are hard coded,
  * TODO tangents need to be used
- * TODO deltas need real values
  */
 void collision_check() {
 	int i, j;
@@ -359,116 +360,114 @@ void collision_check() {
 		// end ball-wall collisions	
 
 		// ball-ball collisions
-		if(i <all_spheres.size()-1){
-		for( j = i+1; j < all_spheres.size(); j++) {
-			// check all but itself
-			//if( i == j) { continue;}
+		if( i < all_spheres.size()-1 ){
+			for( j = i+1; j < all_spheres.size(); j++) {
+				// check all but itself
+				//if( i == j) { continue;}
 
-			if(all_spheres[j].dead > 0) {
-				all_spheres[j].dead--;
-				continue;
+				if(all_spheres[j].dead > 0) {
+					all_spheres[j].dead--;
+					continue;
+				}
+
+				d = distance(all_spheres[i], all_spheres[j]);
+
+				if( d <= all_spheres[i].radius + all_spheres[j].radius) {
+					all_spheres[i].active = 1;
+					all_spheres[j].active = 1;
+					//printf("ball-ball\n");
+					//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
+					//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
+					//glutIdleFunc(NULL);
+
+					// store before collision velocities
+					double b1_v, b2_v;
+					b1_v = all_spheres[i].velocity;
+					b2_v = all_spheres[j].velocity;
+					// have before collision velocities stored	
+					//printf("###COLLISION### %d vs %d\n", i, j);
+					//printf("b1 v before: %f\n", all_spheres[i].velocity);
+					//printf("b2 v before: %f\n", b2_v);
+					//printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
+					//printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
+					// need x and y components of speed
+					double b1_vx, b1_vy, b2_vx, b2_vy;
+					b1_vx = (all_spheres[i].direction.x * b1_v);
+					b1_vy = (all_spheres[i].direction.y * b1_v);
+
+					b2_vx = (all_spheres[j].direction.x * b2_v);
+					b2_vy = (all_spheres[j].direction.y * b2_v);
+					// have x and y components of speed
+
+					//printf("b1 components: %f %f\n", b1_vx, b1_vy);
+					//printf("b2 components: %f %f\n", b2_vx, b2_vy);
+
+
+					// need ball1 and ball2 masses
+					all_spheres[i].mass = get_mass(all_spheres[i]);	
+					all_spheres[j].mass = get_mass(all_spheres[j]);	
+					double m1, m2;
+					m1 = all_spheres[i].mass;
+					m2 = all_spheres[j].mass;
+					// have ball masses
+					//printf("mass1 %f\n", m1);
+					//printf("mass2 %f\n", m2);
+
+					// need the new velocity components (after collision)
+					double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
+
+					// ball 1 new components
+					b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
+					b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+
+					// ball 2 new components
+					b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
+					b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+					// have new velocity compoents
+					//printf("b1 newx: %f\n", b1_vx_new);
+					//printf("b1 newy: %f\n", b1_vy_new);
+					//printf("b2 newx: %f\n", b2_vx_new);
+					//printf("b2 newy: %f\n", b2_vy_new);
+
+					// need to change direction to match new speeds
+					all_spheres[i].direction.x = b1_vx_new;
+					all_spheres[i].direction.y = b1_vy_new;
+					double mag1 = normalize(all_spheres[i].direction);
+					all_spheres[i].direction.x /= mag1;
+					all_spheres[i].direction.y /= mag1;
+					//printf("ball1 dir: %f\n", all_spheres[i].direction.x);
+					//printf("ball1 dir: %f\n", all_spheres[i].direction.y);
+
+
+					all_spheres[j].direction.x = b2_vx_new;
+					all_spheres[j].direction.y = b2_vy_new;
+					double mag2 = normalize(all_spheres[j].direction);
+					all_spheres[j].direction.x /= mag2;
+					all_spheres[j].direction.y /= mag2;
+					//printf("ball2 dir: %f\n", all_spheres[j].direction.x);
+					//printf("ball2 dir: %f\n", all_spheres[j].direction.y);
+					// directions changed, normalized for unit vectors
+
+					// need to update velocities of ball1 and ball2
+					all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+					all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+					// speeds updated
+
+					// TODO change direction here
+
+					all_spheres[i].path = 0;
+					all_spheres[j].path = 0;
+					all_spheres[i].start_time = (double) clock();
+					all_spheres[j].start_time = (double) clock();
+
+					//all_spheres[i].dead = 200;
+					//all_spheres[j].dead = 200;
+
+					//printf("after\n");
+					//printf("ball i: %f\n", all_spheres[i].velocity);
+					//printf("ball j: %f\n", all_spheres[j].velocity);
+				}
 			}
-
-
-
-			d = distance(all_spheres[i], all_spheres[j]);
-
-			if( d <= all_spheres[i].radius + all_spheres[j].radius) {
-				all_spheres[i].active = 1;
-				all_spheres[j].active = 1;
-				//printf("ball-ball\n");
-				//printf("ball i: %f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
-				//printf("ball j: %f %f\n", all_spheres[j].pos.x, all_spheres[j].pos.y);
-				//glutIdleFunc(NULL);
-
-				// store before collision velocities
-				double b1_v, b2_v;
-				b1_v = all_spheres[i].velocity;
-				b2_v = all_spheres[j].velocity;
-				// have before collision velocities stored	
-				//printf("###COLLISION### %d vs %d\n", i, j);
-				//printf("b1 v before: %f\n", all_spheres[i].velocity);
-				//printf("b2 v before: %f\n", b2_v);
-				//printf("b1 direction: %f %f\n", all_spheres[i].direction.x,all_spheres[i].direction.y);
-				//printf("b2 direction: %f %f\n", all_spheres[j].direction.x,all_spheres[j].direction.y);
-				// need x and y components of speed
-				double b1_vx, b1_vy, b2_vx, b2_vy;
-				b1_vx = (all_spheres[i].direction.x * b1_v);
-				b1_vy = (all_spheres[i].direction.y * b1_v);
-
-				b2_vx = (all_spheres[j].direction.x * b2_v);
-				b2_vy = (all_spheres[j].direction.y * b2_v);
-				// have x and y components of speed
-
-				//printf("b1 components: %f %f\n", b1_vx, b1_vy);
-				//printf("b2 components: %f %f\n", b2_vx, b2_vy);
-
-
-				// need ball1 and ball2 masses
-				all_spheres[i].mass = get_mass(all_spheres[i]);	
-				all_spheres[j].mass = get_mass(all_spheres[j]);	
-				double m1, m2;
-				m1 = all_spheres[i].mass;
-				m2 = all_spheres[j].mass;
-				// have ball masses
-				//printf("mass1 %f\n", m1);
-				//printf("mass2 %f\n", m2);
-
-				// need the new velocity components (after collision)
-				double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
-
-				// ball 1 new components
-				b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
-				b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
-
-				// ball 2 new components
-				b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
-				b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
-				// have new velocity compoents
-				//printf("b1 newx: %f\n", b1_vx_new);
-				//printf("b1 newy: %f\n", b1_vy_new);
-				//printf("b2 newx: %f\n", b2_vx_new);
-				//printf("b2 newy: %f\n", b2_vy_new);
-
-				// need to change direction to match new speeds
-				all_spheres[i].direction.x = b1_vx_new;
-				all_spheres[i].direction.y = b1_vy_new;
-				double mag1 = normalize(all_spheres[i].direction);
-				all_spheres[i].direction.x /= mag1;
-				all_spheres[i].direction.y /= mag1;
-				//printf("ball1 dir: %f\n", all_spheres[i].direction.x);
-				//printf("ball1 dir: %f\n", all_spheres[i].direction.y);
-
-
-				all_spheres[j].direction.x = b2_vx_new;
-				all_spheres[j].direction.y = b2_vy_new;
-				double mag2 = normalize(all_spheres[j].direction);
-				all_spheres[j].direction.x /= mag2;
-				all_spheres[j].direction.y /= mag2;
-				//printf("ball2 dir: %f\n", all_spheres[j].direction.x);
-				//printf("ball2 dir: %f\n", all_spheres[j].direction.y);
-				// directions changed, normalized for unit vectors
-
-				// need to update velocities of ball1 and ball2
-				all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
-				all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
-				// speeds updated
-
-				// TODO change direction here
-
-				all_spheres[i].path = 0;
-				all_spheres[j].path = 0;
-				all_spheres[i].start_time = (double) clock();
-				all_spheres[j].start_time = (double) clock();
-
-				//all_spheres[i].dead = 200;
-				//all_spheres[j].dead = 200;
-
-				//printf("after\n");
-				//printf("ball i: %f\n", all_spheres[i].velocity);
-				//printf("ball j: %f\n", all_spheres[j].velocity);
-			}
-		}
 		}
 		// end ball-ball
 	}
@@ -664,7 +663,8 @@ void display() {
 				all_spheres[i].color.blue);
 		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
 		if( all_spheres[i].active == 0) {
-			glutWireSphere(all_spheres[i].radius, 5, 5);
+			glColor3f( 1.0, 1.0, 1.0);
+			glutWireSphere(all_spheres[i].radius, 10, 10);
 		}else{
 			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
