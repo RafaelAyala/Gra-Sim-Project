@@ -72,7 +72,7 @@ struct color3f {
 struct sphere{
 	double interval;
 	struct point2f pos;
-	struct point2f prevous_pos;
+	struct point2f previous_pos;
 	struct point2f p1,p2,p3,p4;
 	double radius;
 	struct color3f color;
@@ -237,17 +237,26 @@ void animate() {
 		}
 
 		if(all_spheres[j].path == 0) { //linear paths
-			// TODO
 			double timediff = (current - all_spheres[j].start_time)/(CLOCKS_PER_SEC);
 
-			all_spheres[j].pos.x += all_spheres[j].direction.x * all_spheres[j].velocity * timediff;
-			all_spheres[j].pos.y += all_spheres[j].direction.y * all_spheres[j].velocity * timediff;
+			//store previous positions
+			all_spheres[j].previous_pos = all_spheres[j].pos;
+			
+			// update position
+			all_spheres[j].pos.x += all_spheres[j].direction.x * 
+									all_spheres[j].velocity * 
+									timediff;
+			all_spheres[j].pos.y += all_spheres[j].direction.y * 
+									all_spheres[j].velocity * 
+									timediff;
 			all_spheres[j].start_time = (double) clock();
 
 
 		} else if(all_spheres[j].path == 1) { // bezier curves for path	
+			// still travelling on the same curve
 			if( all_spheres[j].interval < 1.0) {
-
+				// store previous position
+				all_spheres[j].previous_pos = all_spheres[j].pos;
 				tempX = all_spheres[j].pos.x;
 				tempY = all_spheres[j].pos.y;
 				//printf("%f %f\n", tempX, tempY);
@@ -256,7 +265,12 @@ void animate() {
 					( CLOCKS_PER_SEC * all_spheres[j].curve_time );
 				all_spheres[j].pos = 
 					get_position( all_spheres[j], all_spheres[j].interval );
+			// begin a new curve
 			} else {
+				
+				// store previous position
+				all_spheres[j].previous_pos = all_spheres[j].pos;
+				
 				all_spheres[j].interval = 0.0;
 				all_spheres[j].p2.x = ( all_spheres[j].p4.x - 
 										all_spheres[j].p3.x ) + 
@@ -347,6 +361,7 @@ void collision_check() {
 	for(i = 0; i < all_spheres.size(); i++) {
 
 		// ball-wall collisions
+		// TODO curve-wall collision
 		all_spheres[i] = wall_check(all_spheres[i]);
 		// ball-ball collisions
 		
@@ -365,67 +380,239 @@ void collision_check() {
 				if( d <= all_spheres[i].radius + all_spheres[j].radius) {
 					
 					// COLLISION RESPONSE STARTS
+					if( all_spheres[i].path == 0 && all_spheres[j].path == 0) {
+						// START BALL - BALL
+						all_spheres[i].active = 1;
+						all_spheres[j].active = 1;
+
+						// store before collision velocities
+						double b1_v, b2_v;
+						b1_v = all_spheres[i].velocity;
+						b2_v = all_spheres[j].velocity;
+						double b1_vx, b1_vy, b2_vx, b2_vy;
+						b1_vx = (all_spheres[i].direction.x * b1_v);
+						b1_vy = (all_spheres[i].direction.y * b1_v);
+
+						b2_vx = (all_spheres[j].direction.x * b2_v);
+						b2_vy = (all_spheres[j].direction.y * b2_v);
+						// have x and y components of speed
+
+
+
+						// need ball1 and ball2 masses
+						all_spheres[i].mass = get_mass(all_spheres[i]);	
+						all_spheres[j].mass = get_mass(all_spheres[j]);	
+						double m1, m2;
+						m1 = all_spheres[i].mass;
+						m2 = all_spheres[j].mass;
+						// have ball masses
+
+						// need the new velocity components (after collision)
+						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
+
+						// ball 1 new components
+						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
+						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+
+						// ball 2 new components
+						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
+						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+
+						// need to change direction to match new speeds
+						all_spheres[i].direction.x = b1_vx_new;
+						all_spheres[i].direction.y = b1_vy_new;
+						double mag1 = normalize(all_spheres[i].direction);
+						all_spheres[i].direction.x /= mag1;
+						all_spheres[i].direction.y /= mag1;
+
+
+						all_spheres[j].direction.x = b2_vx_new;
+						all_spheres[j].direction.y = b2_vy_new;
+						double mag2 = normalize(all_spheres[j].direction);
+						all_spheres[j].direction.x /= mag2;
+						all_spheres[j].direction.y /= mag2;
+						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						// speeds updated
+
+						// TODO change direction here
+
+						all_spheres[i].path = 0;
+						all_spheres[j].path = 0;
+						all_spheres[i].start_time = (double) clock();
+						all_spheres[j].start_time = (double) clock();
+						// END BALL-BALL
 					
-					all_spheres[i].active = 1;
-					all_spheres[j].active = 1;
+					}else if(all_spheres[i].path == 1 && all_spheres[j].path == 1){
+						{
+						// START CURVE-CURVE
+						// do nothing
+							double temp1, temp2, temp3;
+							temp1 = all_spheres[i].pos.x - all_spheres[i].previous_pos.x;
+							temp2 = all_spheres[i].pos.y - all_spheres[i].previous_pos.y;
+							all_spheres[i].direction.x = temp1;
+							all_spheres[i].direction.y = temp2;
+							double mag1 = normalize(all_spheres[i].direction);
+							all_spheres[i].direction.x /= mag1;
+							all_spheres[i].direction.y /= mag1;
+							
+							temp1 = all_spheres[j].pos.x - all_spheres[j].previous_pos.x;
+							temp2 = all_spheres[j].pos.y - all_spheres[j].previous_pos.y;
+							all_spheres[j].direction.x = temp1;
+							all_spheres[j].direction.y = temp2;	
+							double mag2 = normalize(all_spheres[j].direction);
+							all_spheres[j].direction.x /= mag2;
+							all_spheres[j].direction.y /= mag2;
+					}	
+						all_spheres[i].active = 1;
+						all_spheres[j].active = 1;
 
-					// store before collision velocities
-					double b1_v, b2_v;
-					b1_v = all_spheres[i].velocity;
-					b2_v = all_spheres[j].velocity;
-					double b1_vx, b1_vy, b2_vx, b2_vy;
-					b1_vx = (all_spheres[i].direction.x * b1_v);
-					b1_vy = (all_spheres[i].direction.y * b1_v);
+						// store before collision velocities
+						double b1_v, b2_v;
+						b1_v = all_spheres[i].velocity;
+						b2_v = all_spheres[j].velocity;
+						double b1_vx, b1_vy, b2_vx, b2_vy;
+						b1_vx = (all_spheres[i].direction.x * b1_v);
+						b1_vy = (all_spheres[i].direction.y * b1_v);
 
-					b2_vx = (all_spheres[j].direction.x * b2_v);
-					b2_vy = (all_spheres[j].direction.y * b2_v);
-					// have x and y components of speed
-
-
-
-					// need ball1 and ball2 masses
-					all_spheres[i].mass = get_mass(all_spheres[i]);	
-					all_spheres[j].mass = get_mass(all_spheres[j]);	
-					double m1, m2;
-					m1 = all_spheres[i].mass;
-					m2 = all_spheres[j].mass;
-					// have ball masses
-
-					// need the new velocity components (after collision)
-					double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
-
-					// ball 1 new components
-					b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
-					b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
-
-					// ball 2 new components
-					b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
-					b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
-
-					// need to change direction to match new speeds
-					all_spheres[i].direction.x = b1_vx_new;
-					all_spheres[i].direction.y = b1_vy_new;
-					double mag1 = normalize(all_spheres[i].direction);
-					all_spheres[i].direction.x /= mag1;
-					all_spheres[i].direction.y /= mag1;
+						b2_vx = (all_spheres[j].direction.x * b2_v);
+						b2_vy = (all_spheres[j].direction.y * b2_v);
+						// have x and y components of speed
 
 
-					all_spheres[j].direction.x = b2_vx_new;
-					all_spheres[j].direction.y = b2_vy_new;
-					double mag2 = normalize(all_spheres[j].direction);
-					all_spheres[j].direction.x /= mag2;
-					all_spheres[j].direction.y /= mag2;
-					all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
-					all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
-					// speeds updated
 
-					// TODO change direction here
+						// need ball1 and ball2 masses
+						all_spheres[i].mass = get_mass(all_spheres[i]);	
+						all_spheres[j].mass = get_mass(all_spheres[j]);	
+						double m1, m2;
+						m1 = all_spheres[i].mass;
+						m2 = all_spheres[j].mass;
+						// have ball masses
 
-					all_spheres[i].path = 0;
-					all_spheres[j].path = 0;
-					all_spheres[i].start_time = (double) clock();
-					all_spheres[j].start_time = (double) clock();
+						// need the new velocity components (after collision)
+						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
+						// ball 1 new components
+						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
+						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+
+						// ball 2 new components
+						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
+						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+
+						// need to change direction to match new speeds
+						all_spheres[i].direction.x = b1_vx_new;
+						all_spheres[i].direction.y = b1_vy_new;
+						double mag1 = normalize(all_spheres[i].direction);
+						all_spheres[i].direction.x /= mag1;
+						all_spheres[i].direction.y /= mag1;
+
+
+						all_spheres[j].direction.x = b2_vx_new;
+						all_spheres[j].direction.y = b2_vy_new;
+						double mag2 = normalize(all_spheres[j].direction);
+						all_spheres[j].direction.x /= mag2;
+						all_spheres[j].direction.y /= mag2;
+						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						// speeds updated
+
+						// TODO change direction here
+
+						all_spheres[i].path = 0;
+						all_spheres[j].path = 0;
+						all_spheres[i].start_time = (double) clock();
+						all_spheres[j].start_time = (double) clock();
+						// END CURVE-CURVE
+					
+					}else{
+						
+						// START BALL-CURVE
+
+						// if [i] is the curved ball
+						if(all_spheres[i].path == 1) {
+							double temp1, temp2, temp3;
+							temp1 = all_spheres[i].pos.x - all_spheres[i].previous_pos.x;
+							temp2 = all_spheres[i].pos.y - all_spheres[i].previous_pos.y;
+							all_spheres[i].direction.x = temp1;
+							all_spheres[i].direction.y = temp2;
+							double mag1 = normalize(all_spheres[i].direction);
+							all_spheres[i].direction.x /= mag1;
+							all_spheres[i].direction.y /= mag1;
+						}else{ // [j] is the curved ball
+							double temp1, temp2, temp3;
+							temp1 = all_spheres[j].pos.x - all_spheres[j].previous_pos.x;
+							temp2 = all_spheres[j].pos.y - all_spheres[j].previous_pos.y;
+							all_spheres[j].direction.x = temp1;
+							all_spheres[j].direction.y = temp2;	
+							double mag2 = normalize(all_spheres[j].direction);
+							all_spheres[j].direction.x /= mag2;
+							all_spheres[j].direction.y /= mag2;
+						}
+						
+						all_spheres[i].active = 1;
+						all_spheres[j].active = 1;
+
+						// store before collision velocities
+						double b1_v, b2_v;
+						b1_v = all_spheres[i].velocity;
+						b2_v = all_spheres[j].velocity;
+						double b1_vx, b1_vy, b2_vx, b2_vy;
+						b1_vx = (all_spheres[i].direction.x * b1_v);
+						b1_vy = (all_spheres[i].direction.y * b1_v);
+
+						b2_vx = (all_spheres[j].direction.x * b2_v);
+						b2_vy = (all_spheres[j].direction.y * b2_v);
+						// have x and y components of speed
+
+
+
+						// need ball1 and ball2 masses
+						all_spheres[i].mass = get_mass(all_spheres[i]);	
+						all_spheres[j].mass = get_mass(all_spheres[j]);	
+						double m1, m2;
+						m1 = all_spheres[i].mass;
+						m2 = all_spheres[j].mass;
+						// have ball masses
+
+						// need the new velocity components (after collision)
+						double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
+
+						// ball 1 new components
+						b1_vx_new = ( (m1-m2) * b1_vx + (2*m2) * b2_vx ) / (m1+m2);
+						b1_vy_new = ( (m1-m2) * b1_vy + (2*m2) * b2_vy ) / (m1+m2);
+
+						// ball 2 new components
+						b2_vx_new = ( (m2-m1) * b2_vx + (2*m1) * b1_vx ) / (m1+m2);
+						b2_vy_new = ( (m2-m1) * b2_vy + (2*m1) * b1_vy ) / (m1+m2);
+
+						// need to change direction to match new speeds
+						all_spheres[i].direction.x = b1_vx_new;
+						all_spheres[i].direction.y = b1_vy_new;
+						double mag1 = normalize(all_spheres[i].direction);
+						all_spheres[i].direction.x /= mag1;
+						all_spheres[i].direction.y /= mag1;
+
+
+						all_spheres[j].direction.x = b2_vx_new;
+						all_spheres[j].direction.y = b2_vy_new;
+						double mag2 = normalize(all_spheres[j].direction);
+						all_spheres[j].direction.x /= mag2;
+						all_spheres[j].direction.y /= mag2;
+						all_spheres[i].velocity = sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+						all_spheres[j].velocity = sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+						// speeds updated
+
+						// TODO change direction here
+
+						all_spheres[i].path = 0;
+						all_spheres[j].path = 0;
+						all_spheres[i].start_time = (double) clock();
+						all_spheres[j].start_time = (double) clock();
+						
+						// END BALL-CURVE
+					}
+					// 
 				}
 			}
 		}
@@ -486,6 +673,8 @@ struct sphere generate_sphere() {
 			
 			// position starts at p1
 			ball.pos = ball.p1;
+			ball.previous_pos = ball.pos;
+			
 			// TODO confirm random_direction is a waste
 			// gets a random direction, this might be a wasted step
 			ball.direction = random_direction();
@@ -579,7 +768,7 @@ void display() {
 	}
 	
 	glutSwapBuffers();
-	glutIdleFunc(NULL);
+	//glutIdleFunc(NULL);
 }
 
 /*

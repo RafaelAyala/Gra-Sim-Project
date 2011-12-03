@@ -1,9 +1,9 @@
 Final Project
-Advanced Graphics - CSCI4110U ?
-Simulation and Modelling - CSCI3010U ?
+Advanced Graphics
+Simulation and Modelling
 
-Rafael Ayala 	- 1003XXXXX
-Jordan Stadler 	- 100366066
+Rafael Ayala
+Jordan Stadler
 
 Dependancies
 ------------
@@ -35,6 +35,7 @@ TODO Simulation Presentation
 [X]	- random color eqn
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
+	- Nudge collisions
 	- Optional Decay Equations (optional)
 	- Decay on collision
 	- System info via text (optional)
