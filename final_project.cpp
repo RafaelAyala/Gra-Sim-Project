@@ -48,12 +48,14 @@ static double start;
 double current;
 double temp;
 int balls;
+
 // holds 2 floating point number representing a point in 2 space
 struct point2f {
 	double x;
 	double y;
 };
 
+// hold two floating point number representing a direction
 struct vector2f {
 	double x;
 	double y;
@@ -204,6 +206,64 @@ double distance( struct sphere b1, struct sphere b2 ) {
 }
 
 /*
+ * struct sphere move_on_vector( struct sphere ball);
+ *
+ * advances the sphere along the vector path
+ */
+struct sphere move_on_vector( struct sphere ball ) {
+	double timediff = ( current - ball.start_time ) / ( CLOCKS_PER_SEC );
+
+	//store previous positions
+	ball.previous_pos = ball.pos;
+	
+	// update position
+	ball.pos.x += ball.direction.x * ball.velocity * timediff;
+	ball.pos.y += ball.direction.y * ball.velocity * timediff;
+	ball.start_time = (double) clock();
+	return ball;
+}
+
+/*
+ * struct sphere move_on_curve( struct sphere ball);
+ *
+ * advances the sphere along the curved path
+ */
+struct sphere move_on_curve( struct sphere ball ) {
+	// store previous position
+	ball.previous_pos = ball.pos;
+	ball.interval =( current - ball.start_time )/
+		( CLOCKS_PER_SEC * ball.curve_time );
+	ball.pos = get_position( ball, ball.interval );
+	
+	return ball;
+}
+
+/*
+ * struct sphere generate_curve( struct sphere ball);
+ *
+ * generates a new bezier curve based on a previous one
+ */
+struct sphere generate_curve( struct sphere ball) {
+	// store previous position
+	ball.previous_pos = ball.pos;
+	
+	ball.interval = 0.0;
+	ball.p2.x = ( ball.p4.x - ball.p3.x ) + ball.p4.x;
+	ball.p1.x = ball.p4.x;
+	ball.p3.x = ranged_random_value();
+	ball.p4.x = ranged_random_value();
+
+	ball.p2.y = ( ball.p4.y - ball.p3.y ) + ball.p4.y;
+	ball.p1.y = ball.p4.y;
+	ball.p3.y = ranged_random_value();
+	ball.p4.y = ranged_random_value();
+	ball.curve_length = curve_length( ball );
+	ball.start_time = (double) clock();
+	ball.curve_time = ball.curve_length / ball.velocity;
+	return ball;
+}
+
+/*
  * void animate();
  *
  * This acts as the idle function, whenever the system is idle, animte() is
@@ -212,16 +272,13 @@ double distance( struct sphere b1, struct sphere b2 ) {
  */
 void animate() {
 	int j;
-	double a, b, c;
-
+	
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
 
-	double tempX, tempY;
-
 	for(j = 0; j < all_spheres.size(); j++) {
 		
-		// 
+		// DECAY
 		double decay = (rand() % 101)/100.;
 
 		if( all_spheres[j].radius>0.0) {
@@ -234,67 +291,23 @@ void animate() {
 			balls--;
 			break;
 		}
+		// END DECAY
 
 		if(all_spheres[j].path == 0) { //linear paths
-			double timediff = ( current - 
-					all_spheres[j].start_time ) / 
-					( CLOCKS_PER_SEC );
-
-			//store previous positions
-			all_spheres[j].previous_pos = all_spheres[j].pos;
+			// advance position on vector
+			all_spheres[j] = move_on_vector(all_spheres[j]);
+		
+		}else if(all_spheres[j].path == 1) { // bezier curves for path	
 			
-			// update position
-			all_spheres[j].pos.x += all_spheres[j].direction.x * 
-									all_spheres[j].velocity * 
-									timediff;
-			all_spheres[j].pos.y += all_spheres[j].direction.y * 
-									all_spheres[j].velocity * 
-									timediff;
-			all_spheres[j].start_time = (double) clock();
-
-
-		} else if(all_spheres[j].path == 1) { // bezier curves for path	
-			// still travelling on the same curve
 			if( all_spheres[j].interval < 1.0) {
-				// store previous position
-				all_spheres[j].previous_pos = all_spheres[j].pos;
-				tempX = all_spheres[j].pos.x;
-				tempY = all_spheres[j].pos.y;
-				//printf("%f %f\n", tempX, tempY);
-				all_spheres[j].interval = 
-					( current - all_spheres[j].start_time )/ 
-					( CLOCKS_PER_SEC * all_spheres[j].curve_time );
-				all_spheres[j].pos = 
-					get_position( all_spheres[j], all_spheres[j].interval );
-			// begin a new curve
-			} else {
-				
-				// store previous position
-				all_spheres[j].previous_pos = all_spheres[j].pos;
-				
-				all_spheres[j].interval = 0.0;
-				all_spheres[j].p2.x = ( all_spheres[j].p4.x - 
-										all_spheres[j].p3.x ) + 
-										all_spheres[j].p4.x;
-				all_spheres[j].p1.x = all_spheres[j].p4.x;
-				all_spheres[j].p3.x = ranged_random_value();
-				all_spheres[j].p4.x = ranged_random_value();
-
-				all_spheres[j].p2.y = ( all_spheres[j].p4.y - 
-										all_spheres[j].p3.y ) + 
-										all_spheres[j].p4.y;
-				all_spheres[j].p1.y = all_spheres[j].p4.y;
-				all_spheres[j].p3.y = ranged_random_value();
-				all_spheres[j].p4.y = ranged_random_value();
-				all_spheres[j].curve_length = curve_length( all_spheres[j] );
-				all_spheres[j].start_time = (double) clock();
-				all_spheres[j].curve_time = all_spheres[j].curve_length / 
-											all_spheres[j].velocity;
+				// advance position on curve
+				all_spheres[j] = move_on_curve(all_spheres[j]);
+			} else { 
+				// generate a new curve
+				all_spheres[j] = generate_curve(all_spheres[j]);		
 			}
 		}	
-
 	}
-
 	// set window and call display to refresh screen
 	glutSetWindow(window);
 	glutPostRedisplay();
