@@ -283,7 +283,7 @@ void animate() {
 		double decay = (rand() % 101)/100.;
 
 		if( all_spheres[j].radius>0.0) {
-			if( decay <= DECAY_PROB) {
+			if( decay <= DECAY_PROB && all_spheres[j].active) {
 				all_spheres[j].radius -= 0.00045;
 			}
 		}else{
