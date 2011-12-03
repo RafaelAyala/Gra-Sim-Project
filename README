@@ -25,11 +25,14 @@ Description
 	- Destructive collisions (other spheres or walls)
 	- Squish on impact
 
+TODO General
+------------
+	- refactor more
+	
 TODO Simulation Presentation
 ----------------------------
 [X]	- Decay
 [X]	- Death and Birth of spheres from the system
-	- Refactoring
 	- Adjusting curves (probabilites)
 [?]	- Optimize collisions  
 [X]	- random color eqn
