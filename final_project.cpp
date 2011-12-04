@@ -33,27 +33,28 @@
 #define CURVE_LENGTH_APPROX 16
 #define DENSITY 1.0
 #define PI 3.14159
+#define CUBE_LENGTH 5.0
 
 ///Probabilities for the directions p3 and p4 will go in bezier curves
-#define N 0.0
-#define S 0.0
-#define E 0.0
-#define W 0.0
-#define NW 1.0
-#define SE 0.0
-#define SW 0.0
-#define NE 0.0
-#define STEP 3.0
+#define N 0.125
+#define S 0.125
+#define E 0.125
+#define W 0.125
+#define NW 0.125
+#define SE 0.125
+#define SW 0.125
+#define NE 0.125
+#define STEP 1.0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 // global variables
 int window; 	//id of the window
-static double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
-static double start;
+double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 double current;
 double temp;
 int balls;
+
 
 // holds 2 floating point number representing a point in 2 space
 struct point2f {
@@ -102,8 +103,10 @@ std::vector<sphere> all_spheres;
  *
  * returns a random value based on the the bounds of the system
  */ 
-double ranged_random_value() {
-	return ((rand() % (101)/100.)*9)-4.5;	
+double ranged_random_value(double radius) {
+	//printf("#### radius: %f\n", radius);
+	double difference = 2 * (CUBE_LENGTH - (radius+0.0001));
+	return ((rand() % (101)/100.)*difference)-(difference/2.);	
 }
 
 /*
@@ -262,11 +265,15 @@ struct sphere move_on_vector( struct sphere ball ) {
  */
 //struct sphere move_on_curve( struct sphere *ball ) {
 void move_on_curve( struct sphere *ball ) {
+	struct point2f temp;
+	temp = ball->pos;
 	// store previous position
-	ball->previous_pos = ball->pos;
+	ball->previous_pos = temp;
 	ball->interval =( current - ball->start_time )/
 		( CLOCKS_PER_SEC * ball->curve_time );
+	//printf("before update: %f %f || %f %f\n", ball->previous_pos.x, ball->previous_pos.y, ball->pos.x, ball->pos.y);
 	update_position( ball );
+	//printf("after update: %f %f || %f %f\n", ball->previous_pos.x, ball->previous_pos.y, ball->pos.x, ball->pos.y);
 }
 
 /*
@@ -284,13 +291,13 @@ struct point2f new_curve_point(struct point2f origin){
 	struct point2f result;
 	
 	pWest =  W;
-	pEast = W + E;
-	pNorth = E + N;
-	pSouth = N + S;
-	pNE = S + NE;
-	pNW = NE + NW;
-	pSE = NW + SE;
-	pSW = SE + SW;
+	pEast = pWest + E;
+	pNorth = pEast + N;
+	pSouth = pNorth + S;
+	pNE = pSouth + NE;
+	pNW = pNE + NW;
+	pSE = pNW + SE;
+	pSW = pSE + SW;
 
 	if(p < pWest){
 	//Move left
@@ -361,9 +368,9 @@ void generate_curve( struct sphere *ball) {
 	
 	
 	ball->p3 = new_curve_point(ball->p2);
-	printf("    x:%f y:%f\n",ball->p3.x,ball->p3.y); 
+	//printf("    x:%f y:%f\n",ball->p3.x,ball->p3.y); 
 	ball->p4 = new_curve_point(ball->p3);
-	printf("    x:%f y:%f\n",ball->p4.x,ball->p4.y);
+	//printf("    x:%f y:%f\n",ball->p4.x,ball->p4.y);
 	
 	ball->curve_length = curve_length( ball );
 	ball->start_time = (double) clock();
@@ -620,8 +627,8 @@ void collision_check() {
  *
  * Returns a randomized 2D point within a bounded 2D area.
  */
-struct point2f random_ranged_point() {
-		return (struct point2f) {ranged_random_value(), ranged_random_value()};
+struct point2f random_ranged_point(double radius) {
+		return (struct point2f) {ranged_random_value(radius), ranged_random_value(radius)};
 }
 
 /*
@@ -629,10 +636,10 @@ struct point2f random_ranged_point() {
  *
  * Returns a random direction vector that has been normalized.
  */
-struct vector2f random_direction(){
+struct vector2f random_direction(double radius){
 		struct vector2f direction;
-		direction.x = ranged_random_value();
-		direction.y = ranged_random_value();
+		direction.x = ranged_random_value(radius);
+		direction.y = ranged_random_value(radius);
 		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2));
 		direction.x /= mag;
 		direction.y /= mag;
@@ -660,8 +667,10 @@ struct sphere generate_sphere() {
 		struct sphere ball;
 		
 		do{
+			// RADIUS MUST BE BEFORE RANDOM POINTS
+			ball.radius = random_radius();
 			// gets 4 random points for the bezier curve
-			ball.p1 = random_ranged_point();
+			ball.p1 = random_ranged_point(ball.radius);
 			ball.p2 = new_curve_point(ball.p1);		
 			ball.p3 = new_curve_point(ball.p2);
 			ball.p4 = new_curve_point(ball.p3);
@@ -669,11 +678,11 @@ struct sphere generate_sphere() {
 			// position starts at p1
 			ball.pos = ball.p1;
 			ball.previous_pos = {0.0, 0.0};
+	//printf("generation: %f %f || %f %f\n", ball.previous_pos.x, ball.previous_pos.y, ball.pos.x, ball.pos.y);
 			
 			// gets a random direction, this might be a wasted step
-			ball.direction = random_direction();
+			ball.direction = random_direction(ball.radius);
 
-			ball.radius = random_radius();
 			ball.active = 0;
 
 			ball.velocity = random_velocity();	
@@ -811,7 +820,6 @@ void gfxinit() {
 	balls = NUMBER_OF_BALLS;
 	all_spheres.resize(balls);
 	
-	start = (double) clock(); 
 	current = 0.0;
 	// LIGHTING 	
     GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
