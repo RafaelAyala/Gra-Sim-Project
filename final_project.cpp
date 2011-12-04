@@ -27,7 +27,7 @@
 #include <stdlib.h>
 #include <vector>
 // user defined values
-#define NUMBER_OF_BALLS 2
+#define NUMBER_OF_BALLS 1
 #define DECAY_PROB 0.5
 #define BALL_SPEED 2.0 // ASU's per second
 #define CURVE_LENGTH_APPROX 16
@@ -96,7 +96,15 @@ struct sphere{
 	double curve_time;
 };
 
+struct dust{
+	struct point2f pos;
+	struct color3f color;
+	int life;
+};
+
 std::vector<sphere> all_spheres;
+std::vector<dust> tails;
+
 //struct sphere next_ball;
 double next_ball_mass;
 double next_ball_radius;
@@ -392,10 +400,20 @@ void animate() {
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
 
+	// remove tails
+	int k;
+	for( k = 0; k < tails.size(); k++) {
+		tails[k].life--;
+		if(tails[k].life <= 0) {
+			tails.erase(tails.begin()+k);
+		}
+	}
+
 	for(j = 0; j < all_spheres.size(); j++) {
 		
 		// DECAY
 		double decay = (rand() % 101)/100.;
+
 
 		if( all_spheres[j].radius>0.0) {
 			if( decay <= DECAY_PROB && all_spheres[j].active) {
@@ -403,6 +421,13 @@ void animate() {
 				all_spheres[j].radius -= 0.00045;
 				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
 				//printf("extra mass in system: %f\n", mass_of_system);
+				struct dust tail;
+				tail.pos = all_spheres[j].pos;
+				tail.color = all_spheres[j].color;
+				tail.life = 100;
+						
+				tails.resize(tails.size()+1);
+				tails.push_back(tail);
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
@@ -425,6 +450,8 @@ void animate() {
 				generate_curve(&all_spheres[j]);		
 			}
 		}	
+
+	
 	}
 	// set window and call display to refresh screen
 	glutSetWindow(window);
@@ -771,18 +798,25 @@ void spawn_next_ball() {
  */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glLoadIdentity();
+    //glMatrixMode(GL_PROJECTION);
+    //gluPerspective(60.0, 16/9., 1.0, 20.0);
+    //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
+	//glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glDisable(GL_LIGHTING);
+	//glEnable (GL_BLEND);
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glColor4f(0.5, 0.5, 0.5, 0.5);
 	// front box
-	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, 5);
-	  glVertex3f( 5, -5, 5);
-	  glVertex3f( 5,  5, 5);
-	  glVertex3f(-5,  5, 5);
-	glEnd();
+	//glBegin(GL_QUADS);
+	//  glVertex3f(-5, -5, 5);
+	//  glVertex3f( 5, -5, 5);
+	//  glVertex3f( 5,  5, 5);
+	//  glVertex3f(-5,  5, 5);
+	//glEnd();
 	// back box
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -791,7 +825,7 @@ void display() {
 	  glVertex3f(-5,  5, -5);
 	glEnd();
 
-	glColor3f(0.4, 0.4, 0.4);
+	glColor4f(0.4, 0.4, 0.4, 0.5);
 	// left side
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -808,7 +842,7 @@ void display() {
 	  glVertex3f( 5,  5, -5);
 	glEnd();
 
-	glColor3f(0.6, 0.6, 0.6);
+	glColor4f(0.6, 0.6, 0.6, 0.5);
 	// bottom
 	glBegin(GL_QUADS);
 	  glVertex3f(-5,  5, -5);
@@ -825,7 +859,24 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
-	glDisable(GL_BLEND);
+	int j;
+	glBegin(GL_POINTS);
+	for( j = 0; j < tails.size(); j++) {
+		
+		double perc = tails[j].life/10.;
+	  	  glColor4f( tails[j].color.red*perc,
+				  	 tails[j].color.green*perc,
+					 tails[j].color.blue*perc,
+					 0.3);
+	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, 0.0);
+	  	  
+
+	}
+	glEnd();
+	
+
+	//glDisable(GL_BLEND);
+	//glEnable(GL_LIGHTING);
 
 	//glPushMatrix();
 	// MUST BE BEFORE SPHERES ARE DRAWN
@@ -855,9 +906,10 @@ void display() {
 	
 	spawn_next_ball();
 	
+	
 	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
-	glFlush();
+	//glFlush();
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
 }
