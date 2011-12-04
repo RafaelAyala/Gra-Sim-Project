@@ -54,7 +54,7 @@ double s = 0.5; // tightness of the paths (0.0 - tight, 0.5 - loose)
 double current;
 double temp;
 int balls;
-
+double mass_of_system;
 
 // holds 2 floating point number representing a point in 2 space
 struct point2f {
@@ -97,6 +97,8 @@ struct sphere{
 };
 
 std::vector<sphere> all_spheres;
+struct sphere next_ball;
+double next_ball_mass;
 
 /*
  * double ranged_random_value();
@@ -386,7 +388,7 @@ void generate_curve( struct sphere *ball) {
  */
 void animate() {
 	int j;
-	
+	double mass_before;
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
 
@@ -397,7 +399,10 @@ void animate() {
 
 		if( all_spheres[j].radius>0.0) {
 			if( decay <= DECAY_PROB && all_spheres[j].active) {
+				mass_before = get_mass(all_spheres[j]);
 				all_spheres[j].radius -= 0.00045;
+				mass_of_system += ( mass_before - get_mass(all_spheres[j]));
+				printf("extra mass in system: %f\n", mass_of_system);
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
@@ -732,6 +737,24 @@ void print_sphere( struct sphere *ball) {
 }
 
 /*
+ * void spawn_next_ball();
+ *
+ * checks if the system has enough mass to spawn the new ball
+ */
+void spawn_next_ball() {
+	printf("%f/%f till next spawn\n", mass_of_system, next_ball_mass);
+	if( mass_of_system >= next_ball_mass ) {
+		printf("NEW BALL");
+		all_spheres.resize(all_spheres.size()+1);
+		sphere temp = next_ball;
+		all_spheres.push_back( temp );
+		mass_of_system -= next_ball_mass; 
+		next_ball = generate_sphere();
+		next_ball_mass = get_mass(next_ball);
+	}
+}
+
+/*
  * void display();
  *
  * The display function displays the animation to the users screen.
@@ -805,6 +828,9 @@ void display() {
 			print_sphere(&all_spheres[i]);
 		}
 	}
+	
+	spawn_next_ball();
+	
 	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
 	glutSwapBuffers();
@@ -817,6 +843,7 @@ void display() {
  * initializes the system prior to animating
  */
 void gfxinit() {
+	mass_of_system = 0.0;
 	balls = NUMBER_OF_BALLS;
 	all_spheres.resize(balls);
 	
@@ -860,6 +887,8 @@ void gfxinit() {
 		//printf("%d\n",k);
 		all_spheres[k] = generate_sphere();
 	}
+	next_ball = generate_sphere();
+	next_ball_mass = get_mass(next_ball); 
 }
 
 
