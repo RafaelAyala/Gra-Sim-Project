@@ -86,7 +86,7 @@ struct sphere{
 	int active;
 	struct color3f color;
 	double start_time;
-
+	int ghost;
 
 	struct point2f p1,p2,p3,p4;
 	struct point2f previous_pos;
@@ -149,6 +149,29 @@ double random_radius() {
 double get_mass(struct sphere ball) {
 	double volume = (4 * PI * pow(ball.radius,3))/3.;
 	return volume * DENSITY;
+}
+
+/*
+ * void update_position(struct sphere ball, double pos);
+ *
+ * returns the position of the ball on a curve
+ */
+void update_position( struct sphere *ball) {
+	double a, b, c;
+	//struct point2f result;
+	// x
+	c = 3 * (ball->p2.x - ball->p1.x);
+	b = 3 * (ball->p3.x - ball->p2.x) - c;
+	a = ball->p4.x - ball->p1.x - c - b;
+	ball->pos.x = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.x;
+
+	// y
+	c = 3 * (ball->p2.y - ball->p1.y);
+	b = 3 * (ball->p3.y - ball->p2.y) - c;
+	a = ball->p4.y - ball->p1.y - c - b;
+	ball->pos.y = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.y;
+
+	//return result;
 }
 
 /*
@@ -243,9 +266,15 @@ void move_on_curve( struct sphere *ball ) {
 	ball->previous_pos = ball->pos;
 	ball->interval =( current - ball->start_time )/
 		( CLOCKS_PER_SEC * ball->curve_time );
-	ball->pos = get_position( ball, ball->interval );
+	update_position( ball );
 }
 
+/*
+ * struct point2f new_curve_point(struct point2f origin);
+ *
+ * Creates a new point for the interpolation of a bezier curve affected by the
+ * defined probabilities
+ */
 struct point2f new_curve_point(struct point2f origin){
 
 	double p = (rand() % 100)/100.;
@@ -536,6 +565,7 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 
 }
 
+
 /*
  * void collision_check();
  *
@@ -552,7 +582,9 @@ void collision_check() {
 		// ball-ball collisions
 		if( i < all_spheres.size()-1 ){
 			for( j = i+1; j < all_spheres.size(); j++) {
-
+				if(all_spheres[i].ghost + all_spheres[j].ghost >= 1) {
+					continue;
+				}
 				d = distance(all_spheres[i], all_spheres[j]);
 				
 				// if a collision
@@ -631,6 +663,7 @@ struct sphere generate_sphere() {
 		do{
 			// gets 4 random points for the bezier curve
 			ball.p1 = random_ranged_point();
+
 			ball.p2 = new_curve_point(ball.p1);
 			ball.p3 = new_curve_point(ball.p2);
 			ball.p4 = new_curve_point(ball.p3);
@@ -656,6 +689,7 @@ struct sphere generate_sphere() {
 			ball.curve_length = curve_length( &ball );
 			ball.start_time = (double) clock();
 			ball.curve_time = ball.curve_length / ball.velocity;
+			ball.ghost = 0;
 		}while(collision_detection(ball) == 1 );	
 		
 		return ball;
@@ -741,6 +775,7 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
+	//glPushMatrix();
 	// MUST BE BEFORE SPHERES ARE DRAWN
 	collision_check();
 	
@@ -763,6 +798,7 @@ void display() {
 			print_sphere(&all_spheres[i]);
 		}
 	}
+	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
