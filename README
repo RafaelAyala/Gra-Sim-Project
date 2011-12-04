@@ -28,7 +28,8 @@ Description
 TODO General
 ------------
 	- refactor more
-	
+	- ball spawning NAN's
+
 TODO Simulation Presentation
 ----------------------------
 [X]	- Decay
@@ -43,19 +44,15 @@ TODO Simulation Presentation
 	- Decay on collision	
 	- Sort out RNG
 [X]	- Fix collision detection
-	- Automate spawning based on mass loss
+[X]	- Automate spawning based on mass loss
 
 TODO Graphics Presentation
 --------------------------
-	- Mouse and Keyboard scene navigation
+	- Mouse and Keyboard scene navigation (Camera Controls)
 	- Release particles on crash and decay
+	- color based on decay (optional)
 	- squish (based on angle of collision) + ease in/out
 	- reflection using stencil buffer
-	- Constant speed of spheres (if not used for spawning only)
 	- 3D (optional)
-	- color based on decay (optional)
 	- transparent cube (optional)
-	- release particles
-	- stencil reflections
-	- Camera Controls
 	- System info via text (optional)

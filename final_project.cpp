@@ -267,7 +267,7 @@ struct sphere move_on_vector( struct sphere ball ) {
  */
 //struct sphere move_on_curve( struct sphere *ball ) {
 void move_on_curve( struct sphere *ball ) {
-	struct point2f temp;
+	point2f temp;
 	temp = ball->pos;
 	// store previous position
 	ball->previous_pos = temp;
@@ -402,7 +402,7 @@ void animate() {
 				mass_before = get_mass(all_spheres[j].radius);
 				all_spheres[j].radius -= 0.00045;
 				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
-				printf("extra mass in system: %f\n", mass_of_system);
+				//printf("extra mass in system: %f\n", mass_of_system);
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
@@ -642,7 +642,7 @@ struct point2f random_ranged_point(double radius) {
  * Returns a random direction vector that has been normalized.
  */
 struct vector2f random_direction(double radius){
-		struct vector2f direction;
+		vector2f direction;
 		direction.x = ranged_random_value(radius);
 		direction.y = ranged_random_value(radius);
 		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2));
@@ -668,12 +668,12 @@ double random_velocity() {
  * 
  * return a ball 
  */
-struct sphere generate_sphere() {
+struct sphere generate_sphere(int rad) {
 		struct sphere ball;
 		
 		do{
 			// RADIUS MUST BE BEFORE RANDOM POINTS
-			ball.radius = random_radius();
+			ball.radius = (rad) ? next_ball_radius : random_radius();
 			// gets 4 random points for the bezier curve
 			ball.p1 = random_ranged_point(ball.radius);
 			ball.p2 = new_curve_point(ball.p1);		
@@ -702,7 +702,7 @@ struct sphere generate_sphere() {
 			ball.start_time = (double) clock();
 			ball.curve_time = ball.curve_length / ball.velocity;
 			ball.ghost = 0;
-		}while(collision_detection(ball) == 1 );	
+		}while(collision_detection(ball) == 1 || ball.p1.x == 0.0 || ball.p1.y == 0.0);	
 		
 		return ball;
 }
@@ -735,10 +735,6 @@ void print_sphere( struct sphere *ball) {
 	printf("path: %d\n", ball->path);
 	printf("active:	%d\n", ball->active);
 }
-		all_spheres.resize(all_spheres.size()+1);
-		struct sphere ball;
-		ball = generate_sphere();
-		all_spheres.push_back(ball);
 
 /*
  * void spawn_next_ball();
@@ -746,16 +742,20 @@ void print_sphere( struct sphere *ball) {
  * checks if the system has enough mass to spawn the new ball
  */
 void spawn_next_ball() {
-	printf("%f/%f till next spawn\n", mass_of_system, next_ball_mass);
+	//printf("%f/%f till next spawn\n", mass_of_system, next_ball_mass);
 	if( mass_of_system >= next_ball_mass ) {
-		printf("NEW BALL");
+		printf("NEW BALL\n");
 		all_spheres.resize(all_spheres.size()+1);
-		struct sphere temp = generate_sphere();
+		//sphere temp = generate_sphere(1);
+		//printf("\nAUTO SPAWNED\n\n");
+		//print_sphere(&temp);
+
 		// TODO
 		// DO not change radius, this causes the jumping sphere effect that resolves
 		// an overlap
-		temp.radius = next_ball_radius;
-		all_spheres.push_back( temp );
+		//temp.radius = next_ball_radius;
+		//all_spheres.push_back( temp );
+		all_spheres.push_back( generate_sphere(1) );
 
 		mass_of_system -= next_ball_mass; 
 		//next_ball = generate_sphere();
@@ -834,15 +834,18 @@ void display() {
 			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
 		glPopMatrix();
-		if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
-			print_sphere(&all_spheres[i]);
-		}
+		// TOOD major issue with NAN's still exists
+		//if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
+		//	glutIdleFunc(NULL);
+		//	print_sphere(&all_spheres[i]);
+		//}
 	}
 	
 	spawn_next_ball();
 	
 	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
+	glFlush();
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
 }
@@ -895,7 +898,7 @@ void gfxinit() {
 	int k;
 	for( k = 0; k < all_spheres.size(); k++ ) { //setup all ball settings
 		//printf("%d\n",k);
-		all_spheres[k] = generate_sphere();
+		all_spheres[k] = generate_sphere(0);
 	}
 	next_ball_radius = random_radius();
 	next_ball_mass = get_mass( next_ball_radius ); 
@@ -913,11 +916,14 @@ void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 97:	// [a] for add ball
 		{
-		//balls++;
-		all_spheres.resize(all_spheres.size()+1);
-		struct sphere ball;
-		ball = generate_sphere();
-		all_spheres.push_back(ball);
+			//balls++;
+			all_spheres.resize(all_spheres.size()+1);
+			//sphere ball;
+			//ball = generate_sphere(0);
+			//printf("\nKEY PRESS SPAWN\n\n");
+			//print_sphere(&ball);
+			//all_spheres.push_back(ball);
+			all_spheres.push_back( generate_sphere(0) );
 		}
 			break;
 		case 113:		// [q] is quit
