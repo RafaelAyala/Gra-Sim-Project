@@ -142,6 +142,29 @@ double get_mass(struct sphere ball) {
 }
 
 /*
+ * void update_position(struct sphere ball, double pos);
+ *
+ * returns the position of the ball on a curve
+ */
+void update_position( struct sphere *ball) {
+	double a, b, c;
+	//struct point2f result;
+	// x
+	c = 3 * (ball->p2.x - ball->p1.x);
+	b = 3 * (ball->p3.x - ball->p2.x) - c;
+	a = ball->p4.x - ball->p1.x - c - b;
+	ball->pos.x = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.x;
+
+	// y
+	c = 3 * (ball->p2.y - ball->p1.y);
+	b = 3 * (ball->p3.y - ball->p2.y) - c;
+	a = ball->p4.y - ball->p1.y - c - b;
+	ball->pos.y = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.y;
+
+	//return result;
+}
+
+/*
  * struct point2f get_position(struct sphere ball, double pos);
  *
  * returns the position of the ball on a curve
@@ -233,7 +256,7 @@ void move_on_curve( struct sphere *ball ) {
 	ball->previous_pos = ball->pos;
 	ball->interval =( current - ball->start_time )/
 		( CLOCKS_PER_SEC * ball->curve_time );
-	ball->pos = get_position( ball, ball->interval );
+	update_position( ball );
 }
 
 /*
@@ -552,9 +575,9 @@ struct sphere generate_sphere() {
 		do{
 			// gets 4 random points for the bezier curve
 			ball.p1 = random_ranged_point();
-			ball.p2 = random_ranged_point();
-			ball.p3 = random_ranged_point();
-			ball.p4 = random_ranged_point();
+			ball.p2 = random_ranged_point();//new_curve_point(ball.p1);		
+			ball.p3 = random_ranged_point();//new_curve_point(ball.p2);
+			ball.p4 = random_ranged_point();//new_curve_point(ball.p3);
 			
 			// position starts at p1
 			ball.pos = ball.p1;
