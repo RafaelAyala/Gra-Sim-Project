@@ -771,8 +771,18 @@ void spawn_next_ball() {
  */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	glColor3f(0.5, 0.5, 0.5);
+
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	glColor4f(0.5, 0.5, 0.5, 0.5);
+	// front box
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, 5);
+	  glVertex3f( 5, -5, 5);
+	  glVertex3f( 5,  5, 5);
+	  glVertex3f(-5,  5, 5);
+	glEnd();
 	// back box
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -815,6 +825,8 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
+	glDisable(GL_BLEND);
+
 	//glPushMatrix();
 	// MUST BE BEFORE SPHERES ARE DRAWN
 	collision_check();
@@ -883,8 +895,8 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
+    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
