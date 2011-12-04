@@ -97,9 +97,9 @@ struct sphere{
 };
 
 std::vector<sphere> all_spheres;
-struct sphere next_ball;
+//struct sphere next_ball;
 double next_ball_mass;
-
+double next_ball_radius;
 /*
  * double ranged_random_value();
  *
@@ -151,8 +151,8 @@ double random_radius() {
  * Note: all balls have the same density
  * volume = (4*Pi * r^3) / 3
  */
-double get_mass(struct sphere ball) {
-	double volume = (4 * PI * pow(ball.radius,3))/3.;
+double get_mass( double radius) {
+	double volume = (4 * PI * pow(radius,3))/3.;
 	return volume * DENSITY;
 }
 
@@ -399,9 +399,9 @@ void animate() {
 
 		if( all_spheres[j].radius>0.0) {
 			if( decay <= DECAY_PROB && all_spheres[j].active) {
-				mass_before = get_mass(all_spheres[j]);
+				mass_before = get_mass(all_spheres[j].radius);
 				all_spheres[j].radius -= 0.00045;
-				mass_of_system += ( mass_before - get_mass(all_spheres[j]));
+				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
 				printf("extra mass in system: %f\n", mass_of_system);
 			}
 		}else{
@@ -541,7 +541,7 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	// have x and y components of speed
 
 	// get ball masses
-	double m1 = get_mass(*b1), m2 = get_mass(*b2);
+	double m1 = get_mass(b1->radius), m2 = get_mass(b2->radius);
 
 	// need the new velocity components (after collision)
 	double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
@@ -735,6 +735,10 @@ void print_sphere( struct sphere *ball) {
 	printf("path: %d\n", ball->path);
 	printf("active:	%d\n", ball->active);
 }
+		all_spheres.resize(all_spheres.size()+1);
+		struct sphere ball;
+		ball = generate_sphere();
+		all_spheres.push_back(ball);
 
 /*
  * void spawn_next_ball();
@@ -746,11 +750,17 @@ void spawn_next_ball() {
 	if( mass_of_system >= next_ball_mass ) {
 		printf("NEW BALL");
 		all_spheres.resize(all_spheres.size()+1);
-		sphere temp = next_ball;
+		struct sphere temp = generate_sphere();
+		// TODO
+		// DO not change radius, this causes the jumping sphere effect that resolves
+		// an overlap
+		temp.radius = next_ball_radius;
 		all_spheres.push_back( temp );
+
 		mass_of_system -= next_ball_mass; 
-		next_ball = generate_sphere();
-		next_ball_mass = get_mass(next_ball);
+		//next_ball = generate_sphere();
+		next_ball_radius = random_radius();
+		next_ball_mass = get_mass( next_ball_radius );
 	}
 }
 
@@ -887,8 +897,8 @@ void gfxinit() {
 		//printf("%d\n",k);
 		all_spheres[k] = generate_sphere();
 	}
-	next_ball = generate_sphere();
-	next_ball_mass = get_mass(next_ball); 
+	next_ball_radius = random_radius();
+	next_ball_mass = get_mass( next_ball_radius ); 
 }
 
 
@@ -903,8 +913,8 @@ void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 97:	// [a] for add ball
 		{
-		balls++;
-		all_spheres.resize(balls);
+		//balls++;
+		all_spheres.resize(all_spheres.size()+1);
 		struct sphere ball;
 		ball = generate_sphere();
 		all_spheres.push_back(ball);
