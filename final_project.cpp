@@ -269,6 +269,12 @@ void move_on_curve( struct sphere *ball ) {
 	update_position( ball );
 }
 
+/*
+ * struct point2f new_curve_point(struct point2f origin);
+ *
+ * Creates a new point for the interpolation of a bezier curve affected by the
+ * defined probabilities
+ */
 struct point2f new_curve_point(struct point2f origin){
 
 	double p = (rand() % 101)/100.;
@@ -656,9 +662,9 @@ struct sphere generate_sphere() {
 		do{
 			// gets 4 random points for the bezier curve
 			ball.p1 = random_ranged_point();
-			ball.p2 = random_ranged_point();//new_curve_point(ball.p1);		
-			ball.p3 = random_ranged_point();//new_curve_point(ball.p2);
-			ball.p4 = random_ranged_point();//new_curve_point(ball.p3);
+			ball.p2 = new_curve_point(ball.p1);		
+			ball.p3 = new_curve_point(ball.p2);
+			ball.p4 = new_curve_point(ball.p3);
 			
 			// position starts at p1
 			ball.pos = ball.p1;
