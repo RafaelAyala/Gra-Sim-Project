@@ -76,7 +76,7 @@ struct sphere{
 	int active;
 	struct color3f color;
 	double start_time;
-
+	int ghost;
 
 	struct point2f p1,p2,p3,p4;
 	struct point2f previous_pos;
@@ -454,6 +454,7 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 
 }
 
+
 /*
  * void collision_check();
  *
@@ -470,7 +471,9 @@ void collision_check() {
 		// ball-ball collisions
 		if( i < all_spheres.size()-1 ){
 			for( j = i+1; j < all_spheres.size(); j++) {
-
+				if(all_spheres[i].ghost + all_spheres[j].ghost >= 1) {
+					continue;
+				}
 				d = distance(all_spheres[i], all_spheres[j]);
 				
 				// if a collision
@@ -574,6 +577,7 @@ struct sphere generate_sphere() {
 			ball.curve_length = curve_length( &ball );
 			ball.start_time = (double) clock();
 			ball.curve_time = ball.curve_length / ball.velocity;
+			ball.ghost = 0;
 		}while(collision_detection(ball) == 1 );	
 		
 		return ball;
@@ -659,6 +663,7 @@ void display() {
 	  glVertex3f( 5, -5, -5);
 	glEnd();
 	
+	//glPushMatrix();
 	// MUST BE BEFORE SPHERES ARE DRAWN
 	collision_check();
 	
@@ -681,6 +686,7 @@ void display() {
 			print_sphere(&all_spheres[i]);
 		}
 	}
+	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
