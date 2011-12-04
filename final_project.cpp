@@ -35,15 +35,15 @@
 #define PI 3.14159
 
 ///Probabilities for the directions p3 and p4 will go in bezier curves
-#define N 0.0
-#define S 0.0
-#define E 0.0
-#define W 0.0
-#define NW 1.0
-#define SE 0.0
-#define SW 0.0
-#define NE 0.0
-#define STEP 3.0
+#define N 0.125
+#define S 0.125
+#define E 0.125
+#define W 0.125
+#define NW 0.125
+#define SE 0.125
+#define SW 0.125
+#define NE 0.125
+#define STEP 1.0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
@@ -248,20 +248,21 @@ void move_on_curve( struct sphere *ball ) {
 
 struct point2f new_curve_point(struct point2f origin){
 
-	double p = (rand() % 101)/100.;
-	//printf("%f \n", p);
+	double p = (rand() % 100)/100.;
+	//printf("PROBABILITY: %f \n", p);
 	double pWest,pEast,pNorth,pSouth;
 	double pNE,pNW,pSE,pSW;	
 	struct point2f result;
 	
 	pWest =  W;
-	pEast = W + E;
-	pNorth = E + N;
-	pSouth = N + S;
-	pNE = S + NE;
-	pNW = NE + NW;
-	pSE = NW + SE;
-	pSW = SE + SW;
+	pEast = pWest + E;
+	pNorth = pEast + N;
+	pSouth = pNorth + S;
+	pNE = pSouth + NE;
+	pNW = pNE + NW;
+	pSE = pNW + SE;
+	pSW = pSE + SW;
+	
 
 	if(p < pWest){
 	//Move left
@@ -270,7 +271,7 @@ struct point2f new_curve_point(struct point2f origin){
 		return result;
 	} else if (p < pEast){
 	//Move Right
-		result.x = origin.x + STEP;
+		result.x= origin.x + STEP;
 		result.y = 0.0;
 		return result;
 	} else if(p < pNorth){
@@ -332,9 +333,9 @@ void generate_curve( struct sphere *ball) {
 	
 	
 	ball->p3 = new_curve_point(ball->p2);
-	printf("    x:%f y:%f\n",ball->p3.x,ball->p3.y); 
+	//printf("    x:%f y:%f\n",ball->p3.x,ball->p3.y); 
 	ball->p4 = new_curve_point(ball->p3);
-	printf("    x:%f y:%f\n",ball->p4.x,ball->p4.y);
+	//printf("    x:%f y:%f\n",ball->p4.x,ball->p4.y);
 	
 	ball->curve_length = curve_length( ball );
 	ball->start_time = (double) clock();
@@ -630,9 +631,9 @@ struct sphere generate_sphere() {
 		do{
 			// gets 4 random points for the bezier curve
 			ball.p1 = random_ranged_point();
-			ball.p2 = random_ranged_point();
-			ball.p3 = random_ranged_point();
-			ball.p4 = random_ranged_point();
+			ball.p2 = new_curve_point(ball.p1);
+			ball.p3 = new_curve_point(ball.p2);
+			ball.p4 = new_curve_point(ball.p3);
 			
 			// position starts at p1
 			ball.pos = ball.p1;
