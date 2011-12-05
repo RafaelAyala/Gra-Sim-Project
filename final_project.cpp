@@ -94,12 +94,6 @@ struct point3f {
 	double z;
 };
 
-// holds 2 floating point number representing a point in 2 space
-//struct point2f {
-//	double x;
-//	double y;
-//};
-
 // hold two floating point number representing a direction
 struct vector2f {
 	double x;
@@ -145,8 +139,8 @@ struct sphere{
 	double curve_time;
 };
 
+// holds all information pertaining to a spec of dust 
 struct dust{
-	//struct point2f pos;
 	struct point3f pos;
 	struct color3f color;
 	int life;
@@ -158,6 +152,7 @@ std::vector<dust> tails;
 //struct sphere next_ball;
 double next_ball_mass;
 double next_ball_radius;
+
 /*
  * double ranged_random_value();
  *
@@ -352,9 +347,7 @@ void move_on_curve( struct sphere *ball ) {
 	ball->previous_pos = temp;
 	ball->interval =( current - ball->start_time )/
 		( CLOCKS_PER_SEC * ball->curve_time );
-	//printf("before update: %f %f || %f %f\n", ball->previous_pos.x, ball->previous_pos.y, ball->pos.x, ball->pos.y);
 	update_position( ball );
-	//printf("after update: %f %f || %f %f\n", ball->previous_pos.x, ball->previous_pos.y, ball->pos.x, ball->pos.y);
 }
 
 /*
@@ -362,14 +355,10 @@ void move_on_curve( struct sphere *ball ) {
  *
  * Creates a new point for the interpolation of a bezier curve affected by the
  * defined probabilities
- * TODO 3D this
  */
 struct point3f new_curve_point(struct point3f origin){
 
 	double p = (rand() % 101)/100.;
-	//printf("%f \n", p);
-	//double pWest,pEast,pNorth,pSouth;
-	//double pNE,pNW,pSE,pSW;	
 	struct point3f result;
 	result = origin;
 	double back, backN, backS, backE, backW, backNW, backSE, backSW, backNE;
@@ -404,15 +393,6 @@ struct point3f new_curve_point(struct point3f origin){
 	frontSE = FRONT_SE + frontNW;
 	frontSW = FRONT_SW + frontSE;
 	frontNE = FRONT_NE + frontSW;
-
-	//pWest =  W;
-	//pEast = pWest + E;
-	//pNorth = pEast + N;
-	//pSouth = pNorth + S;
-	//pNE = pSouth + NE;
-	//pNW = pNE + NW;
-	//pSE = pNW + SE;
-	//pSW = pSE + SW;
 
 	// back movement
 	if( p < backNE ) {
@@ -941,7 +921,6 @@ struct sphere generate_sphere(int rad) {
 			ball.pos = ball.p1;
 			// 3D
 			ball.previous_pos = {0.0, 0.0, 0.0};
-	//printf("generation: %f %f || %f %f\n", ball.previous_pos.x, ball.previous_pos.y, ball.pos.x, ball.pos.y);
 			
 			// gets a random direction, this might be a wasted step
 			ball.direction = random_direction(ball.radius);
@@ -952,8 +931,6 @@ struct sphere generate_sphere(int rad) {
 
 			// start on a curved path
 			ball.path = 1;
-			// dead variable is set to 0, used to prevent collisions
-			//ball.dead = 0;
 			ball.color = random_color();		
 
 			ball.curve_length = curve_length( &ball );
@@ -1005,31 +982,23 @@ void print_sphere( struct sphere *ball) {
 void spawn_next_ball() {
 	//printf("%f/%f till next spawn\n", mass_of_system, next_ball_mass);
 	if( mass_of_system >= next_ball_mass ) {
-		printf("NEW BALL\n");
 		all_spheres.resize(all_spheres.size()+1);
-		//sphere temp = generate_sphere(1);
-		//printf("\nAUTO SPAWNED\n\n");
-		//print_sphere(&temp);
-
-		// TODO
-		// DO not change radius, this causes the jumping sphere effect that resolves
-		// an overlap
-		//temp.radius = next_ball_radius;
-		//all_spheres.push_back( temp );
 		all_spheres.push_back( generate_sphere(1) );
-
 		mass_of_system -= next_ball_mass; 
-		//next_ball = generate_sphere();
 		next_ball_radius = random_radius();
 		next_ball_mass = get_mass( next_ball_radius );
 	}
 }
 
+/*
+ * void keyMove (double deltaMove );
+ *
+ * 
+ */ 
 void keyMove (double deltaMove ) {
 	x += deltaMove * lx * 0.1;
 	y += deltaMove * ly * 0.1;
 	z += deltaMove * lz * 0.1;
-
 }
 
 
@@ -1049,16 +1018,6 @@ void display() {
     
     gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
 	
-	//glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
-	//glMatrixMode(GL_MODELVIEW);
-    //gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-
-	//glDisable(GL_LIGHTING);
-	//glEnable(GL_LIGHTING);
-
-	//glPushMatrix();
 	// MUST BE BEFORE SPHERES ARE DRAWN
 	collision_check();
 	
@@ -1094,6 +1053,7 @@ void display() {
 	//  glVertex3f( 5,  5, 5);
 	//  glVertex3f(-5,  5, 5);
 	//glEnd();
+	
 	// back box
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -1151,17 +1111,10 @@ void display() {
 	}
 	glEnd();
 	
-
 	glDisable(GL_BLEND);
-	
 	spawn_next_ball();
 	
-	
-	//glPopMatrix();
-	//printf("spheres: %d\n", all_spheres.size());
-	//glFlush();
 	glutSwapBuffers();
-	//glutIdleFunc(NULL);
 }
 
 /*
@@ -1256,7 +1209,12 @@ void keystroke(unsigned char c, int x, int y) {
 	}
 }
 
-void releaseKey( unsigned char key, int x, int y) {
+/*
+ * void key_release( unisgned char key, int x, int y);
+ *
+ * when the key is released, stop moving in that direction 
+ */
+void key_release( unsigned char key, int x, int y) {
 	switch(key) {
 		case 119: // [w] forward
 			deltaMove = 0.0;
@@ -1264,10 +1222,14 @@ void releaseKey( unsigned char key, int x, int y) {
 		case 115: // [s] back
 			deltaMove = 0.0;
 			break;
-	}
-	
+	}	
 }
 
+/*
+ * void mouse_move( int x, int y);
+ *
+ * Detects the change is mouse direction
+ */
 void mouse_move( int x, int y) {
 	if( xOrigin >= 0) {
 		deltaAngleX = ( x - xOrigin) * 0.02;
@@ -1279,6 +1241,11 @@ void mouse_move( int x, int y) {
 	}
 }
 
+/*
+ * void mouse_button( int button, int state, int x, int y);
+ *
+ * Handles mouse button presses
+ */
 void mouse_button( int button, int state, int x, int y) {
 	if(button == GLUT_LEFT_BUTTON) {
 		if( state == GLUT_UP) {
@@ -1309,7 +1276,7 @@ int main(int argc, char **argv) {
      glutIdleFunc(animate);	// call animate() when idle
  	glutIgnoreKeyRepeat(1);
 	 glutKeyboardFunc(keystroke);	//handles user input
-	 glutKeyboardUpFunc(releaseKey);
+	 glutKeyboardUpFunc(key_release);
 	 glutMouseFunc(mouse_button);
 	 glutMotionFunc(mouse_move);
 	 gfxinit();
