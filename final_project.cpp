@@ -56,6 +56,19 @@ double temp;
 int balls;
 double mass_of_system;
 
+double angleX = 0.0;
+double angleY = 0.0;
+
+double lx = 0.0, ly =0.0, lz = 1.0;
+
+double x = 10.0, y = 10.0, z = 10.0;
+
+double deltaAngleX = 0.0;
+double deltaAngleY = 0.0;
+double deltaMove = 0.0;
+int xOrigin = -1;
+int yOrigin = -1;
+
 // holds 3 floating point number representing a point in 2 space
 struct point3f {
 	double x;
@@ -880,15 +893,31 @@ void spawn_next_ball() {
 	}
 }
 
+void keyMove (double deltaMove ) {
+	x += deltaMove * lx * 0.1;
+	y += deltaMove * ly * 0.1;
+	z += deltaMove * lz * 0.1;
+
+}
+
+
 /*
  * void display();
  *
  * The display function displays the animation to the users screen.
  */
 void display() {
+
+	if(deltaMove) {
+		keyMove(deltaMove);
+	}
+
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//glLoadIdentity();
-    //glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+    
+    gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
+	
+	//glMatrixMode(GL_PROJECTION);
     //gluPerspective(60.0, 16/9., 1.0, 20.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	//glMatrixMode(GL_MODELVIEW);
@@ -1039,7 +1068,7 @@ void gfxinit() {
     gluPerspective(60.0, 16/9., 1.0, 20.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
-    gluLookAt(10.0, 10.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(x, y, z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
@@ -1079,12 +1108,56 @@ void keystroke(unsigned char c, int x, int y) {
 			all_spheres.push_back( generate_sphere(0) );
 		}
 			break;
+		case 119: // [w] forward
+			deltaMove = 0.5;
+			break;
+		case 115: // [s] back
+			deltaMove = -0.5;
+			break;
+		
 		case 113:		// [q] is quit
 			exit(0);
 			break;
 		case 110:
 			glutIdleFunc(animate);
 			break;
+	}
+}
+
+void releaseKey( unsigned char key, int x, int y) {
+	switch(key) {
+		case 119: // [w] forward
+			deltaMove = 0.0;
+			break;
+		case 115: // [s] back
+			deltaMove = 0.0;
+			break;
+	}
+	
+}
+
+void mouse_move( int x, int y) {
+	if( xOrigin >= 0) {
+		deltaAngleX = ( x - xOrigin) * 0.02;
+		deltaAngleY = ( y - yOrigin) * 0.02;
+
+		lx = sin(angleX + deltaAngleX);
+		ly = -1*sin(angleY + deltaAngleY);
+		lz = -1*cos(angleX + deltaAngleX);
+	}
+}
+
+void mouse_button( int button, int state, int x, int y) {
+	if(button == GLUT_LEFT_BUTTON) {
+		if( state == GLUT_UP) {
+			angleX += deltaAngleX;
+			angleY += deltaAngleY;
+			xOrigin = -1;
+			yOrigin = -1;
+		}else{
+			xOrigin = x;
+			yOrigin = y;
+		}
 	}
 }
 
@@ -1102,7 +1175,11 @@ int main(int argc, char **argv) {
 	 window = glutCreateWindow("Sphere Collisions"); //window title
      glutDisplayFunc(display);
      glutIdleFunc(animate);	// call animate() when idle
-     glutKeyboardFunc(keystroke);	//handles user input
+ 	glutIgnoreKeyRepeat(1);
+	 glutKeyboardFunc(keystroke);	//handles user input
+	 glutKeyboardUpFunc(releaseKey);
+	 glutMouseFunc(mouse_button);
+	 glutMotionFunc(mouse_move);
 	 gfxinit();
      glutMainLoop(); // start the animation
 }
