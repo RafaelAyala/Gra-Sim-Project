@@ -36,14 +36,32 @@
 #define CUBE_LENGTH 5.0
 
 ///Probabilities for the directions p3 and p4 will go in bezier curves
-#define N 0.125
-#define S 0.125
-#define E 0.125
-#define W 0.125
-#define NW 0.125
-#define SE 0.125
-#define SW 0.125
-#define NE 0.125
+#define BACK 0.038461
+#define BACK_N 0.038461
+#define BACK_S 0.038461
+#define BACK_E 0.038461
+#define BACK_W 0.038461
+#define BACK_NW 0.038461
+#define BACK_SE 0.038461
+#define BACK_SW 0.038461
+#define BACK_NE 0.038461
+#define MID_N 0.038461
+#define MID_S 0.038461
+#define MID_E 0.038461
+#define MID_W 0.038461
+#define MID_NW 	0.038461
+#define MID_SE 	0.038461
+#define MID_SW 	0.038461
+#define MID_NE 	0.038461
+#define FRONT 0.038461
+#define FRONT_N 0.038461
+#define FRONT_S 0.038461
+#define FRONT_E 0.038461
+#define FRONT_W 0.038461
+#define FRONT_NW 0.038461
+#define FRONT_SE 0.038461
+#define FRONT_SW 0.038461
+#define FRONT_NE 0.038461
 #define STEP 1.0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
@@ -59,7 +77,7 @@ double mass_of_system;
 double angleX = 0.0;
 double angleY = 0.0;
 
-double lx = 0.0, ly =0.0, lz = 1.0;
+double lx = -10.0, ly = -10.0, lz = -10.0;
 
 double x = 10.0, y = 10.0, z = 10.0;
 
@@ -350,60 +368,174 @@ struct point3f new_curve_point(struct point3f origin){
 
 	double p = (rand() % 101)/100.;
 	//printf("%f \n", p);
-	double pWest,pEast,pNorth,pSouth;
-	double pNE,pNW,pSE,pSW;	
+	//double pWest,pEast,pNorth,pSouth;
+	//double pNE,pNW,pSE,pSW;	
 	struct point3f result;
-	
-	pWest =  W;
-	pEast = pWest + E;
-	pNorth = pEast + N;
-	pSouth = pNorth + S;
-	pNE = pSouth + NE;
-	pNW = pNE + NW;
-	pSE = pNW + SE;
-	pSW = pSE + SW;
+	result = origin;
+	double back, backN, backS, backE, backW, backNW, backSE, backSW, backNE;
+	double midN, midS, midE, midW, midNW, midSE, midSW, midNE;
+	double front, frontN, frontS, frontE, frontW, frontNW, frontSE, frontSW, frontNE;
 
-	if(p < pWest){
-	//Move left
-		result.x = origin.x - STEP;
-		result.y = 0.0;
+	back = BACK;
+	backN = BACK_N + back;
+	backS = BACK_S + backN;
+	backE = BACK_E + backS;
+	backW = BACK_W + backE;
+	backNW = BACK_NW + backW;
+	backSE = BACK_SE + backNW;
+	backSW = BACK_SW + backSE;
+	backNE = BACK_NE + backSW;
+	
+	midN = MID_N + backNE;
+	midS = MID_S + midN;
+	midE = MID_E + midS;
+	midW = MID_W + midE;
+	midNW = MID_NW + midW;
+	midSE = MID_SE + midNW;
+	midSW = MID_SW + midSE;
+	midNE = MID_NE + midSW;
+	
+	front = FRONT + midNE;
+	frontN = FRONT_N + front;
+	frontS = FRONT_S + frontN;
+	frontE = FRONT_E + frontS;
+	frontW = FRONT_W + frontE;
+	frontNW = FRONT_NW + frontW;
+	frontSE = FRONT_SE + frontNW;
+	frontSW = FRONT_SW + frontSE;
+	frontNE = FRONT_NE + frontSW;
+
+	//pWest =  W;
+	//pEast = pWest + E;
+	//pNorth = pEast + N;
+	//pSouth = pNorth + S;
+	//pNE = pSouth + NE;
+	//pNW = pNE + NW;
+	//pSE = pNW + SE;
+	//pSW = pSE + SW;
+
+	// back movement
+	if( p < backNE ) {
+		if(p < back) {
+		// Move Back
+			result.z = origin.z - STEP;
+		} else if(p < backN){
+		// Move Up - Back
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		} else if (p < backS){
+		// Move Down - Back
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < backE){
+		// Move Right - Back
+			result.x = origin.x + STEP;
+			result.z = origin.z - STEP;
+		} else if(p < backW){
+		// Move Left - Back
+			result.x = origin.x - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < backNW){
+		// move north west - Back
+			result.x = origin.x - STEP;
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		} else if (p < backSE){
+		// move south east - Back
+			result.x = origin.x + STEP;
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < backSW) {
+		//move south west - Back
+			result.x = origin.x - STEP;
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else {
+		//Move north east - Back
+			result.x = origin.x + STEP;
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		}
 		return result;
-	} else if (p < pEast){
-	//Move Right
-		result.x = origin.x + STEP;
-		result.y = 0.0;
+	
+	// mid movement
+	}else if( p < midNE ) {
+		
+		if(p < midN){
+		// Move Up
+			result.y = origin.y + STEP;
+		} else if (p < midS){
+		// Move down
+			result.y = origin.y - STEP;
+		} else if (p < midE){
+		// Move Right
+			result.x = origin.x + STEP;
+		} else if(p < midW){
+		// Move left
+			result.x = origin.x - STEP;
+		} else if (p < midNW){
+		// move north west
+			result.x = origin.x - STEP;
+			result.y = origin.y + STEP;
+		} else if (p < midSE){
+		// move south east
+			result.x = origin.x + STEP;
+			result.y = origin.y - STEP;
+		} else if (p < midSW) {
+		//move south west
+			result.x = origin.x - STEP;
+			result.y = origin.y - STEP;
+		} else {
+		//Move north east
+			result.x = origin.x + STEP;
+			result.y = origin.y + STEP;
+		}
 		return result;
-	} else if(p < pNorth){
-	//Move Up
-		result.x = 0.0;
-		result.y = origin.y + STEP;
-		return result;
-	} else if (p < pSouth){
-		result.x = 0.0;
-		result.y = origin.y - STEP;
-		return result;
-	} else if (p < pNE){
-	//Move north east
-		result.x = origin.x + STEP;
-		result.y = origin.y + STEP;
-		return result;
-	} else if (p < pNW){
-		//printf("NORTHWEST\n");
-	//move north west
-		result.x = origin.x - STEP;
-		result.y = origin.y + STEP;
-		//printf("x:%f y:%f xnew:%f ynew:%f\n",origin.x,origin.y,result.x,result.y); 
-		return result;
-	} else if (p < pSE){
-	//move south east
-		result.x = origin.x + STEP;
-		result.y = origin.y - STEP;
-		return result;
+
+	// front movement
 	} else {
-		result.x = origin.x - STEP;
-		result.y = origin.y - STEP;
+		if(p < front) {
+		// Move Back
+			result.z = origin.z - STEP;
+		} else if(p < frontN){
+		// Move Up - Back
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		} else if (p < frontS){
+		// Move Down - Back
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < frontE){
+		// Move Right - Back
+			result.x = origin.x + STEP;
+			result.z = origin.z - STEP;
+		} else if(p < frontW){
+		// Move Left - Back
+			result.x = origin.x - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < frontNW){
+		// move north west - Back
+			result.x = origin.x - STEP;
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		} else if (p < frontSE){
+		// move south east - Back
+			result.x = origin.x + STEP;
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else if (p < frontSW) {
+		//move south west - Back
+			result.x = origin.x - STEP;
+			result.y = origin.y - STEP;
+			result.z = origin.z - STEP;
+		} else {
+		//Move north east - Back
+			result.x = origin.x + STEP;
+			result.y = origin.y + STEP;
+			result.z = origin.z - STEP;
+		}
 		return result;
-	//move south west
+
 	}
 }
 
@@ -1065,10 +1197,10 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    gluPerspective(60.0, 16/9., 0.1, 60.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
-    gluLookAt(x, y, z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    //gluLookAt(x, y, z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
