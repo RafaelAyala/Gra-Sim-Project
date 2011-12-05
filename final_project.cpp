@@ -164,7 +164,7 @@ double next_ball_radius;
 double ranged_random_value(double radius) {
 	//printf("#### radius: %f\n", radius);
 	double difference = 2 * (CUBE_LENGTH - (radius+0.0001));
-	return ((rand() % (101)/100.)*difference)-(difference/2.);	
+	return (( (double)rand()/RAND_MAX )*difference)-(difference/2.);	
 }
 
 /*
@@ -361,7 +361,8 @@ void move_on_curve( struct sphere *ball ) {
  */
 struct point3f new_curve_point(struct point3f origin){
 
-	double p = (rand() % 101)/100.;
+	double p = ( (double)rand() /RAND_MAX);
+	printf("p: %f\n", p);
 	struct point3f result;
 	result = origin;
 	double back, backN, backS, backE, backW, backNW, backSE, backSW, backNE;
@@ -399,6 +400,7 @@ struct point3f new_curve_point(struct point3f origin){
 
 	// back movement
 	if( p < backNE ) {
+		printf("back\n");
 		if(p < back) {
 		// Move Back
 			result.z = origin.z - STEP;
@@ -443,6 +445,7 @@ struct point3f new_curve_point(struct point3f origin){
 	
 	// mid movement
 	}else if( p < midNE ) {
+		printf("mid\n");
 		
 		if(p < midN){
 		// Move Up
@@ -477,45 +480,46 @@ struct point3f new_curve_point(struct point3f origin){
 
 	// front movement
 	} else {
+		printf("front\n");
 		if(p < front) {
-		// Move Back
-			result.z = origin.z - STEP;
+		// Move Front
+			result.z = origin.z + STEP;
 		} else if(p < frontN){
-		// Move Up - Back
+		// Move Up - Front
 			result.y = origin.y + STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if (p < frontS){
-		// Move Down - Back
+		// Move Down - Front
 			result.y = origin.y - STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if (p < frontE){
-		// Move Right - Back
+		// Move Right - Front
 			result.x = origin.x + STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if(p < frontW){
-		// Move Left - Back
+		// Move Left - Front
 			result.x = origin.x - STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if (p < frontNW){
-		// move north west - Back
+		// move north west - Front
 			result.x = origin.x - STEP;
 			result.y = origin.y + STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if (p < frontSE){
-		// move south east - Back
+		// move south east - Front
 			result.x = origin.x + STEP;
 			result.y = origin.y - STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else if (p < frontSW) {
-		//move south west - Back
+		//move south west - Front
 			result.x = origin.x - STEP;
 			result.y = origin.y - STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		} else {
-		//Move north east - Back
+		//Move north east - Front
 			result.x = origin.x + STEP;
 			result.y = origin.y + STEP;
-			result.z = origin.z - STEP;
+			result.z = origin.z + STEP;
 		}
 		return result;
 
