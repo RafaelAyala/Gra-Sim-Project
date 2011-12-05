@@ -55,6 +55,16 @@ double current;
 double temp;
 int balls;
 
+float angleX = 0.0f; 
+float angleY = 0.0f; 
+float lx=0.0f,ly = 0.0f,lz=-1.0f; 
+float x=0.0f, y = 0.0f, z=10.0f;
+float deltaAngleX = 0.0f;
+float deltaAngleY = 0.0f;
+float deltaMove = 0;
+int xOrigin = -1;
+int yOrigin = -1;
+
 
 // holds 2 floating point number representing a point in 2 space
 struct point2f {
@@ -732,12 +742,31 @@ void print_sphere( struct sphere *ball) {
 }
 
 /*
+ * void keyMoveCam(float deltaMove);
+ *
+ * The display function displays the animation to the users screen.
+ */
+void keyMoveCam(float deltaMove) {
+	x += deltaMove * lx * 0.1f; // 0.1 to calibrate the speed
+	y += deltaMove * ly * 0.1f;
+	z += deltaMove * lz * 0.1f;
+}
+
+
+/*
  * void display();
  *
  * The display function displays the animation to the users screen.
  */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	if(deltaMove){
+		keyMoveCam(deltaMove);
+	}
+		
+	glLoadIdentity();
+	gluLookAt(x, y, z, x+lx, y + ly, z+lz, 0.0, 1.0, 0.0);
 	
 	glColor3f(0.5, 0.5, 0.5);
 	// back box
@@ -807,6 +836,7 @@ void display() {
 	}
 	//glPopMatrix();
 	//printf("spheres: %d\n", all_spheres.size());
+	glFlush();
 	glutSwapBuffers();
 	//glutIdleFunc(NULL);
 }
@@ -843,8 +873,8 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    //gluPerspective(60.0, 16/9., 1.0, 20.0);
-    glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
+    gluPerspective(60.0, 16/9., 1.0, 20.0);
+    //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
@@ -872,7 +902,54 @@ void gfxinit() {
  */
 void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
-		case 97:	// [a] for add ball
+		case 97:	// [a]
+			break;
+		case 119:	// [w]
+			deltaMove = 0.5f;
+			break;
+		case 115:	// [s]
+			deltaMove = -0.5f;
+			break;
+		case 100:	// [d]	
+			break;
+		case 98:	// [b] for add ball
+		{
+		balls++;
+		all_spheres.resize(balls);
+		struct sphere ball;
+		ball = generate_sphere();
+		all_spheres.push_back(ball);
+		}
+			break;
+		case 113:		// [q] is quit
+			exit(0);
+			break;
+		case 110:		// [n] sets animate as the display func 
+			glutIdleFunc(animate);
+			break;
+	}
+}
+
+/*
+ * void releaseKey(unisgned char c, int x, int y);
+ *
+ * The keystroke function handles user input to modify how the animation
+ * performs. Also allows the user to quit
+ */
+ void releaseKey(unsigned char c, int x, int y) {
+	switch(c) {
+		//case 97:	// [a]
+		//	break;
+		case 119:	// [w]
+			deltaMove = 0;
+			break;
+		case 115:	// [s]
+			deltaMove = 0;
+			break;
+			/*
+		case 100:	// [d]	
+			break;
+		case 98:	// [b] for add ball
 		{
 		balls++;
 		all_spheres.resize(balls);
@@ -887,9 +964,57 @@ void keystroke(unsigned char c, int x, int y) {
 		case 110:
 			glutIdleFunc(animate);
 			break;
+			*/
 	}
 }
 
+
+/*
+ * void moveMouse(int x,int y);
+ *
+ *
+ */
+ 
+void moveMouse(int x, int y) { 	
+
+         // this will only be true when the left button is down
+         if (xOrigin >= 0) {
+
+		// update deltaAngle
+		deltaAngleX = (x - xOrigin) * 0.020f;
+		deltaAngleY = (y - yOrigin) * 0.020f;
+
+		// update camera's direction
+		lx = sin(angleX + deltaAngleX);
+		ly = -sin(angleY + deltaAngleY);
+		lz = -cos(angleX + deltaAngleX);
+	}
+}
+ 
+/*
+ * void mouseButton(int x,int y);
+ *
+ */
+
+ void mouseButton(int button, int state, int x, int y) {
+
+	// only start motion if the left button is pressed
+	if (button == GLUT_LEFT_BUTTON) {
+
+		// when the button is released
+		if (state == GLUT_UP) {
+			angleX += deltaAngleX;
+			angleY += deltaAngleY;
+			xOrigin = -1;
+			yOrigin = -1;
+		}
+		else  {// state = GLUT_DOWN
+			xOrigin = x;
+			yOrigin = y;
+		}
+	}
+}
+ 
 /*
  * void main(int argc, char **argv);
  *
@@ -901,10 +1026,16 @@ int main(int argc, char **argv) {
      glutInitWindowSize(800,800);
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
      
-	 window = glutCreateWindow("Sphere Collisions"); //window title
+     window = glutCreateWindow("Sphere Collisions"); //window title
      glutDisplayFunc(display);
      glutIdleFunc(animate);	// call animate() when idle
+     glutIgnoreKeyRepeat(1);
      glutKeyboardFunc(keystroke);	//handles user input
-	 gfxinit();
+     glutKeyboardUpFunc(releaseKey);
+     
+     glutMouseFunc(mouseButton);
+     glutMotionFunc(moveMouse);
+     
+     gfxinit();
      glutMainLoop(); // start the animation
 }
