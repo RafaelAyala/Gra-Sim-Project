@@ -176,11 +176,11 @@ struct color3f random_color(){
 	struct color3f color;
 	double red, green, blue;
 	do{
-		red = (rand()%(10001))/10000.;
+		red = ((double)rand()/RAND_MAX);
 		if(red < 0.5) red = 0.0;
-		green = (rand()%(10001))/10000.;
+		green = ((double)rand()/RAND_MAX);
 		if(green < 0.5) green = 0.0;
-		blue = (rand()%(10001))/10000.;
+		blue = ((double)rand()/RAND_MAX);
 		if(blue < 0.5) blue = 0.0;
 	}while( red == 0.0 && green == 0.0 && blue == 0.0); // no black balls
 	color.red = red;  color.green = green;  color.blue = blue;
@@ -195,7 +195,7 @@ struct color3f random_color(){
 double random_radius() {
 	double radius;
 	do{
-		radius = (rand() % 10001)/10000.;
+		radius = ((double)rand()/RAND_MAX);
 	}while(radius > 0.7 || radius < 0.15);
 	return radius;
 }
@@ -589,7 +589,7 @@ void animate() {
 	for(j = 0; j < all_spheres.size(); j++) {
 		
 		// DECAY
-		double decay = (rand() % 101)/100.;
+		double decay = ((double) rand() / RAND_MAX);
 
 
 		if( all_spheres[j].radius>0.0) {
@@ -902,7 +902,7 @@ struct vector3f random_direction(double radius){
  */
 double random_velocity() {
 	double velocity;
-	velocity = ((rand() % 101)/100. * BALL_SPEED/2.) + (BALL_SPEED/2.);
+	velocity = (((double) rand() / RAND_MAX) * BALL_SPEED/2.) + (BALL_SPEED/2.);
 	//printf("velocity %f\n", velocity);
 	return velocity;
 }
