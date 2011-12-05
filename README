@@ -25,12 +25,12 @@ Description
 	- Destructive collisions (other spheres or walls)
 	- Squish on impact
 
-TODO General
+TODO General [ ] - Incomplete [?] - Partial Completion(useable) [X] - Complete
 ------------
 [ ]	- refactor more
-[ ]	- ball spawning NAN's
-[ ]	- increase far plane
-[ ]	- make curves work in 3d (rafs new function)
+[?]	- ball spawning NAN's
+[X]	- increase far plane
+[X]	- make curves work in 3d (rafs new function)
 
 TODO Simulation Presentation
 ----------------------------
@@ -44,7 +44,7 @@ TODO Simulation Presentation
 [X]	- Nudge collisions
 [ ]	- Optional Decay Equations (optional)
 [ ]	- Decay on collision	
-[ ]	- Sort out RNG
+[X]	- Sort out RNG
 [X]	- Fix collision detection
 [X]	- Automate spawning based on mass loss
 
@@ -57,4 +57,4 @@ TODO Graphics Presentation
 [ ]	- reflection using stencil buffer
 [?]	- 3D (optional)
 [?]	- transparent cube (optional)
-[ ]	- System info via text (optional)
+[?]	- System info via text (optional)
