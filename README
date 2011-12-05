@@ -27,8 +27,10 @@ Description
 
 TODO General
 ------------
-	- refactor more
-	- ball spawning NAN's
+[ ]	- refactor more
+[ ]	- ball spawning NAN's
+[ ]	- increase far plane
+[ ]	- make curves work in 3d (rafs new function)
 
 TODO Simulation Presentation
 ----------------------------
@@ -40,19 +42,19 @@ TODO Simulation Presentation
 [?]	- mass and momentum
 [X]	- random sizes(0.15 0.75)
 [X]	- Nudge collisions
-	- Optional Decay Equations (optional)
-	- Decay on collision	
-	- Sort out RNG
+[ ]	- Optional Decay Equations (optional)
+[ ]	- Decay on collision	
+[ ]	- Sort out RNG
 [X]	- Fix collision detection
 [X]	- Automate spawning based on mass loss
 
 TODO Graphics Presentation
 --------------------------
-	- Mouse and Keyboard scene navigation (Camera Controls)
-	- Release particles on crash and decay
-	- color based on decay (optional)
-	- squish (based on angle of collision) + ease in/out
-	- reflection using stencil buffer
-	- 3D (optional)
-	- transparent cube (optional)
-	- System info via text (optional)
+[?]	- Mouse and Keyboard scene navigation (Camera Controls)
+[?]	- Release particles on crash and decay
+[?]	- color based on decay for tail (optional)
+[ ]	- squish (based on angle of collision) + ease in/out
+[ ]	- reflection using stencil buffer
+[?]	- 3D (optional)
+[?]	- transparent cube (optional)
+[ ]	- System info via text (optional)
