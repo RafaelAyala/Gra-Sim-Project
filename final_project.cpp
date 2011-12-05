@@ -56,16 +56,30 @@ double temp;
 int balls;
 double mass_of_system;
 
-// holds 2 floating point number representing a point in 2 space
-struct point2f {
+// holds 3 floating point number representing a point in 2 space
+struct point3f {
 	double x;
 	double y;
+	double z;
 };
+
+// holds 2 floating point number representing a point in 2 space
+//struct point2f {
+//	double x;
+//	double y;
+//};
 
 // hold two floating point number representing a direction
 struct vector2f {
 	double x;
 	double y;
+};
+
+// holds three floating point number representing a direction
+struct vector3f {
+	double x;
+	double y;
+	double z;
 };
 
 // holds 3 floating point numbers representing a color (RGB)
@@ -77,9 +91,11 @@ struct color3f {
 
 // holds all information pertaining to a single sphere
 struct sphere{
-	struct point2f pos;
+	//struct point2f pos;
+	struct point3f pos;
 	double velocity;
-	struct vector2f direction;
+	//struct vector2f direction;
+	struct vector3f direction;
 	//double mass;
 	double radius;
 	
@@ -89,15 +105,18 @@ struct sphere{
 	double start_time;
 	int ghost;
 
-	struct point2f p1,p2,p3,p4;
-	struct point2f previous_pos;
+	//struct point2f p1,p2,p3,p4;
+	struct point3f p1,p2,p3,p4;
+	//struct point2f previous_pos;
+	struct point3f previous_pos;
 	double interval;
 	double curve_length;
 	double curve_time;
 };
 
 struct dust{
-	struct point2f pos;
+	//struct point2f pos;
+	struct point3f pos;
 	struct color3f color;
 	int life;
 };
@@ -176,15 +195,23 @@ void update_position( struct sphere *ball) {
 	c = 3 * (ball->p2.x - ball->p1.x);
 	b = 3 * (ball->p3.x - ball->p2.x) - c;
 	a = ball->p4.x - ball->p1.x - c - b;
-	ball->pos.x = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.x;
+	ball->pos.x = a * pow(ball->interval,3) + b * pow(ball->interval,2) + 
+		c * ball->interval + ball->p1.x;
 
 	// y
 	c = 3 * (ball->p2.y - ball->p1.y);
 	b = 3 * (ball->p3.y - ball->p2.y) - c;
 	a = ball->p4.y - ball->p1.y - c - b;
-	ball->pos.y = a * pow(ball->interval,3) + b * pow(ball->interval,2) + c * ball->interval + ball->p1.y;
-
-	//return result;
+	ball->pos.y = a * pow(ball->interval,3) + b * pow(ball->interval,2) + 
+		c * ball->interval + ball->p1.y;
+	
+	// 3D
+	// z
+	c = 3 * (ball->p2.z - ball->p1.z);
+	b = 3 * (ball->p3.z - ball->p2.z) - c;
+	a = ball->p4.z - ball->p1.z - c - b;
+	ball->pos.z = a * pow(ball->interval,3) + b * pow(ball->interval,2) +
+		c * ball->interval + ball->p1.z;
 }
 
 /*
@@ -192,9 +219,9 @@ void update_position( struct sphere *ball) {
  *
  * returns the position of the ball on a curve
  */
-struct point2f get_position( struct sphere *ball, double pos) {
+struct point3f get_position( struct sphere *ball, double pos) {
 	double a, b, c;
-	struct point2f result;
+	struct point3f result;
 	// x
 	c = 3 * (ball->p2.x - ball->p1.x);
 	b = 3 * (ball->p3.x - ball->p2.x) - c;
@@ -206,6 +233,13 @@ struct point2f get_position( struct sphere *ball, double pos) {
 	b = 3 * (ball->p3.y - ball->p2.y) - c;
 	a = ball->p4.y - ball->p1.y - c - b;
 	result.y = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball->p1.y;
+	
+	// 3D
+	// z
+	c = 3 * (ball->p2.z - ball->p1.z);
+	b = 3 * (ball->p3.z - ball->p2.z) - c;
+	a = ball->p4.z - ball->p1.z - c - b;
+	result.z = a * pow(pos,3) + b * pow(pos,2) + c * pos + ball->p1.z;
 
 	return result;
 }
@@ -219,12 +253,14 @@ struct point2f get_position( struct sphere *ball, double pos) {
 double curve_length( struct sphere *ball ) {
 	double i;
 	double x1, y1, x2, y2;
+	// 3D
+	double z1, z2;
 	double total = 0;
-	struct point2f p1, p2;
+	struct point3f p1, p2;
 	p1 = get_position( ball, 0);
 	for(i = 1./CURVE_LENGTH_APPROX ; i <= 1; i+= 1./CURVE_LENGTH_APPROX) {
 		p2 = get_position( ball, i);
-		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) );
+		total = total + sqrt( pow(p2.x-p1.x,2) + pow(p2.y-p1.y,2) + pow(p2.z-p1.z,2));
 		p1 = p2;
 	}
 	return total;
@@ -236,9 +272,11 @@ double curve_length( struct sphere *ball ) {
  * normalizes the delta_x and delta_y components of a sphere
  */
 void normalize_dir(struct sphere *ball) {
-	double mag = sqrt(pow(ball->direction.x,2) + pow(ball->direction.y,2));
+	double mag = sqrt(pow(ball->direction.x,2) + pow(ball->direction.y,2) +
+			pow(ball->direction.z,2));
 	ball->direction.x /= mag;
 	ball->direction.y /= mag;
+	ball->direction.z /= mag;
 }
 
 /*
@@ -247,7 +285,8 @@ void normalize_dir(struct sphere *ball) {
  * returns the distance between two parameter spheres
  */
 double distance( struct sphere b1, struct sphere b2 ) {
-	return sqrt( pow(b1.pos.x - b2.pos.x,2) + pow(b1.pos.y - b2.pos.y,2));
+	return sqrt( pow(b1.pos.x - b2.pos.x,2) + pow(b1.pos.y - b2.pos.y,2) + 
+			pow(b1.pos.z - b2.pos.z,2));
 }
 
 /*
@@ -264,6 +303,7 @@ struct sphere move_on_vector( struct sphere ball ) {
 	// update position
 	ball.pos.x += ball.direction.x * ball.velocity * timediff;
 	ball.pos.y += ball.direction.y * ball.velocity * timediff;
+	ball.pos.z += ball.direction.z * ball.velocity * timediff;
 	ball.start_time = (double) clock();
 	return ball;
 }
@@ -275,7 +315,7 @@ struct sphere move_on_vector( struct sphere ball ) {
  */
 //struct sphere move_on_curve( struct sphere *ball ) {
 void move_on_curve( struct sphere *ball ) {
-	point2f temp;
+	point3f temp;
 	temp = ball->pos;
 	// store previous position
 	ball->previous_pos = temp;
@@ -291,14 +331,15 @@ void move_on_curve( struct sphere *ball ) {
  *
  * Creates a new point for the interpolation of a bezier curve affected by the
  * defined probabilities
+ * TODO 3D this
  */
-struct point2f new_curve_point(struct point2f origin){
+struct point3f new_curve_point(struct point3f origin){
 
 	double p = (rand() % 101)/100.;
 	//printf("%f \n", p);
 	double pWest,pEast,pNorth,pSouth;
 	double pNE,pNW,pSE,pSW;	
-	struct point2f result;
+	struct point3f result;
 	
 	pWest =  W;
 	pEast = pWest + E;
@@ -375,6 +416,10 @@ void generate_curve( struct sphere *ball) {
 	
 	//ball->p3.y = ranged_random_value();
 	//ball->p4.y = ranged_random_value();
+	
+	// 3D
+	ball->p2.z = ( ball->p4.z - ball->p3.z ) + ball->p4.z;
+	ball->p1.z = ball->p4.z;
 	
 	
 	ball->p3 = new_curve_point(ball->p2);
@@ -490,6 +535,8 @@ void wall_check( struct sphere *ball ) {
 		if(ball->path == 1) {
 			ball->direction.x = ball->pos.x - ball->previous_pos.x;
 			ball->direction.y = ball->pos.y - ball->previous_pos.y;
+			// 3D
+			ball->direction.z = ball->pos.z - ball->previous_pos.z;
 			normalize_dir(ball);
 		}
 		if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
@@ -501,6 +548,13 @@ void wall_check( struct sphere *ball ) {
 		} else if(ball->pos.y >= dist || ball->pos.y <= -1*dist) {
 			ball->direction.y *= -1;
 			ball->pos.y = ( ball->pos.y < 0.0 ) ? -1*dist : dist;
+			ball->path = 0;
+			ball->start_time = (double) clock();
+			ball->active = 1;
+		// 3D
+		} else if(ball->pos.z >= dist || ball->pos.z <= -1*dist) {
+			ball->direction.z *= -1;
+			ball->pos.z = ( ball->pos.z < 0.0 ) ? -1*dist : dist;
 			ball->path = 0;
 			ball->start_time = (double) clock();
 			ball->active = 1;
@@ -522,14 +576,18 @@ void nudge_spheres( struct sphere *b1, struct sphere *b2, double d) {
 	ipen *= penetration;
 	jpen *= penetration;
 	
-	double i_dir_mag = sqrt(pow(b1->direction.x,2) + pow(b1->direction.y,2));
+	double i_dir_mag = sqrt(pow(b1->direction.x,2) + pow(b1->direction.y,2) +
+			pow(b1->direction.z,2));
 	
 	b1->pos.x -= (ipen * b1->direction.x ) / i_dir_mag;
 	b1->pos.y -= (ipen * b1->direction.y ) /i_dir_mag;
+	b1->pos.z -= (ipen * b1->direction.z ) /i_dir_mag;
 	
-	double j_dir_mag = sqrt(pow(b2->direction.x,2) + pow(b2->direction.y,2));
+	double j_dir_mag = sqrt(pow(b2->direction.x,2) + pow(b2->direction.y,2) +
+			pow(b2->direction.z,2));
 	b2->pos.x -= (jpen * b2->direction.x ) / j_dir_mag;
 	b2->pos.y -= (jpen * b2->direction.y ) /j_dir_mag;	
+	b2->pos.z -= (jpen * b2->direction.z ) /j_dir_mag;	
 }
 
 /*
@@ -541,6 +599,7 @@ void nudge_spheres( struct sphere *b1, struct sphere *b2, double d) {
 void update_direction( struct sphere *ball ) {
 	ball->direction.x = ball->pos.x - ball->previous_pos.x;
 	ball->direction.y = ball->pos.y - ball->previous_pos.y;
+	ball->direction.z = ball->pos.z - ball->previous_pos.z;
 	normalize_dir(ball);
 }
 
@@ -560,11 +619,20 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	b1_v = b1->velocity;
 	b2_v = b2->velocity;
 	double b1_vx, b1_vy, b2_vx, b2_vy;
+	// 3D
+	double b1_vz, b2_vz;
 	b1_vx = (b1->direction.x * b1_v);
 	b1_vy = (b1->direction.y * b1_v);
+	
+	// 3D
+	b1_vz = (b1->direction.z * b1_v);
 
 	b2_vx = (b2->direction.x * b2_v);
 	b2_vy = (b2->direction.y * b2_v);
+	
+	// 3D
+	b2_vz = (b2->direction.z * b2_v);
+
 	// have x and y components of speed
 
 	// get ball masses
@@ -573,27 +641,37 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	// need the new velocity components (after collision)
 	double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
+	// 3D
+	double b1_vz_new, b2_vz_new;
+
 	// ball 1 new components
 	b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
 	b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
+	// 3D
+	b1_vz_new = ((m1-m2) * b1_vz + (2*m2) * b2_vz)/(m1+m2);
 
 	// ball 2 new components
 	b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
 	b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
+	// 3D
+	b2_vz_new = ((m2-m1) * b2_vz + (2*m1) * b1_vz)/(m1+m2);
 
 	// need to change direction to match new speeds
 	b1->direction.x = b1_vx_new;
 	b1->direction.y = b1_vy_new;
+	// 3D
+	b1->direction.z = b1_vz_new;
 	normalize_dir(b1);
 
 	b2->direction.x = b2_vx_new;
 	b2->direction.y = b2_vy_new;
+	b2->direction.z = b2_vz_new;
 	normalize_dir(b2);
 	
 	b1->velocity = 
-		sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2));
+		sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2) + pow(b1_vz_new,2));
 	b2->velocity = 
-		sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2));
+		sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2) + pow(b2_vz_new,2));
 	// speeds updated
 
 	b1->path = 0;
@@ -659,8 +737,12 @@ void collision_check() {
  *
  * Returns a randomized 2D point within a bounded 2D area.
  */
-struct point2f random_ranged_point(double radius) {
-		return (struct point2f) {ranged_random_value(radius), ranged_random_value(radius)};
+// 3D
+struct point3f random_ranged_point(double radius) {
+		return (struct point3f) {ranged_random_value(radius), 
+								 ranged_random_value(radius),
+								 ranged_random_value(radius)
+		};
 }
 
 /*
@@ -668,13 +750,16 @@ struct point2f random_ranged_point(double radius) {
  *
  * Returns a random direction vector that has been normalized.
  */
-struct vector2f random_direction(double radius){
-		vector2f direction;
+// 3D
+struct vector3f random_direction(double radius){
+		vector3f direction;
 		direction.x = ranged_random_value(radius);
 		direction.y = ranged_random_value(radius);
-		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2));
+		direction.z = ranged_random_value(radius);
+		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2) + pow(direction.z,2));
 		direction.x /= mag;
 		direction.y /= mag;
+		direction.z /= mag;
 		return direction;
 }
 
@@ -709,7 +794,8 @@ struct sphere generate_sphere(int rad) {
 			
 			// position starts at p1
 			ball.pos = ball.p1;
-			ball.previous_pos = {0.0, 0.0};
+			// 3D
+			ball.previous_pos = {0.0, 0.0, 0.0};
 	//printf("generation: %f %f || %f %f\n", ball.previous_pos.x, ball.previous_pos.y, ball.pos.x, ball.pos.y);
 			
 			// gets a random direction, this might be a wasted step
@@ -729,7 +815,9 @@ struct sphere generate_sphere(int rad) {
 			ball.start_time = (double) clock();
 			ball.curve_time = ball.curve_length / ball.velocity;
 			ball.ghost = 0;
-		}while(collision_detection(ball) == 1 || ball.p1.x == 0.0 || ball.p1.y == 0.0);	
+			// 3D
+		}while(collision_detection(ball) == 1 || ball.p1.x == 0.0 || ball.p1.y == 0.0 ||
+				ball.p1.z == 0.0);	
 		
 		return ball;
 }
@@ -740,16 +828,17 @@ struct sphere generate_sphere(int rad) {
  * prints sphere info, used for debugging
  */
 void print_sphere( struct sphere *ball) {
-	printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
-	printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
+	//printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
+	printf("xpos: %f ypos: %f zpos: %f\n", ball->pos.x, ball->pos.y, ball->pos.z);
+	//printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
+	printf("direction: %f %f %f\n", ball->direction.x, ball->direction.y, ball->direction.z);
 	printf("interval: %f\n", ball->interval);
-	printf("pos -- x: %f y: %f\n", ball->pos.x, ball->pos.y); 
-	printf("prev pos -- x: %f y: %f\n", ball->previous_pos.x,
-			ball->previous_pos.y);
-	printf("p1 -- x: %f y: %f\n", ball->p1.x, ball->p1.y);
-	printf("p2 -- x: %f y: %f\n", ball->p2.x, ball->p2.y);
-	printf("p3 -- x: %f y: %f\n", ball->p3.x, ball->p3.y);
-	printf("p4 -- x: %f y: %f\n", ball->p4.x, ball->p4.y);
+	printf("prev pos -- x: %f y: %f z:%f\n", ball->previous_pos.x,
+			ball->previous_pos.y, ball->previous_pos.z);
+	printf("p1 -- x: %f y: %f z: %f\n", ball->p1.x, ball->p1.y, ball->p1.z);
+	printf("p2 -- x: %f y: %f z: %f\n", ball->p2.x, ball->p2.y, ball->p2.z);
+	printf("p3 -- x: %f y: %f z: %f\n", ball->p3.x, ball->p3.y, ball->p3.z);
+	printf("p4 -- x: %f y: %f z: %f\n", ball->p4.x, ball->p4.y, ball->p4.z);
 	printf("radius: %f", ball->radius);
 	printf("color: %f %f %f\n",
 			ball->color.red,
@@ -798,16 +887,43 @@ void spawn_next_ball() {
  */
 void display() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
+	//glLoadIdentity();
     //glMatrixMode(GL_PROJECTION);
     //gluPerspective(60.0, 16/9., 1.0, 20.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	//glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    //gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	//glDisable(GL_LIGHTING);
-	//glEnable (GL_BLEND);
-	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	//glEnable(GL_LIGHTING);
+
+	//glPushMatrix();
+	// MUST BE BEFORE SPHERES ARE DRAWN
+	collision_check();
+	
+	int i;
+	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
+		//printf("%f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
+		glPushMatrix();
+		glColor3f(all_spheres[i].color.red,
+				all_spheres[i].color.green,
+				all_spheres[i].color.blue);
+		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y, all_spheres[i].pos.z);
+		if( all_spheres[i].active == 0) {
+			glColor3f( 1.0, 1.0, 1.0);
+			glutWireSphere(all_spheres[i].radius, 10, 10);
+		}else{
+			glutSolidSphere(all_spheres[i].radius, 25, 25);
+		}
+		glPopMatrix();
+		// TOOD major issue with NAN's still exists
+		//if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
+		//	glutIdleFunc(NULL);
+		//	print_sphere(&all_spheres[i]);
+		//}
+	}
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	glColor4f(0.5, 0.5, 0.5, 0.5);
 	// front box
@@ -868,41 +984,14 @@ void display() {
 				  	 tails[j].color.green*perc,
 					 tails[j].color.blue*perc,
 					 0.3);
-	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, 0.0);
+	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, tails[j].pos.z);
 	  	  
 
 	}
 	glEnd();
 	
 
-	//glDisable(GL_BLEND);
-	//glEnable(GL_LIGHTING);
-
-	//glPushMatrix();
-	// MUST BE BEFORE SPHERES ARE DRAWN
-	collision_check();
-	
-	int i;
-	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
-		//printf("%f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
-		glPushMatrix();
-		glColor3f(all_spheres[i].color.red,
-				all_spheres[i].color.green,
-				all_spheres[i].color.blue);
-		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y,0);
-		if( all_spheres[i].active == 0) {
-			glColor3f( 1.0, 1.0, 1.0);
-			glutWireSphere(all_spheres[i].radius, 10, 10);
-		}else{
-			glutSolidSphere(all_spheres[i].radius, 25, 25);
-		}
-		glPopMatrix();
-		// TOOD major issue with NAN's still exists
-		//if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
-		//	glutIdleFunc(NULL);
-		//	print_sphere(&all_spheres[i]);
-		//}
-	}
+	glDisable(GL_BLEND);
 	
 	spawn_next_ball();
 	
@@ -950,7 +1039,7 @@ void gfxinit() {
     gluPerspective(60.0, 16/9., 1.0, 20.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+    gluLookAt(10.0, 10.0, 10.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
