@@ -17,6 +17,7 @@
  #include <GL/glut.h>
  #include <GL/glu.h>
  #include <GL/gl.h>
+ #include <GL/freeglut_ext.h>
 #endif
 
 // Common Libraries
@@ -86,6 +87,8 @@ double deltaAngleY = 0.0;
 double deltaMove = 0.0;
 int xOrigin = -1;
 int yOrigin = -1;
+
+int showText = 0; 
 
 // holds 3 floating point number representing a point in 2 space
 struct point3f {
@@ -1012,12 +1015,13 @@ void display() {
 	if(deltaMove) {
 		keyMove(deltaMove);
 	}
+	
+	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
     
     gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
-	
 	// MUST BE BEFORE SPHERES ARE DRAWN
 	collision_check();
 	
@@ -1042,17 +1046,32 @@ void display() {
 		//	print_sphere(&all_spheres[i]);
 		//}
 	}
+	int j;
+	glBegin(GL_POINTS);
+	for( j = 0; j < tails.size(); j++) {
+		
+		double perc = tails[j].life/10.;
+	  	  glColor4f( tails[j].color.red*perc,
+				  	 tails[j].color.green*perc,
+					 tails[j].color.blue*perc,
+					 0.3);
+	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, tails[j].pos.z);
+	  	  
+
+	}
+	glEnd();
+	glDisable(GL_LIGHTING);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	glColor4f(0.5, 0.5, 0.5, 0.5);
+	glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
 	// front box
-	//glBegin(GL_QUADS);
-	//  glVertex3f(-5, -5, 5);
-	//  glVertex3f( 5, -5, 5);
-	//  glVertex3f( 5,  5, 5);
-	//  glVertex3f(-5,  5, 5);
-	//glEnd();
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, 5);
+	  glVertex3f( 5, -5, 5);
+	  glVertex3f( 5,  5, 5);
+	  glVertex3f(-5,  5, 5);
+	glEnd();
 	
 	// back box
 	glBegin(GL_QUADS);
@@ -1062,7 +1081,7 @@ void display() {
 	  glVertex3f(-5,  5, -5);
 	glEnd();
 
-	glColor4f(0.4, 0.4, 0.4, 0.5);
+	glColor4f(0.4f, 0.4f, 0.4f, 0.1f);
 	// left side
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
@@ -1079,7 +1098,7 @@ void display() {
 	  glVertex3f( 5,  5, -5);
 	glEnd();
 
-	glColor4f(0.6, 0.6, 0.6, 0.5);
+	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
 	// bottom
 	glBegin(GL_QUADS);
 	  glVertex3f(-5,  5, -5);
@@ -1095,23 +1114,20 @@ void display() {
 	  glVertex3f( 5, -5,  5);
 	  glVertex3f( 5, -5, -5);
 	glEnd();
-	
-	int j;
-	glBegin(GL_POINTS);
-	for( j = 0; j < tails.size(); j++) {
-		
-		double perc = tails[j].life/10.;
-	  	  glColor4f( tails[j].color.red*perc,
-				  	 tails[j].color.green*perc,
-					 tails[j].color.blue*perc,
-					 0.3);
-	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, tails[j].pos.z);
-	  	  
 
-	}
-	glEnd();
-	
+	if(showText){
 	glDisable(GL_BLEND);
+	glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+	glColor3f( 1.0f, 1.0f, 1.0f);
+	glRasterPos3f(x+lx,y+ly,z+lz);
+	char blah[20];
+	sprintf(blah,"%d - %2.0f %",all_spheres.size(), mass_of_system/next_ball_mass*100);
+	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
+	}
+	glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+	
 	spawn_next_ball();
 	
 	glutSwapBuffers();
@@ -1150,10 +1166,15 @@ void gfxinit() {
     glEnable(GL_DEPTH_TEST);
    
     glMatrixMode(GL_PROJECTION);
-    gluPerspective(60.0, 16/9., 0.1, 60.0);
+    gluPerspective(60.0, 16/9., 0.1, 500.0);
     //glOrtho(-5.0,5.0,-5.0,5.0,1.0,20.0);
 	glMatrixMode(GL_MODELVIEW);
     //gluLookAt(x, y, z, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	
+	
+	//glRasterPos2i(10, 10);
+	//glColor3f(1.0f, 1.0f, 1.0f);
+	//glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)"dog");
 
 	glEnable ( GL_COLOR_MATERIAL ) ;
 	glColorMaterial ( GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE ) ;
@@ -1199,7 +1220,9 @@ void keystroke(unsigned char c, int x, int y) {
 		case 115: // [s] back
 			deltaMove = -0.5;
 			break;
-		
+		case 116: // [t] text
+			showText = (showText) ? 0 : 1; 
+			break;
 		case 113:		// [q] is quit
 			exit(0);
 			break;
@@ -1268,7 +1291,7 @@ void mouse_button( int button, int state, int x, int y) {
  */
 int main(int argc, char **argv) {
      glutInit(&argc,argv);
-     glutInitWindowSize(800,800);
+     glutInitWindowSize(1600,900);
      glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
      
 	 window = glutCreateWindow("Sphere Collisions"); //window title
