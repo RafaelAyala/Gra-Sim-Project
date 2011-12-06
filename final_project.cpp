@@ -1148,27 +1148,7 @@ void keyMove (double deltaMove ) {
 	z += deltaMove * lz * 0.1;
 }
 
-
-/*
- * void display();
- *
- * The display function displays the animation to the users screen.
- */
-void display() {
-
-	if(deltaMove) {
-		keyMove(deltaMove);
-	}
-	
-	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
-
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glLoadIdentity();
-    
-    gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
-	// MUST BE BEFORE SPHERES ARE DRAWN
-	collision_check();
-	
+void draw_spheres() {
 	int i;
 	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
 		//printf("%f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
@@ -1184,12 +1164,12 @@ void display() {
 			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
 		glPopMatrix();
-		// TOOD major issue with NAN's still exists
-		//if(isnan(all_spheres[i].pos.x) != 0 || isnan(all_spheres[i].pos.y) != 0) {
-		//	glutIdleFunc(NULL);
-		//	print_sphere(&all_spheres[i]);
-		//}
 	}
+
+}
+
+void draw_dust() {
+	glPushMatrix();
 	int j;
 	glBegin(GL_POINTS);
 	for( j = 0; j < tails.size(); j++) {
@@ -1204,10 +1184,16 @@ void display() {
 
 	}
 	glEnd();
+	glPopMatrix();
+
+}
+
+void draw_box() {
 	glDisable(GL_LIGHTING);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	glPushMatrix();
 	glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
 	// front box
 	glBegin(GL_QUADS);
@@ -1241,37 +1227,142 @@ void display() {
 	  glVertex3f( 5,  5,  5);
 	  glVertex3f( 5,  5, -5);
 	glEnd();
-
 	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
-	// bottom
+	// top
 	glBegin(GL_QUADS);
 	  glVertex3f(-5,  5, -5);
 	  glVertex3f(-5,  5,  5);
 	  glVertex3f( 5,  5,  5);
 	  glVertex3f( 5,  5, -5);
 	glEnd();
+	glPopMatrix();
 
-	// top
+	glPopMatrix();
+	
+	glDisable(GL_BLEND);
+	glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+}
+
+/*
+ * void display();
+ *
+ * The display function displays the animation to the users screen.
+ */
+void display() {
+
+	if(deltaMove) {
+		keyMove(deltaMove);
+	}
+	glClearStencil(0);
+	glClearDepth(1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	glLoadIdentity();
+    
+    gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
+	// MUST BE BEFORE SPHERES ARE DRAWN
+	collision_check();
+	
+	
+	
+	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+    glDepthMask(GL_FALSE);
+
+	glEnable(GL_STENCIL_TEST);
+
+	glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
+	glStencilOp(GL_REPLACE, GL_REPLACE, GL_REPLACE);
+
+	// DRAW FLOOR 
+	glPushMatrix();
+	// bottom
 	glBegin(GL_QUADS);
 	  glVertex3f(-5, -5, -5);
 	  glVertex3f(-5, -5,  5);
 	  glVertex3f( 5, -5,  5);
 	  glVertex3f( 5, -5, -5);
 	glEnd();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
+	glPopMatrix();
 
-	if(showText){
-	glColor3f( 1.0f, 1.0f, 1.0f);
-	glRasterPos3f(x+lx,y+ly,z+lz);
-	char blah[20];
-	sprintf(blah,"%d - %2.0f %",all_spheres.size(), mass_of_system/next_ball_mass*100);
-	glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
-	}
-	glEnable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
+	// END DRAW FLOOR
+
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+	glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
+	glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+
+	glDisable(GL_DEPTH_TEST);
+	glPushMatrix();
+	glScalef(1.0f, -1.0f, 1.0f);
+
+	// DRAW INVERTED SCENE
+		draw_spheres();
+		draw_dust();
+		draw_box();
+	// END DRAW SCENE
+
+	glPopMatrix();
+	glEnable(GL_DEPTH_TEST);
+	glDisable(GL_STENCIL_TEST);
+
+	glEnable(GL_BLEND);
+	glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// DRAW FLOOR AGAIN
+	glPushMatrix();
+	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
+	// bottom
+	glBegin(GL_QUADS);
+	  glVertex3f(-5, -5, -5);
+	  glVertex3f(-5, -5,  5);
+	  glVertex3f( 5, -5,  5);
+	  glVertex3f( 5, -5, -5);
+	glEnd();
+
+	// END DRAW FLOOR
+
+	glDisable(GL_BLEND);
+
+	// DRAW SCENE
+		draw_spheres();
+		draw_dust();
+		draw_box();
+	// END DRAW SCENE
+
+
+	//draw_dust();
+	//glDisable(GL_LIGHTING);
+	//glEnable (GL_BLEND);
+	//glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	//draw_box();
+	//
+	//glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
+	//// bottom
+	//glBegin(GL_QUADS);
+	//  glVertex3f(-5,  5, -5);
+	//  glVertex3f(-5,  5,  5);
+	//  glVertex3f( 5,  5,  5);
+	//  glVertex3f( 5,  5, -5);
+	//glEnd();
+
+	//
+	//glDisable(GL_BLEND);
+	//glDisable(GL_LIGHTING);
+    //glDisable(GL_DEPTH_TEST);
+
+	//if(showText){
+	//glColor3f( 1.0f, 1.0f, 1.0f);
+	//glRasterPos3f(x+lx,y+ly,z+lz);
+	//char blah[20];
+	//sprintf(blah,"%d - %2.0f %",all_spheres.size(), mass_of_system/next_ball_mass*100);
+	//glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
+	//}
+	//glEnable(GL_LIGHTING);
+    //glEnable(GL_DEPTH_TEST);
 	
 	spawn_next_ball();
 	
@@ -1440,7 +1531,7 @@ void mouse_button( int button, int state, int x, int y) {
 int main(int argc, char **argv) {
      glutInit(&argc,argv);
      glutInitWindowSize(1600,900);
-     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
+     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL);
      
 	 window = glutCreateWindow("Sphere Collisions"); //window title
      glutDisplayFunc(display);
