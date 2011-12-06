@@ -1309,8 +1309,10 @@ void display() {
 	glScalef(1.0f, -1.0f, 1.0f);
 
 	// DRAW INVERTED SCENE
+		glEnable(GL_LIGHTING);
 		draw_spheres(0);
-		draw_dust();
+		//draw_dust();
+		glDisable(GL_LIGHTING);
 		draw_box();
 	// END DRAW SCENE
 
@@ -1337,8 +1339,10 @@ void display() {
 	glDisable(GL_BLEND);
 
 	// DRAW SCENE
+		glEnable(GL_LIGHTING);
 		draw_spheres(1);
 		draw_dust();
+		glDisable(GL_LIGHTING);
 		draw_box();
 	// END DRAW SCENE
 
