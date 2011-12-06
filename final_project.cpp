@@ -165,8 +165,8 @@ double next_ball_radius;
 double ranged_random_value(double radius) {
 	//printf("#### radius: %f\n", radius);
 	double difference = 2 * (CUBE_LENGTH - (radius+0.0001));
-	//return (( (double)rand()/RAND_MAX )*difference)-(difference/2.);	
-	return (( (double)rand()/RAND_MAX )*difference);	
+	return (( (double)rand()/RAND_MAX )*difference)-(difference/2.);	
+	//return (( (double)rand()/RAND_MAX )*difference);	
 }
 
 /*
@@ -1036,7 +1036,7 @@ void collision_check() {
 // 3D
 struct point3f random_ranged_point(double radius) {
 		return (struct point3f) {ranged_random_value(radius), 
-								 ranged_random_value(radius),
+								 ranged_random_value(radius)+5.0,
 								 ranged_random_value(radius)
 		};
 }
@@ -1050,7 +1050,7 @@ struct point3f random_ranged_point(double radius) {
 struct vector3f random_direction(double radius){
 		vector3f direction;
 		direction.x = ranged_random_value(radius);
-		direction.y = ranged_random_value(radius);
+		direction.y = ranged_random_value(radius)+5.0;
 		direction.z = ranged_random_value(radius);
 		double mag = sqrt(pow(direction.x,2) + pow(direction.y,2) + pow(direction.z,2));
 		direction.x /= mag;
