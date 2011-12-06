@@ -599,9 +599,7 @@ void animate() {
 				mass_before = get_mass(all_spheres[j].radius);
 				all_spheres[j].radius -= 0.00045;
 				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
-				//printf("extra mass in system: %f\n", mass_of_system);
 				struct dust tail;
-				//tail.pos = all_spheres[j].pos;
 				double rad = all_spheres[j].radius;
 				tail.pos.x = all_spheres[j].pos.x + 
 					(((double) rand() / RAND_MAX) * (2*rad) - rad);
@@ -682,26 +680,6 @@ void wall_check( struct sphere *ball ) {
 			ball->direction.z = ball->pos.z - ball->previous_pos.z;
 			normalize_dir(ball);
 		}
-		//if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
-		//	ball->direction.x *= -1;
-		//	ball->pos.x = ( ball->pos.x < 0.0  ) ? -1*dist : dist;
-		//	ball->path = 0;
-		//	ball->start_time = (double) clock();
-		//	ball->active = 1;
-		//} else if(ball->pos.y >= dist || ball->pos.y <= -1*dist) {
-		//	ball->direction.y *= -1;
-		//	ball->pos.y = ( ball->pos.y < 0.0 ) ? -1*dist : dist;
-		//	ball->path = 0;
-		//	ball->start_time = (double) clock();
-		//	ball->active = 1;
-		//// 3D
-		//} else if(ball->pos.z >= dist || ball->pos.z <= -1*dist) {
-		//	ball->direction.z *= -1;
-		//	ball->pos.z = ( ball->pos.z < 0.0 ) ? -1*dist : dist;
-		//	ball->path = 0;
-		//	ball->start_time = (double) clock();
-		//	ball->active = 1;
-		//}
 		if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
 			ball->direction.x *= -1;
 			ball->pos.x = ( ball->pos.x < 0.0  ) ? -1*dist : dist;
@@ -1178,7 +1156,7 @@ void keyMove (double deltaMove ) {
 	z += deltaMove * lz * 0.1;
 }
 
-void draw_spheres() {
+void draw_spheres(int a) {
 	int i;
 	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
 		//printf("%f %f\n", all_spheres[i].pos.x, all_spheres[i].pos.y);
@@ -1188,8 +1166,10 @@ void draw_spheres() {
 				all_spheres[i].color.blue);
 		glTranslatef(all_spheres[i].pos.x,all_spheres[i].pos.y, all_spheres[i].pos.z);
 		if( all_spheres[i].active == 0) {
-			glColor3f( 1.0, 1.0, 1.0);
-			glutWireSphere(all_spheres[i].radius, 10, 10);
+			if( a == 1 ){
+				glColor3f( 1.0, 1.0, 1.0);
+				glutWireSphere(all_spheres[i].radius, 10, 10);
+			}
 		}else{
 			glutSolidSphere(all_spheres[i].radius, 25, 25);
 		}
@@ -1329,7 +1309,7 @@ void display() {
 	glScalef(1.0f, -1.0f, 1.0f);
 
 	// DRAW INVERTED SCENE
-		draw_spheres();
+		draw_spheres(0);
 		draw_dust();
 		draw_box();
 	// END DRAW SCENE
@@ -1357,7 +1337,7 @@ void display() {
 	glDisable(GL_BLEND);
 
 	// DRAW SCENE
-		draw_spheres();
+		draw_spheres(1);
 		draw_dust();
 		draw_box();
 	// END DRAW SCENE
