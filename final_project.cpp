@@ -35,7 +35,7 @@
 #define DENSITY 1.0
 #define PI 3.14159
 #define CUBE_LENGTH 5.0
-
+#define RESPONSE 0
 ///Probabilities for the directions p3 and p4 will go in bezier curves
 #define BACK 0.038461
 #define BACK_N 0.038461
@@ -74,6 +74,7 @@ double current;
 double temp;
 int balls;
 double mass_of_system;
+int response = RESPONSE;
 
 double angleX = 0.0;
 double angleY = 0.0;
@@ -362,7 +363,7 @@ void move_on_curve( struct sphere *ball ) {
 struct point3f new_curve_point(struct point3f origin){
 
 	double p = ( (double)rand() /RAND_MAX);
-	printf("p: %f\n", p);
+	//printf("p: %f\n", p);
 	struct point3f result;
 	result = origin;
 	double back, backN, backS, backE, backW, backNW, backSE, backSW, backNE;
@@ -400,7 +401,7 @@ struct point3f new_curve_point(struct point3f origin){
 
 	// back movement
 	if( p < backNE ) {
-		printf("back\n");
+		//printf("back\n");
 		if(p < back) {
 		// Move Back
 			result.z = origin.z - STEP;
@@ -445,7 +446,7 @@ struct point3f new_curve_point(struct point3f origin){
 	
 	// mid movement
 	}else if( p < midNE ) {
-		printf("mid\n");
+		//printf("mid\n");
 		
 		if(p < midN){
 		// Move Up
@@ -480,7 +481,7 @@ struct point3f new_curve_point(struct point3f origin){
 
 	// front movement
 	} else {
-		printf("front\n");
+		//printf("front\n");
 		if(p < front) {
 		// Move Front
 			result.z = origin.z + STEP;
@@ -746,248 +747,206 @@ void collision_response(struct sphere *b1, struct sphere *b2) {
 	b2->active = 1;
 	
 
-	// proper 3D collisions using equation provided on 
-	// http://www.plasmaphysics.org.uk/programs/coll3d_cpp.htm
-	double R = 1.0;
-	double m1 = get_mass(b1->radius); 
-	double m2 = get_mass(b2->radius);
-	double r1 = b1->radius;
-	double r2 = b2->radius;
+	if(response == 1) {
+		// proper 3D collisions using equation provided on 
+		// http://www.plasmaphysics.org.uk/programs/coll3d_cpp.htm
+		double R = 1.0;
+		double m1 = get_mass(b1->radius); 
+		double m2 = get_mass(b2->radius);
+		double r1 = b1->radius;
+		double r2 = b2->radius;
 
-	double x1 = b1->pos.x;
-	double y1 = b1->pos.y;
-	double z1 = b1->pos.z;
-	
-	double x2 = b2->pos.x;
-	double y2 = b2->pos.y;
-	double z2 = b2->pos.z;
-	double vx1 = (b1->direction.x * b1->velocity);
-	double vy1 = (b1->direction.y * b1->velocity);
-	double vz1 = (b1->direction.z * b1->velocity);
-	
-	double vx2 = (b2->direction.x * b2->velocity);
-	double vy2 = (b2->direction.y * b2->velocity);
-	double vz2 = (b2->direction.z * b2->velocity);
+		double x1 = b1->pos.x;
+		double y1 = b1->pos.y;
+		double z1 = b1->pos.z;
+		
+		double x2 = b2->pos.x;
+		double y2 = b2->pos.y;
+		double z2 = b2->pos.z;
+		double vx1 = (b1->direction.x * b1->velocity);
+		double vy1 = (b1->direction.y * b1->velocity);
+		double vz1 = (b1->direction.z * b1->velocity);
+		
+		double vx2 = (b2->direction.x * b2->velocity);
+		double vy2 = (b2->direction.y * b2->velocity);
+		double vz2 = (b2->direction.z * b2->velocity);
 
-//        double& x1, double& y1,double& z1,
-  //      double& x2, double& y2, double& z2,
-    //    double& vx1, double& vy1, double& vz1,
-      //  double& vx2, double& vy2, double& vz2,
-	//double m1
-	double  pi,r12,m21,d,v,theta2,phi2,st,ct,sp,cp,vx1r,vy1r,vz1r,fvz1r,
-	           thetav,phiv,dr,alpha,beta,sbeta,cbeta,dc,sqs,t,a,dvz2,
-			   vx2r,vy2r,vz2r,x21,y21,z21,vx21,vy21,vz21,vx_cm,vy_cm,vz_cm;
+		double  pi,r12,m21,d,v,theta2,phi2,st,ct,sp,cp,vx1r,vy1r,vz1r,fvz1r,
+				   thetav,phiv,dr,alpha,beta,sbeta,cbeta,dc,sqs,t,a,dvz2,
+				   vx2r,vy2r,vz2r,x21,y21,z21,vx21,vy21,vz21,vx_cm,vy_cm,vz_cm;
 
-//     **** initialize some variables ****
-       pi=acos(-1.0E0);
-       //error=0;
-       r12=r1+r2;
-       m21=m2/m1;
-       x21=x2-x1;
-       y21=y2-y1;
-       z21=z2-z1;
-       vx21=vx2-vx1;
-       vy21=vy2-vy1;
-       vz21=vz2-vz1;
-       
-       vx_cm = (m1*vx1+m2*vx2)/(m1+m2) ;
-       vy_cm = (m1*vy1+m2*vy2)/(m1+m2) ;
-       vz_cm = (m1*vz1+m2*vz2)/(m1+m2) ;  
+	//     **** initialize some variables ****
+		   pi=acos(-1.0E0);
+		   //error=0;
+		   r12=r1+r2;
+		   m21=m2/m1;
+		   x21=x2-x1;
+		   y21=y2-y1;
+		   z21=z2-z1;
+		   vx21=vx2-vx1;
+		   vy21=vy2-vy1;
+		   vz21=vz2-vz1;
+		   
+		   vx_cm = (m1*vx1+m2*vx2)/(m1+m2) ;
+		   vy_cm = (m1*vy1+m2*vy2)/(m1+m2) ;
+		   vz_cm = (m1*vz1+m2*vz2)/(m1+m2) ;  
 
-	   
-//     **** calculate relative distance and relative speed ***
-       d=sqrt(x21*x21 +y21*y21 +z21*z21);
-       v=sqrt(vx21*vx21 +vy21*vy21 +vz21*vz21);
-       
-//     **** return if distance between balls smaller than sum of radii ****
-       //if (d<r12) {error=2; return;}
-       
-//     **** return if relative speed = 0 ****
-       //if (v==0) {error=1; return;}
-       
+		   
+	//     **** calculate relative distance and relative speed ***
+		   d=sqrt(x21*x21 +y21*y21 +z21*z21);
+		   v=sqrt(vx21*vx21 +vy21*vy21 +vz21*vz21);
+		   
+	//     **** shift coordinate system so that ball 1 is at the origin ***
+		   x2=x21;
+		   y2=y21;
+		   z2=z21;
+		   
+	//     **** boost coordinate system so that ball 2 is resting ***
+		   vx1=-vx21;
+		   vy1=-vy21;
+		   vz1=-vz21;
 
-//     **** shift coordinate system so that ball 1 is at the origin ***
-       x2=x21;
-       y2=y21;
-       z2=z21;
-       
-//     **** boost coordinate system so that ball 2 is resting ***
-       vx1=-vx21;
-       vy1=-vy21;
-       vz1=-vz21;
-
-//     **** find the polar coordinates of the location of ball 2 ***
-       theta2=acos(z2/d);
-       if (x2==0 && y2==0) {phi2=0;} else {phi2=atan2(y2,x2);}
-       st=sin(theta2);
-       ct=cos(theta2);
-       sp=sin(phi2);
-       cp=cos(phi2);
+	//     **** find the polar coordinates of the location of ball 2 ***
+		   theta2=acos(z2/d);
+		   if (x2==0 && y2==0) {phi2=0;} else {phi2=atan2(y2,x2);}
+		   st=sin(theta2);
+		   ct=cos(theta2);
+		   sp=sin(phi2);
+		   cp=cos(phi2);
 
 
-//     **** express the velocity vector of ball 1 in a rotated coordinate
-//          system where ball 2 lies on the z-axis ******
-       vx1r=ct*cp*vx1+ct*sp*vy1-st*vz1;
-       vy1r=cp*vy1-sp*vx1;
-       vz1r=st*cp*vx1+st*sp*vy1+ct*vz1;
-       fvz1r = vz1r/v ;
-       if (fvz1r>1) {fvz1r=1;}   // fix for possible rounding errors
-          else if (fvz1r<-1) {fvz1r=-1;} 
-       thetav=acos(fvz1r);
-       if (vx1r==0 && vy1r==0) {phiv=0;} else {phiv=atan2(vy1r,vx1r);}
+	//     **** express the velocity vector of ball 1 in a rotated coordinate
+	//          system where ball 2 lies on the z-axis ******
+		   vx1r=ct*cp*vx1+ct*sp*vy1-st*vz1;
+		   vy1r=cp*vy1-sp*vx1;
+		   vz1r=st*cp*vx1+st*sp*vy1+ct*vz1;
+		   fvz1r = vz1r/v ;
+		   if (fvz1r>1) {fvz1r=1;}   // fix for possible rounding errors
+			  else if (fvz1r<-1) {fvz1r=-1;} 
+		   thetav=acos(fvz1r);
+		   if (vx1r==0 && vy1r==0) {phiv=0;} else {phiv=atan2(vy1r,vx1r);}
 
-        						
-//     **** calculate the normalized impact parameter ***
-       dr=d*sin(thetav)/r12;
-
-
-//     **** return old positions and velocities if balls do not collide ***
-      // if (thetav>pi/2 || fabs(dr)>1) {
-        //   x2=x2+x1;
-          // y2=y2+y1;
-           //z2=z2+z1;
-           //vx1=vx1+vx2;
-           //vy1=vy1+vy2;
-           //vz1=vz1+vz2;
-      //     error=1;
-           //return;
-        //}
-       
-//     **** calculate impact angles if balls do collide ***
-       alpha=asin(-dr);
-       beta=phiv;
-       sbeta=sin(beta);
-       cbeta=cos(beta);
-        
-       
-//     **** calculate time to collision ***
-       t=(d*cos(thetav) -r12*sqrt(1-dr*dr))/v;
-
-     
-//     **** update positions and reverse the coordinate shift ***
-       x2=x2+vx2*t +x1;
-       y2=y2+vy2*t +y1;
-       z2=z2+vz2*t +z1;
-       x1=(vx1+vx2)*t +x1;
-       y1=(vy1+vy2)*t +y1;
-       z1=(vz1+vz2)*t +z1;
-        
+									
+	//     **** calculate the normalized impact parameter ***
+		   dr=d*sin(thetav)/r12;
  
-       
-//  ***  update velocities ***
+	//     **** calculate impact angles if balls do collide ***
+		   alpha=asin(-dr);
+		   beta=phiv;
+		   sbeta=sin(beta);
+		   cbeta=cos(beta);			
+		   
+	//     **** calculate time to collision ***
+		   t=(d*cos(thetav) -r12*sqrt(1-dr*dr))/v;
+		 
+	//     **** update positions and reverse the coordinate shift ***
+		   x2=x2+vx2*t +x1;
+		   y2=y2+vy2*t +y1;
+		   z2=z2+vz2*t +z1;
+		   x1=(vx1+vx2)*t +x1;
+		   y1=(vy1+vy2)*t +y1;
+		   z1=(vz1+vz2)*t +z1;
+		   
+	//  ***  update velocities ***
 
-       a=tan(thetav+alpha);
+		   a=tan(thetav+alpha);
+		   dvz2=2*(vz1r+a*(cbeta*vx1r+sbeta*vy1r))/((1+a*a)*(1+m21));
+		   vz2r=dvz2;
+		   vx2r=a*cbeta*dvz2;
+		   vy2r=a*sbeta*dvz2;
+		   vz1r=vz1r-m21*vz2r;
+		   vx1r=vx1r-m21*vx2r;
+		   vy1r=vy1r-m21*vy2r;
 
-       dvz2=2*(vz1r+a*(cbeta*vx1r+sbeta*vy1r))/((1+a*a)*(1+m21));
-       
-       vz2r=dvz2;
-       vx2r=a*cbeta*dvz2;
-       vy2r=a*sbeta*dvz2;
-       vz1r=vz1r-m21*vz2r;
-       vx1r=vx1r-m21*vx2r;
-       vy1r=vy1r-m21*vy2r;
+		   
+	//     **** rotate the velocity vectors back and add the initial velocity
+	//           vector of ball 2 to retrieve the original coordinate system ****
+						 
+		   vx1=ct*cp*vx1r-sp*vy1r+st*cp*vz1r +vx2;
+		   vy1=ct*sp*vx1r+cp*vy1r+st*sp*vz1r +vy2;
+		   vz1=ct*vz1r-st*vx1r               +vz2;
+		   vx2=ct*cp*vx2r-sp*vy2r+st*cp*vz2r +vx2;
+		   vy2=ct*sp*vx2r+cp*vy2r+st*sp*vz2r +vy2;
+		   vz2=ct*vz2r-st*vx2r               +vz2;
+			
+		b1->direction.x = vx1;
+		b1->direction.y = vy1;
+		// 3D
+		b1->direction.z = vz1;
+		normalize_dir(b1);
 
-       
-//     **** rotate the velocity vectors back and add the initial velocity
-//           vector of ball 2 to retrieve the original coordinate system ****
-                     
-       vx1=ct*cp*vx1r-sp*vy1r+st*cp*vz1r +vx2;
-       vy1=ct*sp*vx1r+cp*vy1r+st*sp*vz1r +vy2;
-       vz1=ct*vz1r-st*vx1r               +vz2;
-       vx2=ct*cp*vx2r-sp*vy2r+st*cp*vz2r +vx2;
-       vy2=ct*sp*vx2r+cp*vy2r+st*sp*vz2r +vy2;
-       vz2=ct*vz2r-st*vx2r               +vz2;
-        
-	b1->direction.x = vx1;
-	b1->direction.y = vy1;
-	// 3D
-	b1->direction.z = vz1;
-	normalize_dir(b1);
+		b2->direction.x = vx2;
+		b2->direction.y = vy2;
+		b2->direction.z = vz2;
+		normalize_dir(b2);
 
-	b2->direction.x = vx2;
-	b2->direction.y = vy2;
-	b2->direction.z = vz2;
-	normalize_dir(b2);
+		b1->velocity = 
+			sqrt( pow(vx1,2) + pow(vy1,2) + pow(vz1,2));
+		b2->velocity = 
+			sqrt( pow(vx2,2) + pow(vy2,2) + pow(vz2,2));
+	
+	}else{
+	
+		// store before collision velocities
+		double b1_v, b2_v;
+		b1_v = b1->velocity;
+		b2_v = b2->velocity;
+		double b1_vx, b1_vy, b2_vx, b2_vy;
+		// 3D
+		double b1_vz, b2_vz;
+		b1_vx = (b1->direction.x * b1_v);
+		b1_vy = (b1->direction.y * b1_v);
+		
+		// 3D
+		b1_vz = (b1->direction.z * b1_v);
 
-	b1->velocity = 
-		sqrt( pow(vx1,2) + pow(vy1,2) + pow(vz1,2));
-	b2->velocity = 
-		sqrt( pow(vx2,2) + pow(vy2,2) + pow(vz2,2));
+		b2_vx = (b2->direction.x * b2_v);
+		b2_vy = (b2->direction.y * b2_v);
+		
+		// 3D
+		b2_vz = (b2->direction.z * b2_v);
 
-//     ***  velocity correction for inelastic collisions ***
+		// have x and y components of speed
 
-       //vx1=(vx1-vx_cm)*R + vx_cm;
-       //vy1=(vy1-vy_cm)*R + vy_cm;
-       //vz1=(vz1-vz_cm)*R + vz_cm;
-       //vx2=(vx2-vx_cm)*R + vx_cm;
-       //vy2=(vy2-vy_cm)*R + vy_cm;
-       //vz2=(vz2-vz_cm)*R + vz_cm;  
+		// get ball masses
+		double m1 = get_mass(b1->radius), m2 = get_mass(b2->radius);
 
-       //return;
-//}
+		// need the new velocity components (after collision)
+		double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
 
+		// 3D
+		double b1_vz_new, b2_vz_new;
 
+		// ball 1 new components
+		b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
+		b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
+		// 3D
+		b1_vz_new = ((m1-m2) * b1_vz + (2*m2) * b2_vz)/(m1+m2);
 
-	//// store before collision velocities
-	//double b1_v, b2_v;
-	//b1_v = b1->velocity;
-	//b2_v = b2->velocity;
-	//double b1_vx, b1_vy, b2_vx, b2_vy;
-	//// 3D
-	//double b1_vz, b2_vz;
-	//b1_vx = (b1->direction.x * b1_v);
-	//b1_vy = (b1->direction.y * b1_v);
-	//
-	//// 3D
-	//b1_vz = (b1->direction.z * b1_v);
+		// ball 2 new components
+		b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
+		b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
+		// 3D
+		b2_vz_new = ((m2-m1) * b2_vz + (2*m1) * b1_vz)/(m1+m2);
 
-	//b2_vx = (b2->direction.x * b2_v);
-	//b2_vy = (b2->direction.y * b2_v);
-	//
-	//// 3D
-	//b2_vz = (b2->direction.z * b2_v);
+		// need to change direction to match new speeds
+		b1->direction.x = b1_vx_new;
+		b1->direction.y = b1_vy_new;
+		// 3D
+		b1->direction.z = b1_vz_new;
+		normalize_dir(b1);
 
-	//// have x and y components of speed
-
-	//// get ball masses
-	//double m1 = get_mass(b1->radius), m2 = get_mass(b2->radius);
-
-	//// need the new velocity components (after collision)
-	//double b1_vx_new, b1_vy_new, b2_vx_new, b2_vy_new;
-
-	//// 3D
-	//double b1_vz_new, b2_vz_new;
-
-	//// ball 1 new components
-	//b1_vx_new = ((m1-m2) * b1_vx + (2*m2) * b2_vx)/(m1+m2);
-	//b1_vy_new = ((m1-m2) * b1_vy + (2*m2) * b2_vy)/(m1+m2);
-	//// 3D
-	//b1_vz_new = ((m1-m2) * b1_vz + (2*m2) * b2_vz)/(m1+m2);
-
-	//// ball 2 new components
-	//b2_vx_new = ((m2-m1) * b2_vx + (2*m1) * b1_vx)/(m1+m2);
-	//b2_vy_new = ((m2-m1) * b2_vy + (2*m1) * b1_vy)/(m1+m2);
-	//// 3D
-	//b2_vz_new = ((m2-m1) * b2_vz + (2*m1) * b1_vz)/(m1+m2);
-
-	//// need to change direction to match new speeds
-	//b1->direction.x = b1_vx_new;
-	//b1->direction.y = b1_vy_new;
-	//// 3D
-	//b1->direction.z = b1_vz_new;
-	//normalize_dir(b1);
-
-	//b2->direction.x = b2_vx_new;
-	//b2->direction.y = b2_vy_new;
-	//b2->direction.z = b2_vz_new;
-	//normalize_dir(b2);
-	//
-	//b1->velocity = 
-	//	sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2) + pow(b1_vz_new,2));
-	//b2->velocity = 
-	//	sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2) + pow(b2_vz_new,2));
-	//// speeds updated
-
+		b2->direction.x = b2_vx_new;
+		b2->direction.y = b2_vy_new;
+		b2->direction.z = b2_vz_new;
+		normalize_dir(b2);
+		
+		b1->velocity = 
+			sqrt( pow(b1_vx_new,2) + pow(b1_vy_new,2) + pow(b1_vz_new,2));
+		b2->velocity = 
+			sqrt( pow(b2_vx_new,2) + pow(b2_vy_new,2) + pow(b2_vz_new,2));
+		// speeds updated
+	}
 	b1->path = 0;
 	b2->path = 0;
 	b1->start_time = (double) clock();
@@ -1139,9 +1098,8 @@ struct sphere generate_sphere(int rad) {
  * prints sphere info, used for debugging
  */
 void print_sphere( struct sphere *ball) {
-	//printf("xpos: %f ypos: %f\n", ball->pos.x, ball->pos.y);
 	printf("xpos: %f ypos: %f zpos: %f\n", ball->pos.x, ball->pos.y, ball->pos.z);
-	//printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
+	printf("direction: %f %f\n", ball->direction.x, ball->direction.y);
 	printf("direction: %f %f %f\n", ball->direction.x, ball->direction.y, ball->direction.z);
 	printf("interval: %f\n", ball->interval);
 	printf("prev pos -- x: %f y: %f z:%f\n", ball->previous_pos.x,
@@ -1399,6 +1357,9 @@ void keystroke(unsigned char c, int x, int y) {
 			//all_spheres.push_back(ball);
 			all_spheres.push_back( generate_sphere(0) );
 		}
+			break;
+		case 99:
+			response = (response == 0) ? 1 : 0;
 			break;
 		case 119: // [w] forward
 			deltaMove = 0.5;
