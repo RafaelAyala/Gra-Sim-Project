@@ -165,7 +165,8 @@ double next_ball_radius;
 double ranged_random_value(double radius) {
 	//printf("#### radius: %f\n", radius);
 	double difference = 2 * (CUBE_LENGTH - (radius+0.0001));
-	return (( (double)rand()/RAND_MAX )*difference)-(difference/2.);	
+	//return (( (double)rand()/RAND_MAX )*difference)-(difference/2.);	
+	return (( (double)rand()/RAND_MAX )*difference);	
 }
 
 /*
@@ -665,6 +666,8 @@ int collision_detection( struct sphere ball ) {
 void wall_check( struct sphere *ball ) {	
 		//return ball;
 		double dist = 5.0 - ball->radius;
+		double dist_top = 10.0 - ball->radius;
+		double dist_bottom = 0.0 + ball->radius;
 		if(ball->path == 1) {
 			ball->direction.x = ball->pos.x - ball->previous_pos.x;
 			ball->direction.y = ball->pos.y - ball->previous_pos.y;
@@ -672,15 +675,35 @@ void wall_check( struct sphere *ball ) {
 			ball->direction.z = ball->pos.z - ball->previous_pos.z;
 			normalize_dir(ball);
 		}
+		//if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
+		//	ball->direction.x *= -1;
+		//	ball->pos.x = ( ball->pos.x < 0.0  ) ? -1*dist : dist;
+		//	ball->path = 0;
+		//	ball->start_time = (double) clock();
+		//	ball->active = 1;
+		//} else if(ball->pos.y >= dist || ball->pos.y <= -1*dist) {
+		//	ball->direction.y *= -1;
+		//	ball->pos.y = ( ball->pos.y < 0.0 ) ? -1*dist : dist;
+		//	ball->path = 0;
+		//	ball->start_time = (double) clock();
+		//	ball->active = 1;
+		//// 3D
+		//} else if(ball->pos.z >= dist || ball->pos.z <= -1*dist) {
+		//	ball->direction.z *= -1;
+		//	ball->pos.z = ( ball->pos.z < 0.0 ) ? -1*dist : dist;
+		//	ball->path = 0;
+		//	ball->start_time = (double) clock();
+		//	ball->active = 1;
+		//}
 		if( ball->pos.x >= dist || ball->pos.x <= -1*dist) {
 			ball->direction.x *= -1;
 			ball->pos.x = ( ball->pos.x < 0.0  ) ? -1*dist : dist;
 			ball->path = 0;
 			ball->start_time = (double) clock();
 			ball->active = 1;
-		} else if(ball->pos.y >= dist || ball->pos.y <= -1*dist) {
+		} else if(ball->pos.y >= dist_top || ball->pos.y <= dist_bottom) {
 			ball->direction.y *= -1;
-			ball->pos.y = ( ball->pos.y < 0.0 ) ? -1*dist : dist;
+			ball->pos.y = ( ball->pos.y < 5.0 ) ? dist_bottom : dist_top;
 			ball->path = 0;
 			ball->start_time = (double) clock();
 			ball->active = 1;
@@ -1068,7 +1091,7 @@ struct sphere generate_sphere(int rad) {
 			// position starts at p1
 			ball.pos = ball.p1;
 			// 3D
-			ball.previous_pos = {0.0, 0.0, 0.0};
+			ball.previous_pos = {0.0, 5.0, 0.0};
 			
 			// gets a random direction, this might be a wasted step
 			ball.direction = random_direction(ball.radius);
@@ -1197,43 +1220,43 @@ void draw_box() {
 	glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
 	// front box
 	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, 5);
-	  glVertex3f( 5, -5, 5);
-	  glVertex3f( 5,  5, 5);
-	  glVertex3f(-5,  5, 5);
+	  glVertex3f(-5,  0, 5);
+	  glVertex3f( 5,  0, 5);
+	  glVertex3f( 5, 10, 5);
+	  glVertex3f(-5, 10, 5);
 	glEnd();
 	
 	// back box
 	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, -5);
-	  glVertex3f( 5, -5, -5);
-	  glVertex3f( 5,  5, -5);
-	  glVertex3f(-5,  5, -5);
+	  glVertex3f(-5, 0, -5);
+	  glVertex3f( 5, 0, -5);
+	  glVertex3f( 5, 10, -5);
+	  glVertex3f(-5, 10, -5);
 	glEnd();
 
 	glColor4f(0.4f, 0.4f, 0.4f, 0.1f);
 	// left side
 	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, -5);
-	  glVertex3f(-5, -5,  5);
-	  glVertex3f(-5,  5,  5);
-	  glVertex3f(-5,  5, -5);
+	  glVertex3f(-5, 0, -5);
+	  glVertex3f(-5, 0,  5);
+	  glVertex3f(-5, 10,  5);
+	  glVertex3f(-5, 10, -5);
 	glEnd();
 
 	// right side
 	glBegin(GL_QUADS);
-	  glVertex3f( 5, -5, -5);
-	  glVertex3f( 5, -5,  5);
-	  glVertex3f( 5,  5,  5);
-	  glVertex3f( 5,  5, -5);
+	  glVertex3f( 5, 0, -5);
+	  glVertex3f( 5, 0,  5);
+	  glVertex3f( 5, 10,  5);
+	  glVertex3f( 5, 10, -5);
 	glEnd();
 	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
 	// top
 	glBegin(GL_QUADS);
-	  glVertex3f(-5,  5, -5);
-	  glVertex3f(-5,  5,  5);
-	  glVertex3f( 5,  5,  5);
-	  glVertex3f( 5,  5, -5);
+	  glVertex3f(-5, 10, -5);
+	  glVertex3f(-5, 10,  5);
+	  glVertex3f( 5, 10,  5);
+	  glVertex3f( 5, 10, -5);
 	glEnd();
 	glPopMatrix();
 
@@ -1279,10 +1302,10 @@ void display() {
 	glPushMatrix();
 	// bottom
 	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, -5);
-	  glVertex3f(-5, -5,  5);
-	  glVertex3f( 5, -5,  5);
-	  glVertex3f( 5, -5, -5);
+	  glVertex3f(-5, 0, -5);
+	  glVertex3f(-5, 0,  5);
+	  glVertex3f( 5, 0,  5);
+	  glVertex3f( 5, 0, -5);
 	glEnd();
 	glPopMatrix();
 
@@ -1316,10 +1339,10 @@ void display() {
 	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
 	// bottom
 	glBegin(GL_QUADS);
-	  glVertex3f(-5, -5, -5);
-	  glVertex3f(-5, -5,  5);
-	  glVertex3f( 5, -5,  5);
-	  glVertex3f( 5, -5, -5);
+	  glVertex3f(-5, 0, -5);
+	  glVertex3f(-5, 0,  5);
+	  glVertex3f( 5, 0,  5);
+	  glVertex3f( 5, 0, -5);
 	glEnd();
 
 	// END DRAW FLOOR
