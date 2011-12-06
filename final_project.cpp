@@ -601,7 +601,14 @@ void animate() {
 				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
 				//printf("extra mass in system: %f\n", mass_of_system);
 				struct dust tail;
-				tail.pos = all_spheres[j].pos;
+				//tail.pos = all_spheres[j].pos;
+				double rad = all_spheres[j].radius;
+				tail.pos.x = all_spheres[j].pos.x + 
+					(((double) rand() / RAND_MAX) * (2*rad) - rad);
+				tail.pos.y = all_spheres[j].pos.y + 
+					(((double) rand() / RAND_MAX) * (2*rad) - rad);
+				tail.pos.z = all_spheres[j].pos.z + 
+					(((double) rand() / RAND_MAX) * (2*rad) - rad);
 				tail.color = all_spheres[j].color;
 				tail.life = 100;
 						
