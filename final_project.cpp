@@ -1160,7 +1160,7 @@ void display() {
 		keyMove(deltaMove);
 	}
 	
-	glClearColor(0.2f, 0.2f, 0.2f, 1.0f);
+	glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glLoadIdentity();
@@ -1258,11 +1258,12 @@ void display() {
 	  glVertex3f( 5, -5,  5);
 	  glVertex3f( 5, -5, -5);
 	glEnd();
-
-	if(showText){
+	
 	glDisable(GL_BLEND);
 	glDisable(GL_LIGHTING);
     glDisable(GL_DEPTH_TEST);
+
+	if(showText){
 	glColor3f( 1.0f, 1.0f, 1.0f);
 	glRasterPos3f(x+lx,y+ly,z+lz);
 	char blah[20];
