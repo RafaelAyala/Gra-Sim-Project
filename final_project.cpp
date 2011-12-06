@@ -91,6 +91,9 @@ int yOrigin = -1;
 
 int showText = 0; 
 
+int dust_shown = 1;
+int reflection = 1;
+
 // holds 3 floating point number representing a point in 2 space
 struct point3f {
 	double x;
@@ -599,19 +602,22 @@ void animate() {
 				mass_before = get_mass(all_spheres[j].radius);
 				all_spheres[j].radius -= 0.00045;
 				mass_of_system += ( mass_before - get_mass(all_spheres[j].radius));
-				struct dust tail;
-				double rad = all_spheres[j].radius;
-				tail.pos.x = all_spheres[j].pos.x + 
-					(((double) rand() / RAND_MAX) * (2*rad) - rad);
-				tail.pos.y = all_spheres[j].pos.y + 
-					(((double) rand() / RAND_MAX) * (2*rad) - rad);
-				tail.pos.z = all_spheres[j].pos.z + 
-					(((double) rand() / RAND_MAX) * (2*rad) - rad);
-				tail.color = all_spheres[j].color;
-				tail.life = 100;
-						
-				tails.resize(tails.size()+1);
-				tails.push_back(tail);
+				
+				if(dust_shown) {
+					struct dust tail;
+					double rad = all_spheres[j].radius;
+					tail.pos.x = all_spheres[j].pos.x + 
+						(((double) rand() / RAND_MAX) * (2*rad) - rad);
+					tail.pos.y = all_spheres[j].pos.y + 
+						(((double) rand() / RAND_MAX) * (2*rad) - rad);
+					tail.pos.z = all_spheres[j].pos.z + 
+						(((double) rand() / RAND_MAX) * (2*rad) - rad);
+					tail.color = all_spheres[j].color;
+					tail.life = 75;
+							
+					tails.resize(tails.size()+1);
+					tails.push_back(tail);
+				}
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
@@ -1276,7 +1282,7 @@ void display() {
 	collision_check();
 	
 	
-	
+	if(reflection) {	
 	glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
     glDepthMask(GL_FALSE);
 
@@ -1317,6 +1323,7 @@ void display() {
 	// END DRAW SCENE
 
 	glPopMatrix();
+	}
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_STENCIL_TEST);
 
@@ -1365,18 +1372,18 @@ void display() {
 
 	//
 	//glDisable(GL_BLEND);
-	//glDisable(GL_LIGHTING);
-    //glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
 
-	//if(showText){
-	//glColor3f( 1.0f, 1.0f, 1.0f);
-	//glRasterPos3f(x+lx,y+ly,z+lz);
-	//char blah[20];
-	//sprintf(blah,"%d - %2.0f %",all_spheres.size(), mass_of_system/next_ball_mass*100);
-	//glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
-	//}
-	//glEnable(GL_LIGHTING);
-    //glEnable(GL_DEPTH_TEST);
+	if(showText){
+		glColor3f( 1.0f, 1.0f, 1.0f);
+		glRasterPos3f(x+lx,y+ly,z+lz);
+		char blah[20];
+		sprintf(blah,"%d - %2.0f %",all_spheres.size(), mass_of_system/next_ball_mass*100);
+		glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
+	}
+	glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
 	
 	spawn_next_ball();
 	
@@ -1464,11 +1471,17 @@ void keystroke(unsigned char c, int x, int y) {
 			all_spheres.push_back( generate_sphere(0) );
 		}
 			break;
-		case 99:
+		case 99:	// [c] collisions response mode
 			response = (response == 0) ? 1 : 0;
+			break;
+		case 100:
+			dust_shown = ( dust_shown ) ? 0 : 1;
 			break;
 		case 119: // [w] forward
 			deltaMove = 0.5;
+			break;
+		case 114: // [r] relfection on/off
+			reflection = (reflection) ? 0 : 1;
 			break;
 		case 115: // [s] back
 			deltaMove = -0.5;
