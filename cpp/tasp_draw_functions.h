@@ -18,12 +18,12 @@ struct dust{
 /*
  * draws the spheres in the systems
  */
-void draw_spheres(std::vector<Sphere*> all_spheres, int a);
+void draw_spheres(std::vector<Sphere*>* all_spheres, int a);
 
 /*
  * draws the dust trails behind the box
  */
-void draw_dust(std::vector<dust> tails);
+void draw_dust(std::vector<dust*>* tails);
 
 /*
  * draws the cube that all the spheres are bound in

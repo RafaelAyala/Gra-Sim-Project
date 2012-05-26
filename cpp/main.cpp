@@ -75,8 +75,8 @@ int showText = 0;
 int dust_shown = 1;
 int reflection = 1;
 
-std::vector<Sphere*> all_spheres;
-std::vector<dust> tails;
+std::vector<Sphere*>* all_spheres;
+std::vector<dust*>* tails;
 
 /*
  * This acts as the idle function, whenever the system is idle, animte() is
@@ -88,65 +88,61 @@ void animate() {
 	while((double) clock() == current){} // waits for next time step
 	current = (double) clock();
 
-	// remove tails
 	int k;
-	for( k = 0; k < tails.size(); k++) {
-		tails[k].life--;
-		if(tails[k].life <= 0) {
-			tails.erase(tails.begin()+k);
+	for( k = 0; k < (*tails).size(); k++) {
+		(*tails)[k]->life--;
+		if((*tails)[k]->life <= 0) {
+			(*tails).erase((*tails).begin()+k);
 		}
 	}
 
-	for(j = 0; j < all_spheres.size(); j++) {
+	for(j = 0; j < (*all_spheres).size(); j++) {
 		
 		// DECAY
 		double decay = ((double) rand() / RAND_MAX);
 
-
-		if( all_spheres[j]->radius>0.0) {
-			if( decay <= DECAY_PROB && all_spheres[j]->active) {
-				mass_before = all_spheres[j]->get_mass();
-				all_spheres[j]->radius -= 0.00045;
-				mass_of_system += ( mass_before - all_spheres[j]->get_mass());
+		if( (*all_spheres)[j]->radius>0.0) {
+			if( decay <= DECAY_PROB && (*all_spheres)[j]->active) {
+				mass_before = (*all_spheres)[j]->get_mass();
+				(*all_spheres)[j]->radius -= 0.00045;
+				mass_of_system += ( mass_before - (*all_spheres)[j]->get_mass());
 				
 				if(dust_shown) {
-					 dust tail;
-					double rad = all_spheres[j]->radius;
-					tail.pos.x = all_spheres[j]->pos.x + 
+					dust* tail = new dust;
+					double rad = (*all_spheres)[j]->radius;
+					tail->pos.x = (*all_spheres)[j]->pos.x + 
 						(((double) rand() / RAND_MAX) * (2*rad) - rad);
-					tail.pos.y = all_spheres[j]->pos.y + 
+					tail->pos.y = (*all_spheres)[j]->pos.y + 
 						(((double) rand() / RAND_MAX) * (2*rad) - rad);
-					tail.pos.z = all_spheres[j]->pos.z + 
+					tail->pos.z = (*all_spheres)[j]->pos.z + 
 						(((double) rand() / RAND_MAX) * (2*rad) - rad);
-					tail.color = all_spheres[j]->color;
-					tail.life = 75;
+					tail->color = (*all_spheres)[j]->color;
+					tail->life = 75;
 							
-					tails.resize(tails.size()+1);
-					tails.push_back(tail);
+
+					(*tails).push_back(tail);
 				}
 			}
 		}else{
-			all_spheres.erase(all_spheres.begin()+j);
+			all_spheres->erase(all_spheres->begin()+j);
 			break;
 		}
 		// END DECAY
 
-		if(all_spheres[j]->path == 0) { //linear paths
+		if((*all_spheres)[j]->path == 0) { //linear paths
 			// advance position on vector
-			all_spheres[j]->move_on_vector(current);
+			(*all_spheres)[j]->move_on_vector(current);
 		
-		}else if(all_spheres[j]->path == 1) { // bezier curves for path	
+		}else if((*all_spheres)[j]->path == 1) { // bezier curves for path	
 			
-			if( all_spheres[j]->interval < 1.0) {
+			if( (*all_spheres)[j]->interval < 1.0) {
 				// advance position on curve
-				all_spheres[j]->move_on_curve(current);
+				(*all_spheres)[j]->move_on_curve(current);
 			} else { 
 				// generate a new curve
-				all_spheres[j]->generate_curve();		
+				(*all_spheres)[j]->generate_curve();		
 			}
 		}	
-
-	
 	}
 	// set window and call display to refresh screen
 	glutSetWindow(window);
@@ -158,7 +154,7 @@ void animate() {
  */
 void spawn_next_ball() {
 	if( mass_of_system >= next_ball_mass ) {
-		all_spheres.push_back(  new Sphere(next_ball_radius) );
+		(*all_spheres).push_back(  new Sphere(next_ball_radius) );
 		mass_of_system -= next_ball_mass; 
 		next_ball_radius = random_radius();
 		next_ball_mass = (4 * PI * pow(next_ball_radius,3))/3.;
@@ -193,7 +189,7 @@ void display() {
     
     gluLookAt(x, y, z, x+lx, y+ly, z+lz, 0.0, 1.0, 0.0);
 	// MUST BE BEFORE SPHERES ARE DRAWN
-	collision_check(all_spheres);
+	collision_check((*all_spheres));
 	
 	
 	if(reflection) {	
@@ -273,7 +269,7 @@ void display() {
 		glColor3f( 1.0f, 1.0f, 1.0f);
 		glRasterPos3f(x+lx,y+ly,z+lz);
 		char blah[20];
-		sprintf(blah,"%d - %2.0f",all_spheres.size(), mass_of_system/next_ball_mass*100);
+		sprintf(blah,"%d - %2.0f",(*all_spheres).size(), mass_of_system/next_ball_mass*100);
 		glutBitmapString(GLUT_BITMAP_HELVETICA_18, (const unsigned char*)blah);
 	}
 	glEnable(GL_LIGHTING);
@@ -321,13 +317,21 @@ void gfxinit() {
 
 	srand(time(NULL));	// seed for rand() calls
 
+	all_spheres = new std::vector<Sphere *>;
+	tails = new std::vector<dust *>;
+
 	// create all spheres for the initial system state
 	int k;
 	for( k = 0; k < balls; k++ ) { //setup all ball settings
-		all_spheres.push_back( new Sphere(random_radius()) );
+		(*all_spheres).push_back( new Sphere(random_radius()) );
 	}
 	next_ball_radius = random_radius();
 	next_ball_mass = (4 * PI * pow(next_ball_radius,3))/3.;
+}
+
+// releases memory of all the pointers I generate
+void cleanup() {
+
 }
 
 /*
@@ -338,7 +342,7 @@ void keystroke(unsigned char c, int x, int y) {
 	switch(c) {
 		case 97:	// [a] for add ball
 		{
-			all_spheres.push_back( new Sphere(random_radius()) );
+			(*all_spheres).push_back( new Sphere(random_radius()) );
 		}
 			break;
 		case 99:	// [c] collisions response mode
@@ -361,6 +365,7 @@ void keystroke(unsigned char c, int x, int y) {
 			showText = (showText) ? 0 : 1; 
 			break;
 		case 113:		// [q] is quit
+			cleanup();
 			exit(0);
 			break;
 		case 110:
