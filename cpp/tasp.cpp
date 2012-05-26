@@ -114,6 +114,8 @@ struct color3f {
 	double blue;
 };
 
+// SPHERE
+
 // holds all information pertaining to a single sphere
 class Sphere{
   public:
@@ -138,9 +140,53 @@ class Sphere{
 	double interval;
 	double curve_length;
 	double curve_time;
-	
+	Sphere(int radius);
+	~Sphere();
 
 };
+
+Sphere::Sphere(int rad){
+		
+		do{
+			// RADIUS MUST BE BEFORE RANDOM POINTS
+			radius = (rad) ? next_ball_radius : random_radius();
+			// gets 4 random points for the bezier curve
+			p1 = random_ranged_point(radius);
+			p2 = new_curve_point(p1);		
+			p3 = new_curve_point(p2);
+			p4 = new_curve_point(p3);
+			
+			// position starts at p1
+			pos = p1;
+			// 3D
+			previous_pos = {0.0, 5.0, 0.0};
+			
+			// gets a random direction, this might be a wasted step
+			direction = random_direction(ball.radius);
+
+			active = 0;
+
+			velocity = random_velocity();	
+
+			// start on a curved path
+			path = 1;
+			color = random_color();		
+
+			curve_length = curve_length( &ball );
+			start_time = (double) clock();
+			curve_time = curve_length / velocity;
+			ghost = 0;
+			// 3D
+		}while(collision_detection(ball) == 1 || p1.x == 0.0 || p1.y == 0.0 ||
+				p1.z == 0.0);	
+}
+Sphere::~Sphere(){}
+
+// SPHERE
+
+
+
+
 
 // holds all information pertaining to a spec of dust 
 class Dust{
@@ -159,6 +205,7 @@ double next_ball_mass;
 double next_ball_radius;
 
 /*
+ * TYPE : SUPPORT
  * double ranged_random_value();
  *
  * returns a random value based on the the bounds of the system
@@ -171,6 +218,7 @@ double ranged_random_value(double radius) {
 }
 
 /*
+ * TYPE : SUPPORT
  * struct color3f random_color();
  *
  * returns a randomized RGB color w/o dark colors
@@ -191,6 +239,7 @@ struct color3f random_color(){
 }
 
 /*
+ * TYPE : SUPPORT
  * double random_radius();
  *
  * returns a random radius between 0.15 and 0.7
@@ -204,6 +253,7 @@ double random_radius() {
 }
 
 /*
+ * TYPE : SPHERE
  * double get_mass(struct sphere ball);
  *
  * returns the mass of the ball based on the radius
@@ -216,6 +266,7 @@ double get_mass( double radius) {
 }
 
 /*
+ * TYPE : SPHERE
  * void update_position(struct sphere ball, double pos);
  *
  * returns the position of the ball on a curve
@@ -247,6 +298,7 @@ void update_position( Sphere *ball) {
 }
 
 /*
+ * TYPE : SPHERE
  * struct point2f get_position(struct sphere ball, double pos);
  *
  * returns the position of the ball on a curve
@@ -277,6 +329,7 @@ struct point3f get_position( Sphere *ball, double pos) {
 }
 
 /*
+ * TYPE : SPHERE
  * double curve_length(struct sphere ball);
  *
  * returns a double value representing the approximate length of the bezier
@@ -299,6 +352,7 @@ double curve_length( Sphere *ball ) {
 }
 
 /*
+ * TYPE : SPHERE
  * void normalize(struct sphere ball);
  *
  * normalizes the delta_x and delta_y components of a sphere
@@ -312,6 +366,7 @@ void normalize_dir( Sphere *ball) {
 }
 
 /*
+ * TYPE : SPHERE
  * struct sphere move_on_vector( struct sphere ball);
  *
  * advances the sphere along the vector path
@@ -331,6 +386,7 @@ Sphere move_on_vector( Sphere ball ) {
 }
 
 /*
+ * TYPE : SPHERE
  * struct sphere move_on_curve( struct sphere ball);
  *
  * advances the sphere along the curved path
@@ -347,6 +403,7 @@ void move_on_curve( Sphere *ball ) {
 }
 
 /*
+ * TYPE : SUPPORT
  * double distance(struct sphere ball1, struct sphere ball2);
  *
  * returns the distance between two parameter spheres
@@ -357,6 +414,7 @@ double distance( Sphere b1, Sphere b2 ) {
 }
 
 /*
+ * TYPE : SUPPORT
  * struct point2f new_curve_point(struct point2f origin);
  *
  * Creates a new point for the interpolation of a bezier curve affected by the
@@ -531,6 +589,7 @@ struct point3f new_curve_point(struct point3f origin){
 
 
 /*
+ * TYPE : SPHERE
  * void generate_curve( struct sphere ball);
  *
  * generates a new bezier curve based on a previous one
@@ -569,6 +628,7 @@ void generate_curve( Sphere *ball) {
 }
 
 /*
+ * TYPE : MAIN
  * void animate();
  *
  * This acts as the idle function, whenever the system is idle, animte() is
@@ -647,6 +707,7 @@ void animate() {
 }
 
 /*
+ * TYPE : SUPPORT
  * int collision_detection(struct sphere ball);
  *
  * returns 1 when a collision is detected with ball
@@ -667,6 +728,7 @@ int collision_detection( Sphere ball ) {
 }
 
 /*
+ * TYPE : SUPPORT
  * void wall_check( struct sphere ball );
  *
  * checks for a ball to wall collision
@@ -707,6 +769,7 @@ void wall_check( Sphere *ball ) {
 }
 
 /*
+ * TYPE : SUPPORT
  * void nudge_spheres( struct sphere *b1, struct sphere b2, double d);
  *
  * nudges sphere so they are at the point of collision, uses d to determine
@@ -736,6 +799,7 @@ void nudge_spheres( Sphere *b1, Sphere *b2, double d) {
 }
 
 /*
+ * TYPE : SPHERE
  * void update_direction( struct sphere *ball);
  *
  * Generates a direction based on the previous direction. Used when a sphere
@@ -749,6 +813,7 @@ void update_direction( Sphere *ball ) {
 }
 
 /*
+ * TYPE : SUPPORT
  * void collision_response( struct sphere *b1, struct sphere *b2);
  *
  * performs collision response between two balls
@@ -968,6 +1033,7 @@ void collision_response( Sphere *b1, Sphere *b2) {
 
 
 /*
+ * TYPE : SUPPORT
  * void collision_check();
  *
  * determines if any ball-wall or ball-ball collisions occur
@@ -1049,6 +1115,7 @@ struct vector3f random_direction(double radius){
 }
 
 /*
+ * TYPE : SUPPORT
  * double random_velocity();
  *
  * Returns a random speed between 0.0 and BALL_SPEED
@@ -1061,10 +1128,12 @@ double random_velocity() {
 }
 
 /*
+ * TYPE : SPHERE (should be constructor)
  * struct sphere generate_sphere();
  * 
  * return a ball 
  */
+ /*
 Sphere generate_sphere(int rad) {
 		Sphere ball;
 		
@@ -1103,8 +1172,10 @@ Sphere generate_sphere(int rad) {
 		
 		return ball;
 }
+*/
 
 /*
+ * TYPE : SUPPORT
  * void print_sphere( struct sphere *ball);
  *
  * prints sphere info, used for debugging
@@ -1134,6 +1205,7 @@ void print_sphere( Sphere *ball) {
 }
 
 /*
+ * TYPE : SUPPORT
  * void spawn_next_ball();
  *
  * checks if the system has enough mass to spawn the new ball
@@ -1150,6 +1222,7 @@ void spawn_next_ball() {
 }
 
 /*
+ TYPE : MAIN
  * void keyMove (double deltaMove );
  *
  * 
@@ -1160,6 +1233,7 @@ void keyMove (double deltaMove ) {
 	z += deltaMove * lz * 0.1;
 }
 
+// TYPE : SUPPORT
 void draw_spheres(int a) {
 	int i;
 	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
@@ -1182,6 +1256,7 @@ void draw_spheres(int a) {
 
 }
 
+// TYPE : SUPPORT
 void draw_dust() {
 	glPushMatrix();
 	int j;
@@ -1202,6 +1277,7 @@ void draw_dust() {
 
 }
 
+// TYPE SUPPORT
 void draw_box() {
 	glDisable(GL_LIGHTING);
 	glEnable (GL_BLEND);
@@ -1259,6 +1335,7 @@ void draw_box() {
 }
 
 /*
+ * TYPE : MAIN
  * void display();
  *
  * The display function displays the animation to the users screen.
@@ -1389,6 +1466,7 @@ void display() {
 }
 
 /*
+ * TYPE : MAIN
  * void gfxinit();
  *
  * initializes the system prior to animating
@@ -1450,6 +1528,7 @@ void gfxinit() {
 
 
 /*
+ * TYPE : MAIN
  * void keystroke(unisgned char c, int x, int y);
  *
  * The keystroke function handles user input to modify how the animation
@@ -1497,6 +1576,7 @@ void keystroke(unsigned char c, int x, int y) {
 }
 
 /*
+ * TYPE : MAIN
  * void key_release( unisgned char key, int x, int y);
  *
  * when the key is released, stop moving in that direction 
@@ -1513,6 +1593,7 @@ void key_release( unsigned char key, int x, int y) {
 }
 
 /*
+ * TYPE : MAIN
  * void mouse_move( int x, int y);
  *
  * Detects the change is mouse direction
@@ -1529,6 +1610,7 @@ void mouse_move( int x, int y) {
 }
 
 /*
+ * TYPE : MAIN
  * void mouse_button( int button, int state, int x, int y);
  *
  * Handles mouse button presses
@@ -1548,6 +1630,7 @@ void mouse_button( int button, int state, int x, int y) {
 }
 
 /*
+ * TYPE : MAIN
  * void main(int argc, char **argv);
  *
  * Simply sets up the OpenGL framework, calls functions to set up and begin
