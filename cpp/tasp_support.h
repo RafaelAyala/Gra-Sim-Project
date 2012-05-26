@@ -1,4 +1,4 @@
-#ifndef TASP_SUPPPORT_H
+#ifndef TASP_SUPPORT_H
 #define TASP_SUPPORT_H
 
 namespace tasp
@@ -29,38 +29,6 @@ struct color3f {
 	double red;
 	double green;
 	double blue;
-};
-
-// holds all information pertaining to a single sphere
-struct sphere{
-	// point2f pos;
-	 point3f pos;
-	double velocity;
-	// vector2f direction;
-	 vector3f direction;
-	//double mass;
-	double radius;
-	
-	int path;  // flag: 0 is linear path, 1 is a bezier curve
-	int active;
-	 color3f color;
-	double start_time;
-	int ghost;
-
-	// point2f p1,p2,p3,p4;
-	 point3f p1,p2,p3,p4;
-	// point2f previous_pos;
-	 point3f previous_pos;
-	double interval;
-	double curve_length;
-	double curve_time;
-};
-
-// holds all information pertaining to a spec of dust 
-struct dust{
-	 point3f pos;
-	 color3f color;
-	int life;
 };
 
 void set_cube_length( double cl );

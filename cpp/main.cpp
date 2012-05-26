@@ -31,41 +31,44 @@
 // Our Libraries
 //#include "tasp_sphere.h"
 #include "tasp_collision_dar.h"
+#include "tasp_draw_functions.h"
 using namespace tasp;
 
 // user defined values
-#define NUMBER_OF_BALLS 1
+// TODO : CLI parameters
 #define DECAY_PROB 0.5
 #define BALL_SPEED 2.0 // ASU's per second
 #define PI 3.14159
 #define DENSITY 1.0
 
 #define CUBE_LENGTH 5.0
-#define RESPONSE 0
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-
-
 // global variables
-int window; 	//id of the window
-double current;
-int balls;
-double mass_of_system;
-int response = RESPONSE;
 
+const int balls(1);		// initial number of balls in the system
+
+int window; 			// id of the window
+double current(0.0); 		// stores time
+double mass_of_system(0.0);
+int response(0);
+
+// camera controls
 double angleX = 0.0;
 double angleY = 0.0;
-
-double lx = -10.0, ly = -10.0, lz = -10.0;
-
-double x = 10.0, y = 10.0, z = 10.0;
-
+double lx = -10.0, ly = -10.0, lz = -10.0; // for keyboard movement
+double x = 10.0, y = 10.0, z = 10.0; // for keyboard movement
 double deltaAngleX = 0.0;
 double deltaAngleY = 0.0;
 double deltaMove = 0.0;
 int xOrigin = -1;
 int yOrigin = -1;
+// end camera controls
+
+// sphere next_ball;
+double next_ball_mass;
+double next_ball_radius;
 
 int showText = 0; 
 
@@ -75,14 +78,7 @@ int reflection = 1;
 std::vector<Sphere*> all_spheres;
 std::vector<dust> tails;
 
-// sphere next_ball;
-double next_ball_mass;
-double next_ball_radius;
-
 /*
- * CLASS : MAIN
- * void animate();
- *
  * This acts as the idle function, whenever the system is idle, animte() is
  * called.  The end of animate() forces display() to refresh
  */
@@ -131,7 +127,6 @@ void animate() {
 			}
 		}else{
 			all_spheres.erase(all_spheres.begin()+j);
-			balls--;
 			break;
 		}
 		// END DECAY
@@ -159,17 +154,10 @@ void animate() {
 }
 
 /*
- * void spawn_next_ball();
- *
  * checks if the system has enough mass to spawn the new ball
  */
 void spawn_next_ball() {
-	//printf("%f/%f till next spawn\n", mass_of_system, next_ball_mass);
 	if( mass_of_system >= next_ball_mass ) {
-		//all_spheres.resize(all_spheres.size()+1);
-		//generare sphere with next_ball_radius
-		//next_ball_radius
-		//all_spheres.push_back( generate_sphere(next_ball_radius) );
 		all_spheres.push_back(  new Sphere(next_ball_radius) );
 		mass_of_system -= next_ball_mass; 
 		next_ball_radius = random_radius();
@@ -178,112 +166,12 @@ void spawn_next_ball() {
 }
 
 /*
- * void keyMove (double deltaMove );
- *
  * 
  */ 
 void keyMove (double deltaMove ) {
 	x += deltaMove * lx * 0.1;
 	y += deltaMove * ly * 0.1;
 	z += deltaMove * lz * 0.1;
-}
-
-void draw_spheres(int a) {
-	int i;
-	for(i = 0; i < all_spheres.size(); i++) {	// draw all spheres
-		//printf("%f %f\n", all_spheres[i]->pos.x, all_spheres[i]->pos.y);
-		glPushMatrix();
-		glColor3f(all_spheres[i]->color.red,
-				all_spheres[i]->color.green,
-				all_spheres[i]->color.blue);
-		glTranslatef(all_spheres[i]->pos.x,all_spheres[i]->pos.y, all_spheres[i]->pos.z);
-		if( all_spheres[i]->active == 0) {
-			if( a == 1 ){
-				glColor3f( 1.0, 1.0, 1.0);
-				glutWireSphere(all_spheres[i]->radius, 10, 10);
-			}
-		}else{
-			glutSolidSphere(all_spheres[i]->radius, 25, 25);
-		}
-		glPopMatrix();
-	}
-
-}
-
-void draw_dust() {
-	glPushMatrix();
-	int j;
-	glBegin(GL_POINTS);
-	for( j = 0; j < tails.size(); j++) {
-		
-		double perc = tails[j].life/10.;
-	  	  glColor4f( tails[j].color.red*perc,
-				  	 tails[j].color.green*perc,
-					 tails[j].color.blue*perc,
-					 0.3);
-	  	  glVertex3f(tails[j].pos.x, tails[j].pos.y, tails[j].pos.z);
-	  	  
-
-	}
-	glEnd();
-	glPopMatrix();
-
-}
-
-void draw_box() {
-	glDisable(GL_LIGHTING);
-	glEnable (GL_BLEND);
-	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPushMatrix();
-	glColor4f(0.5f, 0.5f, 0.5f, 0.1f);
-	// front box
-	glBegin(GL_QUADS);
-	  glVertex3f(-5,  0, 5);
-	  glVertex3f( 5,  0, 5);
-	  glVertex3f( 5, 10, 5);
-	  glVertex3f(-5, 10, 5);
-	glEnd();
-	
-	// back box
-	glBegin(GL_QUADS);
-	  glVertex3f(-5, 0, -5);
-	  glVertex3f( 5, 0, -5);
-	  glVertex3f( 5, 10, -5);
-	  glVertex3f(-5, 10, -5);
-	glEnd();
-
-	glColor4f(0.4f, 0.4f, 0.4f, 0.1f);
-	// left side
-	glBegin(GL_QUADS);
-	  glVertex3f(-5, 0, -5);
-	  glVertex3f(-5, 0,  5);
-	  glVertex3f(-5, 10,  5);
-	  glVertex3f(-5, 10, -5);
-	glEnd();
-
-	// right side
-	glBegin(GL_QUADS);
-	  glVertex3f( 5, 0, -5);
-	  glVertex3f( 5, 0,  5);
-	  glVertex3f( 5, 10,  5);
-	  glVertex3f( 5, 10, -5);
-	glEnd();
-	glColor4f(0.6f, 0.6f, 0.6f, 0.1f);
-	// top
-	glBegin(GL_QUADS);
-	  glVertex3f(-5, 10, -5);
-	  glVertex3f(-5, 10,  5);
-	  glVertex3f( 5, 10,  5);
-	  glVertex3f( 5, 10, -5);
-	glEnd();
-	glPopMatrix();
-
-	glPopMatrix();
-	
-	glDisable(GL_BLEND);
-	glDisable(GL_LIGHTING);
-    glDisable(GL_DEPTH_TEST);
 }
 
 /*
@@ -342,8 +230,7 @@ void display() {
 
 	// DRAW INVERTED SCENE
 		glEnable(GL_LIGHTING);
-		draw_spheres(0);
-		//draw_dust();
+		draw_spheres(all_spheres, 0);
 		glDisable(GL_LIGHTING);
 		draw_box();
 	// END DRAW SCENE
@@ -373,8 +260,8 @@ void display() {
 
 	// DRAW SCENE
 		glEnable(GL_LIGHTING);
-		draw_spheres(1);
-		draw_dust();
+		draw_spheres(all_spheres, 1);
+		draw_dust(tails);
 		glDisable(GL_LIGHTING);
 		draw_box();
 	// END DRAW SCENE
@@ -398,16 +285,9 @@ void display() {
 }
 
 /*
- * void gfxinit();
- *
  * initializes the system prior to animating
  */
 void gfxinit() {
-	mass_of_system = 0.0;
-	balls = NUMBER_OF_BALLS;
-	//all_spheres.resize(balls);
-	
-	current = 0.0;
 	// LIGHTING 	
     GLfloat lightpos[4] = { 1.0, 0.0, 1.0, 1.0 };     // light position
     GLfloat lightamb[4] = { 0.0, 0.0, 0.0, 1.0 };     // ambient colour
@@ -451,8 +331,6 @@ void gfxinit() {
 }
 
 /*
- * void keystroke(unisgned char c, int x, int y);
- *
  * The keystroke function handles user input to modify how the animation
  * performs. Also allows the user to quit
  */
@@ -492,8 +370,6 @@ void keystroke(unsigned char c, int x, int y) {
 }
 
 /*
- * void key_release( unisgned char key, int x, int y);
- *
  * when the key is released, stop moving in that direction 
  */
 void key_release( unsigned char key, int x, int y) {
@@ -508,8 +384,6 @@ void key_release( unsigned char key, int x, int y) {
 }
 
 /*
- * void mouse_move( int x, int y);
- *
  * Detects the change is mouse direction
  */
 void mouse_move( int x, int y) {
@@ -524,8 +398,6 @@ void mouse_move( int x, int y) {
 }
 
 /*
- * void mouse_button( int button, int state, int x, int y);
- *
  * Handles mouse button presses
  */
 void mouse_button( int button, int state, int x, int y) {
@@ -543,8 +415,6 @@ void mouse_button( int button, int state, int x, int y) {
 }
 
 /*
- * void main(int argc, char **argv);
- *
  * Simply sets up the OpenGL framework, calls functions to set up and begin
  * the animation.
  */
